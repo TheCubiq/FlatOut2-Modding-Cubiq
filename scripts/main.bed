@@ -477,6 +477,7 @@ function BuildCarClassReferences()
 
 	local function SplitString(str)
 		local t={}		
+---@diagnostic disable-next-line: undefined-field
 		for w in string.gfind(str,"(%w+)%.?") do
 			table.insert(t,w)
 		end
