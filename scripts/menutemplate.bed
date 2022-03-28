@@ -56,6 +56,7 @@ local MenuTemplates = {
 
 
 			if menu_entered then
+				LOG("Menu Entered")
 				local w=GetWindow("menubar_top")
 				local xs,ys=w:GetSize()
 
@@ -69,7 +70,7 @@ local MenuTemplates = {
 				w:SetPosition(0,480)
 				AnimateWindowPos(w,POS(0,480),POS(0,480-ys),0.2)
 
-				menu_entered=nil
+				--menu_entered=nil
 			end
 		end,
 
@@ -105,13 +106,13 @@ local MenuTemplates = {
 
 		eventhandler = function(self,child,event)
 			local e=event or child
-			if DEV and e.id == EVENT_SCREENSHOT then
-				W("debug_string"):HideWindow()
-			end
+			--if DEV and e.id == EVENT_SCREENSHOT then
+				--W("debug_string"):HideWindow()
+			--end
 
-			if DEV and e.id == EVENT_SCREENSHOT_DONE then
+			--if DEV and e.id == EVENT_SCREENSHOT_DONE then
 				W("debug_string"):ShowWindow()
-			end
+			--end
 		end,
 
 	}, --//end template_basic
@@ -270,8 +271,10 @@ function StandardBarsAndButtons(menu,showmoney,showcarname)
 		end
 
 
-		if DEV then
-			StaticText{Name="debug_string",Title=L"",IgnoreGlobalAlpha=1,Position=POS(0,0),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+		if true then
+			StaticText{Name="debug_string",IgnoreGlobalAlpha=1,Position=POS(150,50),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+			debugged = true
+			--W("debug_string"):SetTitle(L(mystattext))
 		end
 			
 
@@ -308,13 +311,16 @@ function StandardBarsAndButtons(menu,showmoney,showcarname)
 		GUI:SetHelpButtons(unpack(help_buttons))
 end
 
-
-
-
-
-
-
-
+function writetodebug(str)
+	--StaticText{Name="debug_string",Title=L"test",IgnoreGlobalAlpha=1,Position=POS(150,0),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+	--MyLog2 = MyLog2.."\n"..str
+	if debugged then
+		--W("debug_string"):ShowWindow()
+		W("debug_string"):SetTitle(L(str))
+	else
+		--W("debug_string"):SetTitle(L("test"))
+	end
+end
 
 
 
@@ -334,7 +340,7 @@ function BlackLowerBalk()
 	local ppos=POS(0,392)
 
 	local p=addparent(Frame{ Position=ppos, Size=SIZE(640,480-392), ShowBorders=FALSE,Layer=0 } )
-	--//p:AttachResource(menucommon.black_transparent)
+	--p:AttachResource(menucommon.black_transparent)
 
 end
 
@@ -910,7 +916,7 @@ end
 function SetLowerBalkText(text)
 	local w=GetWindow("lowebalk_text")
 	if w then
-		w:SetTitle(text)
+		--w:SetTitle(text)
 		w:ShowWindow()
     end
 end
