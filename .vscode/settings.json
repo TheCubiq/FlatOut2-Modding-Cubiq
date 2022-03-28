@@ -316,9 +316,11 @@
         "ShowInteractBox",
         "POSE_RIGHT",
         "GUI",
-        "CubiqsColorPalette"
+        "CubiqsColorPalette",
+        "VERSION_US",
+        "gfind"
     ],
 	"Lua.diagnostics.disable": [
-        "lowercase-global"
+        "lowercase-global",
     ]
 }

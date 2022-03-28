@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 BEGIN_REPLICATED_OBJECT(ReplicatedObject2)
 REPLICATED_OBJECT_TYPE(REPLICATEDOBJECT2)
 REPLICATED_PROPERTY(Test1, int)

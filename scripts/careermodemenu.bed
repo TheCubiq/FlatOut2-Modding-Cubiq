@@ -257,7 +257,7 @@ function menu_career.init(self)
 		StaticText{Title=ConvertToWString(Classes[PlayerProfile:GetActiveClass()].Cups[PlayerProfile:GetActiveCup()].Name),Position=POS(53,92),Font=fontmedium(),Color=GetPaletteColor(33)}
 
 
-		StaticText{Title=TRANSLATOR(TITLE_CROSSHATCH),Align=FONTF_CENTER,Position=POS(237+20,113),Font=fontsmall(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		StaticText{Title=TRANSLATOR(TITLE_CROSSHATCH),Position=POS(237+20,113),Font=fontsmall(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
 		StaticText{Title=TRANSLATOR(TITLE_NAME),Align=FONTF_LEFT,Position=POS(247+35,113),Font=fontsmall(),Color=GetPaletteColor(33)}
 		StaticText{Title=TRANSLATOR(TITLE_POINTS),Align=FONTF_CENTER,Position=POS(555,112),Font=fontsmall(),Color=GetPaletteColor(33)}
 

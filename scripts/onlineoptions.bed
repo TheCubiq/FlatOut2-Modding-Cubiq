@@ -568,7 +568,7 @@ function ShowOnlineOptions()
 	
 	local optionsbox = wm.GetWindow("options_box")
 		
-	local title = StaticText { Name="options_title", Title=TITLE_LIVE_OPTIONS, Position=OnlineOptionsLayout.TitlePos, Size=SIZE(640,480), Color=OnlineOptionsLayout.TitleColor, Font=OnlineOptionsLayout.TitleFont, Parent=bgframe, Align=FONTF_CENTER, Parent=optionsbox, Layer=5 }
+	local title = StaticText { Name="options_title", Title=TITLE_LIVE_OPTIONS, Position=OnlineOptionsLayout.TitlePos, Size=SIZE(640,480), Color=OnlineOptionsLayout.TitleColor, Font=OnlineOptionsLayout.TitleFont, Align=FONTF_CENTER, Parent=optionsbox, Layer=5 }
 	AddOptionsWindow(title)
 
 	if AppearOffline then

@@ -291,7 +291,8 @@ local function ChangeCar()
 	elseif carclass == SessionInfo.CarClass.Any then
 		-- Any car; includes derby, racing, street and bonus cars
 		local function SplitString(str)
-			local t={}		
+			local t={}	
+---@diagnostic disable-next-line: undefined-field
 			for w in string.gfind(str,"(%w+)%.?") do
 				table.insert(t,w)
 			end
@@ -313,6 +314,7 @@ local function ChangeCar()
 		-- "Same as host" car setting
 		local function SplitString(str)
 			local t={}		
+---@diagnostic disable-next-line: undefined-field
 			for w in string.gfind(str,"(%w+)%.?") do
 				table.insert(t,w)
 			end
@@ -2239,13 +2241,15 @@ function menu_multiplayer_lobby.update(self, time)
 	if Mode == SELECT_PLAYER then
 		if PrevNumPlayers > numplayers then
 			local found = false
+			local foundplayer
 			for i = 1, numplayers do
 				if Session:GetPlayer(i).PeerId == SelectedPlayerPeerId then
 					found = true
 				end
+				foundplayer = i
 			end
 			if found then
-				wm.GetWindow("list"):SetSelectedRow(i)
+				wm.GetWindow("list"):SetSelectedRow(foundplayer)
 				SetSelectPlayerButtons()
 			else
 				SetSelectPlayerButtons()

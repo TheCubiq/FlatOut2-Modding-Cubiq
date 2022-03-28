@@ -34,6 +34,10 @@ end
 function menu_mainmenu.create(self)
 
 	--//slight kludge: set profilemenu back here
+	--DebugPrint("!!!!!!!!!!menu_mainmenu create")
+	--DebugCallTrackingOn()
+	--DebugTraceOn()
+
 	menu_profiles.back=entermenu("menu_mainmenu")
 
 	self.back=nil
@@ -58,6 +62,7 @@ function menu_mainmenu.create(self)
 		MENUITEM(TRANSLATOR(ICON_MAIN_EXTRAS), entermenu("menu_extras"), ICON(self,"icon_extras")),
 	}
 
+--[[
 	if XBOX then
 		self.items[3]={ TRANSLATOR(ICON_MULTIPLAYER_XBOXLIVE), function() MultiplayerMode = MPMODE_XBOXLIVE; enter_xboxlive()(); end, ICON(self,"icon_xbox_live") }
 	elseif PS2 then
@@ -69,6 +74,7 @@ function menu_mainmenu.create(self)
 	else
 		table.remove(self.items,3)
 	end
+--]]
 
 --//	if PRESSBUILD then
 --//		self.items[7]=MENUITEM(L"PRESS MENU",entermenu("pressmenu_tracks"),ICON(self,"icon_extras"))

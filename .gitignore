@@ -24,3 +24,6 @@
 /global/particles
 /global/skybox
 /global/water
+/scripts/gamespylogin.bed
+/scripts/lancreategame.bed
+/scripts/lanlobby.bed

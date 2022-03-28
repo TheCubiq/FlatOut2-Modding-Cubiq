@@ -336,10 +336,12 @@ Derby = {
 		Name = "data/scripts/LoadingScreens/derby-hits.bed", 
 		},
 
+---@diagnostic disable-next-line: duplicate-index
 		[3] = { 
 		Name = "data/scripts/LoadingScreens/derby-wrecking.bed", 
 		},
 
+---@diagnostic disable-next-line: duplicate-index
 		[3] = { 
 		Name = "data/scripts/LoadingScreens/derby-tactics.bed", 
 		},
