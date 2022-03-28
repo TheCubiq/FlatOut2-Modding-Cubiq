@@ -21,13 +21,13 @@ local tirerippermenu = false
 local EnableTuneMenu = true
 
 
-local tunepos 
-tunepos = {
-	1, -- y
-	1, -- x
-	0, -- pos
-	1, -- multiplier
-	1, -- page
+local ct_Menu 
+ct_Menu = {
+	["y"] = 1, -- y
+	["x"] = 1, -- x
+	["pos"] = 0, -- pos
+	["mul"] = 1, -- multiplier
+	["pg"] = 1, -- page
 }
 
 local crashwarning = true -- if true, displays warning message
@@ -476,16 +476,16 @@ end
 
 local mymenubuttons={
 	function ()
-		tunepos[1] = tunepos[1] - 1
+		ct_Menu.y = ct_Menu.y - 1
 	end,
 	function ()
-		tunepos[1] = tunepos[1] + 1
+		ct_Menu.y = ct_Menu.y + 1
 	end,
 	function ()
-		tunepos[2] = -1
+		ct_Menu.x = -1
 	end,
 	function ()
-		tunepos[2] = 1
+		ct_Menu.x = 1
 	end,
 }
 
@@ -571,7 +571,7 @@ local function updatecartunemenu(dir)
 				{cd.Tires,"MeshId","model id for tire, Proper Tire Ripper soon"},
 				{cd.Tires,"SkinId","skin id for this tire, Proper Tire Ripper soon"},
 				--{function() LOG("test") end, "test function","test desc"},
-				{function() ToggleTuneMenu("tr") end, "Tire Ripper","Hell yeah baby!"},
+				--{function() ToggleTuneMenu("tr") end, "Tire Ripper","Hell yeah baby!"},
 				--{cd.Body,"",""},
 				--{cd.Body,"",""},
 				--{cd.Body,"",""},
@@ -589,90 +589,113 @@ local function updatecartunemenu(dir)
 		mymenubuttons[dir]()
 	end
 
+	
+	-- if moved left or right
 	if dir == 3 or dir == 4 then
-		if tunepos[1] <= table.getn(props[tunepos[5]]) and tunepos[1] >= 1 then
-			if type(props[ tunepos[5] ][tunepos[1]][1]) == "function" then
-				MessageBox(L"this doesn't make sense, sorry",MESSAGEBOX_OK,ok)
+		-- is any property selected?
+		
+		-- selected page
+		local sel_pg = props[ct_Menu.pg]
+		
+		if ct_Menu.y <= table.getn(sel_pg) and ct_Menu.y >= 1 then
+			if type(sel_pg[ct_Menu.y][1]) == "function" then
+				--MessageBox(L"this doesn't make sense, sorry",MESSAGEBOX_OK,ok)
+				playmenusound_error()
 			else
-				replacedata(props[tunepos[5]][tunepos[1]][1], props[tunepos[5]][tunepos[1]][2], tunepos[3],tunepos[2]*tunepos[4],false)
+				local t_loc = sel_pg[ct_Menu.y][1]
+				local t_prop = sel_pg[ct_Menu.y][2]
+				replacedata(t_loc, t_prop, ct_Menu.pos,ct_Menu.x*ct_Menu.mul,false)
 			end
 			updatecartunemenu(8)
+
+		-- when the option is selected
 		else
-			if tunepos[1] == table.getn(props[tunepos[5]])+1 then
-					tunepos[4] = tunepos[4] * math.pow(10,tunepos[2])
-			elseif tunepos[1] == table.getn(props[tunepos[5]])+2 then
-				tunepos[3] = tunepos[3] + tunepos[2]
-				if tunepos[3] < 0 then
-					tunepos[3] = 0
+			-- option: multiplier
+			if ct_Menu.y == table.getn(sel_pg)+1 then
+					ct_Menu.mul = ct_Menu.mul * math.pow(10,ct_Menu.x)
+
+			-- option: level
+			elseif ct_Menu.y == table.getn(sel_pg)+2 then
+				ct_Menu.pos = ct_Menu.pos + ct_Menu.x
+				if ct_Menu.pos < 0 then
+					ct_Menu.pos = 0
 				end
-			elseif tunepos[1] == table.getn(props[tunepos[5]])+3 then
-				tunepos[5] = tunepos[5] + tunepos[2]
-				if tunepos[5] <= 0 then
-					tunepos[5] = table.getn(props)
-				elseif tunepos[5] > table.getn(props) then
-					tunepos[5] = 1
+
+			-- option: page
+			elseif ct_Menu.y == table.getn(sel_pg)+3 then
+				ct_Menu.pg = ct_Menu.pg + ct_Menu.x
+				if ct_Menu.pg <= 0 then
+					ct_Menu.pg = table.getn(props)
+				elseif ct_Menu.pg > table.getn(props) then
+					ct_Menu.pg = 1
 				end
-				tunepos[1] = 1
+				ct_Menu.y = 1
 			end
 		end
 	end
 	
 	
-	for i = 1, table.getn(props[tunepos[5] ]) do
-		--if table.getn(props[tunepos[5]][i]) == 2 then
-		--	table.insert(TheTuneMenu,props[ tunepos[5] ][i][2])
+	for i = 1, table.getn(props[ct_Menu.pg ]) do
+		--if table.getn(sel_pg[i]) == 2 then
+		--	table.insert(TheTuneMenu,props[ ct_Menu.pg ][i][2])
 		--else
 		local l
-		if type(props[ tunepos[5] ][i][1]) =="function" then
-			l = props[ tunepos[5] ][i][2]
+		if type(props[ ct_Menu.pg ][i][1]) =="function" then
+			l = props[ ct_Menu.pg ][i][2]
 		else
-			local proptype = type(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ])
-			if  proptype == "table" then
-				l = "#71 {"..table.concat(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ],"; ").."}"
-			elseif proptype == "number" or proptype == "string" then
-				l = "#3 "..props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ]
-			elseif proptype == "boolean" then
-				l = "#35 "..tostring(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ])
+			local property_pos = props[ct_Menu.pg][i]
+			local propertyname = property_pos[2]
+			local property = property_pos[1][ propertyname ]
+			if property ~= nil then
+					local proptype = type(property)
+				if  proptype == "table" then
+					l = "#71 {"..table.concat(property,"; ").."}"
+				elseif proptype == "number" or proptype == "string" then
+					l = "#3 "..property
+				elseif proptype == "boolean" then
+					l = "#35 "..tostring(property)
+				end
+				l = propertyname.." : "..l
 			end
-			l = props[ tunepos[5] ][i][2].." : "..l
+			
 		end
 		table.insert(TheTuneMenu,l)
 	end
 
-	local modmode = tunepos[4]
+	local modmode = ct_Menu.mul
 	table.insert(TheTuneMenu,"Modifier : "..modmode)
 
-	modmode = tunepos[3] 
-	if tunepos[3] == 0 then
+	modmode = ct_Menu.pos 
+	if ct_Menu.pos == 0 then
 		modmode = "All"
 	end
 	table.insert(TheTuneMenu,"ModifyPos : "..modmode)
 	
-	modmode = tunepos[5]
+	modmode = ct_Menu.pg
 	table.insert(TheTuneMenu,"Page : "..modmode.."/"..table.getn(props))
 
-	if tunepos[1] > table.getn(TheTuneMenu) then
-		tunepos[1] = 1 
-	elseif tunepos[1] < 1 then 
-		tunepos[1] = table.getn(TheTuneMenu)
+	if ct_Menu.y > table.getn(TheTuneMenu) then
+		ct_Menu.y = 1 
+	elseif ct_Menu.y < 1 then 
+		ct_Menu.y = table.getn(TheTuneMenu)
 	end
 
 	
 	
 	
-	TheTuneMenu[tunepos[1]] = "#69"..TheTuneMenu[tunepos[1]]
+	TheTuneMenu[ct_Menu.y] = "#69"..TheTuneMenu[ct_Menu.y]
 
 	local tunehint
 
-	if tunepos[1] <= table.getn(props[tunepos[5]]) then
-		tunehint = props[tunepos[5]][tunepos[1]][3]
-	elseif tunepos[1] == table.getn(props[tunepos[5]])+3 then
-		local l = "#35 "..props[tunepos[5]]["pagename"].."#20 "
-		if tunepos[5] > 1 then
-			l = props[tunepos[5]-1]["pagename"].."\t\t<-\t"..l
+	if ct_Menu.y <= table.getn(props[ct_Menu.pg]) then
+		tunehint = props[ct_Menu.pg][ct_Menu.y][3]
+	elseif ct_Menu.y == table.getn(props[ct_Menu.pg])+3 then
+		local l = "#35 "..props[ct_Menu.pg].pagename.."#20 "
+		if ct_Menu.pg > 1 then
+			l = props[ct_Menu.pg-1].pagename.."\t\t<-\t"..l
 		end
-		if tunepos[5] < table.getn(props) then
-			l = l.."\t->\t\t"..props[tunepos[5]+1]["pagename"]
+		if ct_Menu.pg < table.getn(props) then
+			l = l.."\t->\t\t"..props[ct_Menu.pg+1].pagename
 		end
 
 		tunehint = l
@@ -680,7 +703,7 @@ local function updatecartunemenu(dir)
 		tunehint = ""
 	end
 
-	if props[tunepos[5]]["pagename"] == "Fun Stuff" then
+	if props[ct_Menu.pg].pagename == "Fun Stuff" then
 		if hidecarwnds == false then
 			HideCarInfoWindows()
 			hidecarwnds = true
@@ -697,9 +720,9 @@ local function updatecartunemenu(dir)
 	wm.GetWindow( "CubiqHint" ):SetTitle(L(tunehint))
 	wm.GetWindow( "CubiqMenu" ):SetTitle(L("#999 [Cubiq's Tuning Menu]#34\n "..table.concat(TheTuneMenu,"\n#34 ")))
 	UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,true,menu_carselection.SelectedSkin)
-	if tunepos[1] <= table.getn(props[tunepos[5]]) and dir == 7 then
-		if type(props[ tunepos[5] ][tunepos[1]][1]) == "function" then
-			props[ tunepos[5] ][tunepos[1]][1]()
+	if ct_Menu.y <= table.getn(props[ct_Menu.pg]) and dir == 7 then
+		if type(props[ ct_Menu.pg ][ct_Menu.y][1]) == "function" then
+			props[ ct_Menu.pg ][ct_Menu.y][1]()
 		end
 	end
 	playmenusound_move()
@@ -726,11 +749,11 @@ function editcarproperty(r,cd,pe,pp,val,abs)
 	}
 
 	if r then 
-		return(props[tunepos[5] ])
+		return(props[ct_Menu.pg ])
 	else 
-		if pe <= table.getn(props[tunepos[5] ]) and pe >= 1 then
-			--replacedata(props[tunepos[5] ][pe][1], props[tunepos[5] ][pe][2], pp, val*props[tunepos[5] ][pe][3])
-			--wm.GetWindow("CubiqMenu"):SetTitle(L("[ menu ]\n"..props[tunepos[5] ][pe][2].."\n#35 "..val.."\n"..table.concat(props[tunepos[5] ][pe][1][props[tunepos[5] ][pe][2] ],"; ")))
+		if pe <= table.getn(props[ct_Menu.pg ]) and pe >= 1 then
+			--replacedata(props[ct_Menu.pg ][pe][1], props[ct_Menu.pg ][pe][2], pp, val*props[ct_Menu.pg ][pe][3])
+			--wm.GetWindow("CubiqMenu"):SetTitle(L("[ menu ]\n"..props[ct_Menu.pg ][pe][2].."\n#35 "..val.."\n"..table.concat(props[ct_Menu.pg ][pe][1][props[ct_Menu.pg ][pe][2] ],"; ")))
 			--playmenusound_move()
 		else
 			--wm.GetWindow("CubiqMenu"):SetTitle(L("[ menu ]\nunknown element\n #35nothing"))
@@ -875,7 +898,7 @@ function menu_carselection.init(self)
 			--cardata.SubjectiveHandling[1] = "test"
 			--cardata.SubjectiveHandling = {addtune,0}
 			
-			--editcarproperty(false,cardata,tunepos,-1,addtune)
+			--editcarproperty(false,cardata,ct_Menu,-1,addtune)
 			oldcarid = id
 		else
 
@@ -915,8 +938,8 @@ function menu_carselection.init(self)
 		local ccd = db.FlatOut2.Cars:GetProperty("Car",temppos)
 		-- selected car directory
 		local scd = db.FlatOut2.Cars:GetProperty("Car",testid-1)
-		replacedata(ccd.Tires, "MeshId",tunepos[3], scd.Tires.MeshId,true)
-		replacedata(ccd.Tires, "SkinId",tunepos[3], scd.Tires.SkinId,true)
+		replacedata(ccd.Tires, "MeshId",ct_Menu.pos, scd.Tires.MeshId,true)
+		replacedata(ccd.Tires, "SkinId",ct_Menu.pos, scd.Tires.SkinId,true)
 	end
 
 	function tireripperupdate()
@@ -935,8 +958,8 @@ function menu_carselection.init(self)
 			--up action
 			updatecartunemenu(1)
 			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35up")	)
-			--tunepos = tunepos + 1
-			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35up\n"..tunepos)	)
+			--ct_Menu = ct_Menu + 1
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35up\n"..ct_Menu)	)
 			--playmenusound_action()
 		else
 			if menu_carselection.goingforward or menu_carselection.goingback then
@@ -975,8 +998,8 @@ function menu_carselection.init(self)
 			-- down action
 			updatecartunemenu(2)
 			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35down")	)
-			--tunepos = tunepos - 1
-			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35down\n"..tunepos)	)
+			--ct_Menu = ct_Menu - 1
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35down\n"..ct_Menu)	)
 			--playmenusound_action()
 		else
 			if menu_carselection.goingforward or menu_carselection.goingback then
