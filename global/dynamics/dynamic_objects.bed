@@ -3,7 +3,7 @@ COLLISIONSOUND_NONE 	= 0
 COLLISIONSOUND_TRUCK 	= 1
 COLLISIONSOUND_GROUND 	= 2
 COLLISIONSOUND_SOFT 	= 3
-COLLISIONSOUND_SOLID 	= 4 -- seinämäiset/kivet
+COLLISIONSOUND_SOLID 	= 4 -- seinï¿½mï¿½iset/kivet
 COLLISIONSOUND_BARREL 	= 5
 COLLISIONSOUND_TIRE 	= 6
 COLLISIONSOUND_WOOD 	= 7
@@ -23,43 +23,43 @@ COLLISIONSOUND_HEAVYPLASTIC = 20
 COLLISIONSOUND_RUBBERBRUSH = 21
 
 -- bonus types
-BONUSTYPE_ROADBLOCK = 1 	-- muovitörpöt, renkaat, betoniporsaat, tynnyrit.
+BONUSTYPE_ROADBLOCK = 1 	-- muovitï¿½rpï¿½t, renkaat, betoniporsaat, tynnyrit.
 BONUSTYPE_FENCE 	= 2 	-- puu+metalli+jne -aidat, ja kaikki portit.
-BONUSTYPE_MACHINERY	= 3 	-- mekaaniset koneet/autot. kamelit, henkilöautot, pittien liukuhihnat.
+BONUSTYPE_MACHINERY	= 3 	-- mekaaniset koneet/autot. kamelit, henkilï¿½autot, pittien liukuhihnat.
 BONUSTYPE_SIGN 		= 4	-- kaikki mainoskyltit + liikennemerkit
-BONUSTYPE_ACCESSORY	= 5	-- (FO2: lyhtypylväät) ihmisen luomat yleiset roinat, useimmiten pienikokoiset esineet, jakoavaimet, kaasupullot, postilaatikot.
-BONUSTYPE_NATURE 	= 6	-- tukit, polttopuut, luontoonliittyvät asiat.
+BONUSTYPE_ACCESSORY	= 5	-- (FO2: lyhtypylvï¿½ï¿½t) ihmisen luomat yleiset roinat, useimmiten pienikokoiset esineet, jakoavaimet, kaasupullot, postilaatikot.
+BONUSTYPE_NATURE 	= 6	-- tukit, polttopuut, luontoonliittyvï¿½t asiat.
 BONUSTYPE_STRUCTURE	= 7	-- kaikki tukirakenteet / isommat rakennelmat. katulamput, tikkaat, polet, rakennusten palaset jne.
 BONUSTYPE_TIRE		= 8	-- renkaat.
 BONUSTYPE_NITRO		= 9	-- esineet joista saa nitroa muttei rahaa, atm kivet.
 
 BonusTypeMayhem = {	--//percent of mayhem (nitro) received per object  1.0 is 100% of ObjectBonusFactor in Settings/Nitro in db
-	[BONUSTYPE_NITRO]     = 0.07, --0.03  --//#0.18,  # 0.01
-	[BONUSTYPE_MACHINERY] = 0.50, --0.50 (use this only for cars and other big, rare objects)  --//#0.08,  # 0.08
-	[BONUSTYPE_NATURE]    = 0.12, --0.12  --//#0.04,  # 0.03
-	[BONUSTYPE_STRUCTURE] = 0.10, --0.10, --//#0.025, # 0.02
-	[BONUSTYPE_ROADBLOCK] = 0.10, --0.10, --//#0.022,  # 0.015
-	[BONUSTYPE_ACCESSORY] = 0.20, --0.20  --//#0.013, # 0.01
-	[BONUSTYPE_TIRE]      = 0.05, --0.05, --//#0.012, # 0.005
-	[BONUSTYPE_SIGN]      = 0.05, --???? (ainoastaan rock sculpturessa) --//#0.008, # 0.008
-	[BONUSTYPE_FENCE]     = 0.05  --???? (osa aidoista ei vielä tätä tyyppiä)  --//#0.006  # 0.005 
+	[BONUSTYPE_NITRO]     = 0.07, --0.03  --//--0.18,  -- 0.01
+	[BONUSTYPE_MACHINERY] = 0.50, --0.50 (use this only for cars and other big, rare objects)  --//--0.08,  -- 0.08
+	[BONUSTYPE_NATURE]    = 0.12, --0.12  --//--0.04,  -- 0.03
+	[BONUSTYPE_STRUCTURE] = 0.10, --0.10, --//--0.025, -- 0.02
+	[BONUSTYPE_ROADBLOCK] = 0.10, --0.10, --//--0.022,  -- 0.015
+	[BONUSTYPE_ACCESSORY] = 0.20, --0.20  --//--0.013, -- 0.01
+	[BONUSTYPE_TIRE]      = 0.05, --0.05, --//--0.012, -- 0.005
+	[BONUSTYPE_SIGN]      = 0.05, --???? (ainoastaan rock sculpturessa) --//--0.008, -- 0.008
+	[BONUSTYPE_FENCE]     = 0.05  --???? (osa aidoista ei vielï¿½ tï¿½tï¿½ tyyppiï¿½)  --//--0.006  -- 0.005 
 
-# TARKISTA PILKKU
+-- TARKISTA PILKKU
 
 }
 
 BonusTypePrice = { 	--//price per object  1.0 is $1
-	[BONUSTYPE_MACHINERY] = 5.0, 	# 5.0
-	[BONUSTYPE_STRUCTURE] = 2.7, 	# 2.5
-	[BONUSTYPE_NATURE]    = 1.8, 	# 2.0
-	[BONUSTYPE_ROADBLOCK] = 1.6, 	# 1.5
-	[BONUSTYPE_ACCESSORY] = 1.45,	# 1.5
-	[BONUSTYPE_SIGN]      = 1.25,	# 1.0
-	[BONUSTYPE_FENCE]     = 0.47,	# 0.5
-	[BONUSTYPE_TIRE]      = 0.46, # 0.25
-	[BONUSTYPE_NITRO]	    = 0.0 	# 0.0
+	[BONUSTYPE_MACHINERY] = 5.0, 	-- 5.0
+	[BONUSTYPE_STRUCTURE] = 2.7, 	-- 2.5
+	[BONUSTYPE_NATURE]    = 1.8, 	-- 2.0
+	[BONUSTYPE_ROADBLOCK] = 1.6, 	-- 1.5
+	[BONUSTYPE_ACCESSORY] = 1.45,	-- 1.5
+	[BONUSTYPE_SIGN]      = 1.25,	-- 1.0
+	[BONUSTYPE_FENCE]     = 0.47,	-- 0.5
+	[BONUSTYPE_TIRE]      = 0.46, -- 0.25
+	[BONUSTYPE_NITRO]	    = 0.0 	-- 0.0
 
-# TARKISTA PILKKU
+-- TARKISTA PILKKU
 
 }
 
@@ -76,20 +76,20 @@ CATEGORY_CAR_PANEL		=	"4"
 CATEGORY_DYNAMIC_OBJECT		=	"5"
 
 
-#### object types ###
+-------- object types ------
 OBJECT_DEFAULT		=	1
 OBJECT_GATE			=	2
 OBJECT_POLE			=	3
 
 
-#### inertia types ###
+-------- inertia types ------
 INERTIA_SOLID_BOX		=	1
 INERTIA_SOLID_CYLINDER	=	2
 INERTIA_SOLID_SPHERE	=	3
 INERTIA_HOLLOW_CYLINDER	=	4
 
 
-#### destroy fx ###
+-------- destroy fx ------
 DESTROYFX_NONE = 0
 DESTROYFX_GLASS = 1
 DESTROYFX_DEBRIS = 2
@@ -97,13 +97,13 @@ DESTROYFX_DEBRIS_SPARKS = 3
 DESTROYFX_PHYSICS_EXPLOSION = 4
 
 
-#### visibility ranget ###
-# esim. MaxVisibility = VISIBILITY_HIGH,
-VISIBILITY_VERYLOW	=	70.0		# 50 - todella pienet objektit (hedelmät jne.)
-VISIBILITY_LOW		=	130.0		# 100 - conet
-VISIBILITY_MEDIUM		=	240.0		# 200 - renkaat
-VISIBILITY_HIGH		=	350.0		# 300 - isommat
-VISIBILITY_VERYHIGH	=	500.0		# 450 - todella isot
+-------- visibility ranget ------
+-- esim. MaxVisibility = VISIBILITY_HIGH,
+VISIBILITY_VERYLOW	=	70.0		-- 50 - todella pienet objektit (hedelmï¿½t jne.)
+VISIBILITY_LOW		=	130.0		-- 100 - conet
+VISIBILITY_MEDIUM		=	240.0		-- 200 - renkaat
+VISIBILITY_HIGH		=	350.0		-- 300 - isommat
+VISIBILITY_VERYHIGH	=	500.0		-- 450 - todella isot
 
 function SetCategory(...)
 	local k,v
@@ -116,9 +116,9 @@ function SetCategory(...)
 	return t
 end
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ Specials #############################
+---------------------------------------------------------------- Specials ----------------------------------------------------------
 
 window = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -254,9 +254,9 @@ wood_Desert_Electricpole= {
 
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ Shared Rock #############################
+---------------------------------------------------------------- Shared Rock ----------------------------------------------------------
 
 rock_light = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -303,9 +303,9 @@ rock_heavy = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-###########################################################################
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ Shared Metal #############################
+---------------------------------------------------------------- Shared Metal ----------------------------------------------------------
 
 metal_light = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -547,9 +547,9 @@ metal_electricpole_new = {
 	Inertia = INERTIA_SOLID_CYLINDER		
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ Shared Wood #############################
+---------------------------------------------------------------- Shared Wood ----------------------------------------------------------
 
 wood_light = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -605,7 +605,7 @@ wood_fence = {
 
 	Mass	= 	50.0,
 	Restitution = 0.2,
-	WakeupVelocity = 1.00, #24
+	WakeupVelocity = 1.00, --24
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_WOOD,
@@ -619,7 +619,7 @@ wood_gate_180 = {
 
 	BonusType = BONUSTYPE_FENCE,
 	
-	#450
+	--450
 	Mass	= 	230.0,
 	Restitution = 0.08,
 
@@ -641,9 +641,9 @@ wood_gate_180 = {
 
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ Shared Plastic #############################
+---------------------------------------------------------------- Shared Plastic ----------------------------------------------------------
 
 plastic_light = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -766,9 +766,9 @@ silent_box = {
 }
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ ARENA TRACK #############################
+---------------------------------------------------------------- ARENA TRACK ----------------------------------------------------------
 
 concrete_block_superheavy = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_AVOID_IMPACT),
@@ -787,9 +787,9 @@ concrete_block_superheavy = {
 
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ CANAL TRACK #############################
+---------------------------------------------------------------- CANAL TRACK ----------------------------------------------------------
 metal_watertank = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_AVOID_IMPACT),
 	Type	=	OBJECT_DEFAULT,	
@@ -852,9 +852,9 @@ canal_box = {
 }
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ CITY TRACK #############################
+---------------------------------------------------------------- CITY TRACK ----------------------------------------------------------
 
 metal_structure_tilt = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_TIRE_COLLISION),
@@ -910,7 +910,7 @@ sheetmetal_fence = {
 
 	Mass	= 	500.0,
 	Restitution = 0.1,
-	WakeupVelocity = 1.00, #24
+	WakeupVelocity = 1.00, --24
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_PLATEFENCE,
@@ -926,7 +926,7 @@ metal_lightpole = {
 
 	Mass	= 	500.0,
 	Restitution = 0.003,
-	WakeupVelocity = 1.00, #24
+	WakeupVelocity = 1.00, --24
 	ReactivationVelocity = 0.30,
 
 	CollisionSound = COLLISIONSOUND_METALPOLE,
@@ -949,14 +949,14 @@ advert_wood = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ DERBY TRACK #############################
+---------------------------------------------------------------- DERBY TRACK ----------------------------------------------------------
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ DESERT TRACK #############################
+---------------------------------------------------------------- DESERT TRACK ----------------------------------------------------------
 
 
 fighter_hull = {
@@ -1087,7 +1087,7 @@ wood_fence_leg_medium = {
 
 	Mass	= 	130.0,
 	Restitution = 0.15,
-	WakeupVelocity = 1.00, #25
+	WakeupVelocity = 1.00, --25
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_WOOD,
@@ -1103,7 +1103,7 @@ wood_fence_leg_heavy = {
 
 	Mass	= 	170.0,
 	Restitution = 0.15,
-	WakeupVelocity = 1.00, #28
+	WakeupVelocity = 1.00, --28
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_WOOD,
@@ -1119,7 +1119,7 @@ wood_fence_pole_short = {
 
 	Mass	= 	90.0,
 	Restitution = 0.15,
-	WakeupVelocity = 1.00, #15
+	WakeupVelocity = 1.00, --15
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_WOOD,
@@ -1135,7 +1135,7 @@ wood_fence_pole_long = {
 
 	Mass	= 	120.0,
 	Restitution = 0.15,
-	WakeupVelocity = 1.00, #15
+	WakeupVelocity = 1.00, --15
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_WOOD,
@@ -1151,7 +1151,7 @@ metal_car_stationwagon = {
 
 	Mass	= 	120.0,
 	Restitution = 0.15,
-	WakeupVelocity = 1.00, #15
+	WakeupVelocity = 1.00, --15
 	ReactivationVelocity = 1.00,
 
 	CollisionSound = COLLISIONSOUND_HEAVYMETAL,
@@ -1159,9 +1159,9 @@ metal_car_stationwagon = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ FIELDS TRACK #############################
+---------------------------------------------------------------- FIELDS TRACK ----------------------------------------------------------
 
 explosive_cropduster = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_AVOID_IMPACT),
@@ -1186,8 +1186,8 @@ hay_box = {
 
 	BonusType = BONUSTYPE_NATURE,
 
-	Mass	= 	50.0, ##170
-	Restitution = 0.05, ##0.07
+	Mass	= 	50.0, ----170
+	Restitution = 0.05, ----0.07
 
 	CollisionSound = COLLISIONSOUND_RUBBERBRUSH,
 
@@ -1236,9 +1236,9 @@ Bridge_Covered_a_pillar_tilt_a = {
 
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ FOREST TRACK #############################
+---------------------------------------------------------------- FOREST TRACK ----------------------------------------------------------
 
 explosive_gaspump = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_AVOID_IMPACT),
@@ -1491,14 +1491,14 @@ advert_wood = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ QUARRY TRACK #############################
+---------------------------------------------------------------- QUARRY TRACK ----------------------------------------------------------
 
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ RACING TRACK #############################
+---------------------------------------------------------------- RACING TRACK ----------------------------------------------------------
 
 ad_sign_smaller = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -1701,7 +1701,7 @@ rac_boulder = {
 
 	BonusType = BONUSTYPE_NITRO,
 
-	Mass	= 	1200.0, # 2100 
+	Mass	= 	1200.0, -- 2100 
 	Restitution = 0.03,
 
 	CollisionSound = COLLISIONSOUND_SOLID,
@@ -1716,7 +1716,7 @@ rac_boulder_medium = {
 
 	BonusType = BONUSTYPE_NITRO,
 
-	Mass	= 	900.0, # 1600
+	Mass	= 	900.0, -- 1600
 	Restitution = 0.03,
 
 	CollisionSound = COLLISIONSOUND_SOLID,
@@ -1731,7 +1731,7 @@ rac_boulder_small = {
 
 	BonusType = BONUSTYPE_NITRO,
 
-	Mass	= 	700.0, # 1100
+	Mass	= 	700.0, -- 1100
 	Restitution = 0.03,
 
 	CollisionSound = COLLISIONSOUND_SOLID,
@@ -1803,9 +1803,9 @@ racing_rubber_tire = {
 	Inertia = INERTIA_HOLLOW_CYLINDER
 }
 
-##########################################################################
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
-################################ STUNT TRACK #############################
+---------------------------------------------------------------- STUNT TRACK ----------------------------------------------------------
 
 BREAKDOWN_A		= 500
 BREAKDOWN_B		= 501
@@ -1875,7 +1875,7 @@ Launch_bar = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ curling ##############################################
+-------------------------------------------------------- curling --------------------------------------------------------------------------------------------
 
 curling_disk_A = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -1991,7 +1991,7 @@ curling_disk_H = {
 }
 
 
-############################ High Jump ##############################################
+-------------------------------------------------------- High Jump --------------------------------------------------------------------------------------------
 
 barrel_show = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT, CATEGORY_AVOID_IMPACT),
@@ -2009,7 +2009,7 @@ barrel_show = {
 }
 
 
-############################ CARDS - diamonds ##############################################
+-------------------------------------------------------- CARDS - diamonds --------------------------------------------------------------------------------------------
 
 Card_joker = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2222,7 +2222,7 @@ Card_diamonds_king = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ CARDS - spades ##############################################
+-------------------------------------------------------- CARDS - spades --------------------------------------------------------------------------------------------
 
 
 Card_spades_ace = {
@@ -2421,7 +2421,7 @@ Card_spades_king = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ CARDS - hearts ##############################################
+-------------------------------------------------------- CARDS - hearts --------------------------------------------------------------------------------------------
 
 
 Card_hearts_ace = {
@@ -2620,7 +2620,7 @@ Card_hearts_king = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ CARDS - clubs ##############################################
+-------------------------------------------------------- CARDS - clubs --------------------------------------------------------------------------------------------
 
 Card_clubs_ace = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2818,7 +2818,7 @@ Card_clubs_king = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ Breakdown ##############################################
+-------------------------------------------------------- Breakdown --------------------------------------------------------------------------------------------
 
 Breakdown_area_A = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2905,7 +2905,7 @@ Mattress = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ Bowling ##############################################
+-------------------------------------------------------- Bowling --------------------------------------------------------------------------------------------
 
 bowling_pin = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2924,7 +2924,7 @@ bowling_pin = {
 	
 }
 
-############################ Basketball ############################################
+-------------------------------------------------------- Basketball ----------------------------------------------------------------------------------------
 
 basketball_plate = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2944,7 +2944,7 @@ basketball_plate = {
 
 
 
-############################ Darts ##############################################
+-------------------------------------------------------- Darts --------------------------------------------------------------------------------------------
 
 dartboard = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2961,7 +2961,7 @@ dartboard = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ Soccer ##############################################
+-------------------------------------------------------- Soccer --------------------------------------------------------------------------------------------
 
 Soccerball = {
 	Category = SetCategory(CATEGORY_DYNAMIC_OBJECT),
@@ -2994,7 +2994,7 @@ doll_part = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ Ring Of Fire ##############################################
+-------------------------------------------------------- Ring Of Fire --------------------------------------------------------------------------------------------
 
 
 Burning_ring = {
@@ -3014,7 +3014,7 @@ Burning_ring = {
 	Inertia = INERTIA_SOLID_BOX
 }
 
-############################ Ski Jump ##############################################
+-------------------------------------------------------- Ski Jump --------------------------------------------------------------------------------------------
 
 
 Mattress_gate_180 = {
@@ -3059,7 +3059,7 @@ ski = {
 }
 
 
-############################ Field Goal ##############################################
+-------------------------------------------------------- Field Goal --------------------------------------------------------------------------------------------
 
 
 Static_player = {
