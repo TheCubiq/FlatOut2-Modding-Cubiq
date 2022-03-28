@@ -102,7 +102,10 @@ function LOG(...)
 		end
 		--local l = W("debug_string"):GetTitle()
 		--writetodebug(string.format(unpack(arg)))
-		--writetodebug(l)
+		
+		-- turn this on if you want to fix the logger.. its broken currently tho
+		--writetodebug(l) 
+		
 	end
 end
 --//function LOG(...)

@@ -13,3 +13,55 @@
 
 --//deleted secret stuff
 
+--// Graemes stuff
+--// -------------
+
+function DebugHook (event, line)
+	if (event == "line") then
+		DebugPrint(string.format("%s : %i", debug.getinfo(2, "S").short_src, line))
+	elseif (event == "call") then
+		local info = debug.getinfo(2)
+		DebugPrint(string.format("Calling %s:%s", info.what, info.namewhat or ""))
+	elseif (event == "return") then
+		local info = debug.getinfo(2)
+		DebugPrint(string.format("Returning from %s:%s", info.what, info.name or ""))
+	end
+end
+ 
+function DebugUpdate ()
+	if (g_tracingEnabled or g_callTrackingEnabled) then
+		local flags = ""
+		if (g_tracingEnabled) then flags = flags.."l" end
+		if (g_callTrackingEnabled) then flags = flags.."cr" end
+		debug.sethook(DebugHook, flags)
+	else
+		debug.sethook()
+	end
+end
+      
+function DebugAllOff ()
+	g_tracingEnabled = false;
+	g_callTrackingEnabled = false;
+	DebugUpdate()
+end
+
+function DebugTraceOn ()
+	g_tracingEnabled = true;
+	DebugUpdate()
+end
+
+function DebugTraceOff ()
+	g_tracingEnabled = false;
+	DebugUpdate()
+end
+
+function DebugCallTrackingOn ()
+	g_callTrackingEnabled = true;
+	DebugUpdate()
+end
+
+function DebugCallTrackingOff ()
+	g_callTrackingEnabled = false;
+	DebugUpdate()
+end
+

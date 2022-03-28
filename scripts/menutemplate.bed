@@ -61,6 +61,7 @@ local MenuTemplates = {
 				local xs,ys=w:GetSize()
 
 				w:ShowWindow()
+				
 				w:SetPosition(0,-ys)
 				AnimateWindowPos(w,POS(0,-ys),POS(0,0),0.2)
 
@@ -107,11 +108,11 @@ local MenuTemplates = {
 		eventhandler = function(self,child,event)
 			local e=event or child
 			--if DEV and e.id == EVENT_SCREENSHOT then
-				--W("debug_string"):HideWindow()
+				--W("dbg_str"):HideWindow()
 			--end
 
 			--if DEV and e.id == EVENT_SCREENSHOT_DONE then
-				W("debug_string"):ShowWindow()
+				W("dbg_str"):ShowWindow()
 			--end
 		end,
 
@@ -272,9 +273,9 @@ function StandardBarsAndButtons(menu,showmoney,showcarname)
 
 
 		if true then
-			StaticText{Name="debug_string",IgnoreGlobalAlpha=1,Position=POS(150,50),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+			StaticText{Name="dbg_str",IgnoreGlobalAlpha=1,Position=POS(150,50),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
 			debugged = true
-			--W("debug_string"):SetTitle(L(mystattext))
+			--W("dbg_str"):SetTitle(L(mystattext))
 		end
 			
 
@@ -312,13 +313,13 @@ function StandardBarsAndButtons(menu,showmoney,showcarname)
 end
 
 function writetodebug(str)
-	--StaticText{Name="debug_string",Title=L"test",IgnoreGlobalAlpha=1,Position=POS(150,0),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+	--StaticText{Name="dbg_str",Title=L"test",IgnoreGlobalAlpha=1,Position=POS(150,0),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
 	--MyLog2 = MyLog2.."\n"..str
 	if debugged then
-		--W("debug_string"):ShowWindow()
-		W("debug_string"):SetTitle(L(str))
+		W("dbg_str"):ShowWindow()
+		W("dbg_str"):SetTitle(L(str))
 	else
-		--W("debug_string"):SetTitle(L("test"))
+		--W("dbg_str"):SetTitle(L("test"))
 	end
 end
 
