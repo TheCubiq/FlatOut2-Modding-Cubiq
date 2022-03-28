@@ -318,7 +318,8 @@
         "GUI",
         "CubiqsColorPalette",
         "VERSION_US",
-        "gfind"
+        "gfind",
+        "enter_xboxlive"
     ],
 	"Lua.diagnostics.disable": [
         "lowercase-global",

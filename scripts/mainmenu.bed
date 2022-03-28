@@ -54,15 +54,14 @@ function menu_mainmenu.create(self)
 	self.items={
 		MENUITEM(TRANSLATOR(ICON_MAIN_SINGLEPLAYER),	function() EnterSinglePlayer() end,	ICON(self,"icon_single_player")),
 		MENUITEM(TRANSLATOR(ICON_MAIN_MULTIPLAYER),	entermenu("menu_multiplayer"),	ICON(self,"icon_multiplayer")),
-		{ },--//placeholder for multiplayer
 		--//uncomment next line to get instant action game mode
-		--//MENUITEM(TRANSLATOR(ICON_MAIN_INSTANTACTION), instantaction(),	ICON(self,"icon_instant_action")),
+		MENUITEM(TRANSLATOR(ICON_MAIN_INSTANTACTION), instantaction(),	ICON(self,"icon_instant_action")),
 		MENUITEM(TRANSLATOR(ICON_MAIN_CHANGEPROFILE), entermenu("menu_profiles"),     ICON(self,"icon_change_profiles")),
 		MENUITEM(TRANSLATOR(ICON_MAIN_OPTIONS),		entermenu("menu_options"),		ICON(self,"icon_options")),
 		MENUITEM(TRANSLATOR(ICON_MAIN_EXTRAS), entermenu("menu_extras"), ICON(self,"icon_extras")),
 	}
 
---[[
+
 	if XBOX then
 		self.items[3]={ TRANSLATOR(ICON_MULTIPLAYER_XBOXLIVE), function() MultiplayerMode = MPMODE_XBOXLIVE; enter_xboxlive()(); end, ICON(self,"icon_xbox_live") }
 	elseif PS2 then
@@ -74,7 +73,7 @@ function menu_mainmenu.create(self)
 	else
 		table.remove(self.items,3)
 	end
---]]
+
 
 --//	if PRESSBUILD then
 --//		self.items[7]=MENUITEM(L"PRESS MENU",entermenu("pressmenu_tracks"),ICON(self,"icon_extras"))
