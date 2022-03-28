@@ -58,7 +58,9 @@ local menufiles = {
 	"CareerCupMenu.bed",
 	"Garage.bed",
 	"GenericRaceMapMenu.bed",
-	"CarSelectionGenericMenu.bed",
+	--"CarSelectionGenericMenu.bed",
+	"CarColorPalette.bed",
+	"CarSelectionGenericMenu_CTM.bed",
 	"CareerCarShop.bed",
 
 	"TimeAttackMenu.bed",

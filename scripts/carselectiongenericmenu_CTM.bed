@@ -508,7 +508,10 @@ local function updatecartunemenu(dir)
 				{cd,"SpeedLimit","Speed Limit limits your speed :OOOOOOO big brain"},
 				{cd,"Durability","How durable the car should be"},
 				{cd,"SubjectiveHandling","How great should it steer"},
-				{cd,"WindowBrightness","Why not to make a limo from your car? :D"}, -- some cars don't contain this property
+				
+				-- some cars don't contain this property
+				--{cd,"WindowBrightness","Why not to make a limo from your car? :D"}, 
+				
 				{cd,"Mass","How heavy the car should be"},
 				{cd,"CenterOfMass","Where should it be"},
 				-- {cd,"Class","test"}, -- probably not possible..
