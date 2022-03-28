@@ -1,0 +1,7 @@
+character_images_locked_3_size = { 512,512 }
+character_images_locked_3 = {
+	
+	ai_portrait_locked_5 = {  0, 0, 256, 345 },   -- Paul McGuire
+	ai_portrait_locked_6 = {  256, 0, 256, 345 }, -- Ray Smith
+
+}

@@ -1,0 +1,7 @@
+track_2_map_size = { 512,256 }
+track_2_map = {
+	
+	track_2_map = {  0, 0, 256, 256 },    -- derby arena 2
+--	track_2_map = {  256, 0, 256, 256 },    -- 
+
+}

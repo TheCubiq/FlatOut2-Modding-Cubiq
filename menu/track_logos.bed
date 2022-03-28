@@ -1,0 +1,29 @@
+track_logos_size = { 512,512 }
+track_logos = {
+	
+	track_forest_1a_logo = {  0, 0, 160, 64 },      -- forest 1
+	track_forest_1b_logo = {  160, 0, 160, 64 },    -- forest 1
+	track_forest_1c_logo = {  320, 0, 160, 64 },     -- forest 1
+	track_forest_2a_logo = {  0, 64, 160, 64 },   -- forest 2
+	track_forest_2b_logo = {  160, 64, 160, 64 },    -- forest 2
+	track_forest_2c_logo = {  320, 64, 160, 64 },  -- forest 2
+	track_canal_1a_logo = {  0, 128, 160, 64 },   -- canal
+	track_canal_1b_logo = {  160, 128, 160, 64 },   -- canal
+	track_canal_1c_logo = {  320, 128, 160, 64 },   -- canal
+	track_desert_1a_logo = {  0, 192, 160, 64 },   -- desert
+	track_desert_1b_logo = {  160, 192, 160, 64 },   -- desert
+	track_desert_1c_logo = {  320, 192, 160, 64 },   -- desert
+	track_city_1a_logo = {  0, 256, 160, 64 },   -- city 1
+	track_city_1b_logo = {  160, 256, 160, 64 },   -- city 1
+	track_city_1c_logo = {  320, 256, 160, 64 },   -- city 1
+	track_city_2a_logo = {  0, 320, 160, 64 },   -- city 2
+	track_city_2b_logo = {  160, 320, 160, 64 },   -- city 2
+	track_city_2c_logo = {  320, 320, 160, 64 },   -- city 2
+	track_fields_1a_logo = {  0, 384, 160, 64 },   -- fields 1
+	track_fields_1b_logo = {  160, 384, 160, 64 },   -- fields 1
+	track_fields_1c_logo = {  320, 384, 160, 64 },   -- fields 1
+	track_fields_2a_logo = {  0, 448, 160, 64 },   -- fields 2
+	track_fields_2b_logo = {  160, 448, 160, 64 },   -- fields 2
+	track_fields_2c_logo = {  320, 448, 160, 64 },   -- fields 2
+	
+}

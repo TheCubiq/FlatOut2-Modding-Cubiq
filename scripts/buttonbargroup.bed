@@ -1,0 +1,267 @@
+--///////////////////////////////////////////////////////////////////////////
+--// ButtonBarGroup.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 15.6.2005 12:24:10
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+--//implements ButtonBarGroup as an extension from ButtonBar
+
+local _ButtonBarGroup = {
+
+
+	onChildAction = function(self,child,child_id,button_id)
+
+	end,
+
+	onChildAdd = function(self,child,child_id,button_id)
+
+	end,
+
+	onChildRemove = function(self,child,child_id,button_id)
+
+	end,
+
+	onEnterFromUp = function(self)
+		local group=self.group
+		
+		group.childs[1]:HighlightSelectedSlot(TRUE)
+		group.childs[1]:SetSelectedButton(0)
+		group.childs[1]:SetFocus()
+	end,
+
+	onEnterFromDown = function(self)
+		local group=self.group
+		
+		group.childs[group.rows]:HighlightSelectedSlot(TRUE)
+		group.childs[group.rows]:SetSelectedButton(0)
+		group.childs[group.rows]:SetFocus()
+	end,
+
+	onMoveDown = function(self,id)
+		local group=self.group
+
+		if id == group.rows then
+			if self.onLeaveDown then
+				group.selected=group.childs[id]:GetSelectedSlot()
+				group.childs[id]:HighlightSelectedSlot(FALSE)
+				self:onLeaveDown()
+			end
+		else
+			local selected=group.childs[id]:GetSelectedSlot()
+			group.childs[id]:HighlightSelectedSlot(FALSE)
+			id=id+1
+			group.childs[id]:HighlightSelectedSlot(TRUE)
+			group.childs[id]:SetSelectedButton(selected)
+			group.childs[id]:SetFocus()
+		end
+	end,
+
+	onMoveUp = function(self,id)
+		local group=self.group
+		if id == 1 then
+			if self.onLeaveUp then
+				local group=self.group
+				group.selected=group.childs[1]:GetSelectedSlot()
+				group.childs[1]:HighlightSelectedSlot(FALSE)
+				self:onLeaveUp()
+			end
+		else
+			local selected=group.childs[id]:GetSelectedSlot()
+			group.childs[id]:HighlightSelectedSlot(FALSE)
+			id=id-1
+			group.childs[id]:HighlightSelectedSlot(TRUE)
+			group.childs[id]:SetSelectedButton(selected)
+			group.childs[id]:SetFocus()
+		end
+	end,
+
+	onButtonX = function(self,id)
+
+	end,
+
+	onButtonY = function(self,id)
+
+		local child=self.group.childs[id]
+		local slot=child:GetSelectedSlot()
+
+		local button=child:GetButtonAtSlot(slot)
+		if button then
+			self:RemoveButton(child,button,button.id,slot)
+		 end
+	end,
+
+	AddButton = function(self,button)
+		
+		local child,slot=self:getFirstEmptySlot()
+
+		if not child then return end
+
+		local id,btn=child:AddButton(unpack(button))
+
+		btn.data=button
+		btn.group_id=self.buttonid
+		self.buttonid=self.buttonid+1
+
+		return btn.group_id,btn
+	end,
+
+	RemoveButton = function(self,child,child_id,slot)
+		local group=self.group
+
+		child:RemoveButton(slot)
+		
+		local prevchild=child
+		local i
+		for i=child_id+1,group.rows do
+			local nextchild=group.childs[i]
+
+			if nextchild and slot == group.slots-1 then
+				local button=nextchild:GetButtonAtSlot(0)
+				if button then
+					local id,btn=prevchild:AddButton(unpack(button.data))
+					btn.group_id=button.group_id
+				end
+				prevchild=nextchild
+			end
+		end
+
+	end,
+
+
+	getChildWithButton = function(self,button_id)
+		local group=self.group
+		local i
+
+        for i=1,group.rows do
+			local child=group.childs[i]
+			local slot
+			for slot=1,group.slots do
+				local button=child:GetButtonAtSlot(slot-1)
+				if button and button.group_id == button_id then 
+					return child
+				end
+			end
+		end
+	end,
+
+
+	getFirstEmptySlot = function(self)
+		local group=self.group
+
+		local i
+		for i=1,group.rows do
+			local child=group.childs[i]
+			local slot=child:GetFirstEmptySlot()
+			if slot then
+				return child,slot
+			end
+		end
+	end,
+
+}
+
+
+function ButtonBarGroup(data)
+	if not data then return end
+
+	local slots=data.Slots or 5
+	local rows=data.Rows or 3
+	local slotsize=data.SlotSize or SIZE(50,50)
+	local selectedslotsize=data.SelectedSlotSize or SIZE(50,50)
+	local padding=data.Padding or 6.0
+	local y_padding=data.YPadding or padding
+
+	local group={}
+	
+
+	local parent=Frame{ Name=data.Name, Position=data.Position, Size=SIZE((slotsize[1]+padding)*slots,(slotsize[2]+y_padding)*rows)}
+
+	parent.group=group
+
+	group.slots=slots
+	group.rows=rows
+	group.slotsize=slotsize
+	group.childs={}
+
+
+		local childAction = function(self,button_id)
+			self.parent:onChildAction(self,self.id,button_id)	
+		end
+
+		local childAdd = function(self,button_id)
+			self.parent:onChildAdd(self,self.id,button_id)
+		end
+
+		local childRemove = function(self,button_id)
+			self.parent:onChildRemove(self,self.id,button_id)
+		end
+
+		local moveUp = function(self)
+			self.parent:onMoveUp(self.id)
+		end
+
+		local moveDown = function(self)
+			self.parent:onMoveDown(self.id)
+		end
+
+		local onButtonX = function(self)
+			self.parent:onButtonX(self.id)
+		end
+
+		local onButtonY = function(self)
+			self.parent:onButtonY(self.id)
+		end
+
+		local onBack = function(self)
+			if self.parent.onBack then
+				self.parent:onBack()
+			end
+		end
+
+	local pos=POS(0,0)
+	local size=SIZE((slotsize[1]+padding)*slots,slotsize[2])
+	local i
+	for i=1,rows do
+		local bar=ButtonBar{ Position=pos,Size=size,Slots=slots,Padding=padding,SlotSize=slotsize,SelectedSlotSize=selectedslotsize,Parent=parent }
+		bar:HighlightSelectedSlot(FALSE)
+
+		bar.id=i
+		bar.parent=parent
+
+			bar.onBack = onBack
+			bar.onChildAction = childAction
+			bar.onChildAdd = childAdd
+			bar.onChildRemove = childRemove
+			bar.onMoveUp = moveUp 
+			bar.onMoveDown = moveDown
+			bar.onButtonX = onButtonX
+			bar.onButtonY = onButtonY
+
+		table.insert(group.childs,bar)
+		pos[2]=pos[2]+slotsize[2]+y_padding
+	end
+
+	parent.buttonid=1
+	parent.onChildAction = _ButtonBarGroup.onChildAction
+	parent.onChildRemove = _ButtonBarGroup.onChildRemove
+	parent.onChildAdd = _ButtonBarGroup.onChildAdd
+	parent.AddButton = _ButtonBarGroup.AddButton
+	parent.RemoveButton = _ButtonBarGroup.RemoveButton
+	parent.getChildWithButton = _ButtonBarGroup.getChildWithButton
+	parent.getFirstEmptySlot = _ButtonBarGroup.getFirstEmptySlot
+	parent.onMoveUp = _ButtonBarGroup.onMoveUp
+	parent.onMoveDown = _ButtonBarGroup.onMoveDown
+	parent.onEnterFromUp = _ButtonBarGroup.onEnterFromUp
+	parent.onEnterFromDown = _ButtonBarGroup.onEnterFromDown
+	parent.onButtonX = _ButtonBarGroup.onButtonX
+	parent.onButtonY = _ButtonBarGroup.onButtonY
+
+	return parent
+end
+

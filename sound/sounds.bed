@@ -1,0 +1,11 @@
+
+-- Menu sounds
+MenuSfx = {
+	Move			= "GearShift/UI_Buttonover_16_tweaked.wav",
+	Select			= "GearShift/UI_Select_1_tweaked.wav",
+	Back			= "GearShift/UI_Select_30_tweaked.wav",
+	Error			= "GearShift/UI_Select_31_tweaked.wav",
+	Card			= "GearShift/UI_Select_5.wav",
+	TutorialScreen		= "GearShift/UI_Select_4.wav",
+}
+

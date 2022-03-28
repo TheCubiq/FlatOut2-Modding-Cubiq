@@ -1,0 +1,16 @@
+track_logos3_size = { 512, 512 }
+track_logos3 = {
+	
+	track_racing_2a_logo = {  0, 0, 160, 64 },      -- racing 2
+	track_racing_2b_logo = {  160, 0, 160, 64 },    -- racing 2
+	track_racing_2c_logo = {  320, 0, 160, 64 },     -- derby 2
+
+	track_arena_1_logo = {  0, 64, 160, 64 },      -- arena 1
+	track_arena_2_logo = {  160, 64, 160, 64 },    -- arena 2
+	track_arena_3_logo = {  320, 64, 160, 64 },     -- arena 3
+
+	track_arena_4_logo = {  0, 128, 160, 64 },      -- arena 4
+	track_arena_5_logo = {  160, 128, 160, 64 },    -- arena 5
+	track_arena_6_logo = {  320, 128, 160, 64 },     -- arena 6
+	
+}

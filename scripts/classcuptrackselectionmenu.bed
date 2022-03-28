@@ -1,0 +1,49 @@
+--///////////////////////////////////////////////////////////////////////////
+--// ClassCupTrackSelectionMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 19.8.2005 16:12:59
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+
+dofile("data/menu/selection_graphics.bed")
+
+
+
+menu_class_select = CreateMenuFromTemplate("template_basic")
+
+
+menu_class_select.title=TRANSLATOR(TITLE_CLASSSELECTION)
+
+function menu_class_select.create(self)
+	self.parent:create(self)
+
+	self:addResource("selection_graphics.tga",selection_graphics,selection_graphics_size)
+	self:addResource("map_1","map_1.tga")
+	self:addResource("map_2","map_2.tga")
+
+	self:loadResources()
+end
+
+function menu_class_select.init(self)
+	self.parent:init(self)
+
+
+
+
+end
+
+function menu_class_select.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+

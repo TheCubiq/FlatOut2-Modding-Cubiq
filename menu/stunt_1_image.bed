@@ -1,0 +1,7 @@
+stunt_1_image_size = { 512,256 }
+stunt_1_image = {
+	
+	stunt_1_image = {  0, 0, 256, 256 },    -- ski jump
+--	stunt_2_image = {  256, 0, 256, 256 },    -- 
+
+}

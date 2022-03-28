@@ -1,0 +1,592 @@
+--///////////////////////////////////////////////////////////////////////////
+--// ProfilesMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 21.7.2005 12:24:47
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+menu_profiles = CreateMenuFromTemplate( "template_basic" )
+
+local CommandLineProfileLoaded = false
+local new_profile = nil
+local state={}
+local StartTime = nil
+
+menu_profiles.options.title = TRANSLATOR(TITLE_SELECTPROFILE)
+
+
+
+--//local resources
+dofile("data/menu/profile_elements.bed")
+dofile("data/menu/keyboard.bed")
+dofile("data/menu/track_racing_1.bed")
+--//dofile("data/menu/hardcore_selected.bed")
+--//dofile("data/menu/beginner_selected.bed")
+
+
+local testclasses = {
+	TRANSLATOR(TITLE_DERBY), TRANSLATOR(TITLE_RACING), TRANSLATOR(TITLE_STREET), TRANSLATOR(TITLE_GRANDFINALS),   --//1,2,3
+}
+
+local function createNewProfile()
+	new_profile.slot=menu_profiles.items[new_profile.selectedButton].slot
+	new_profile:nextPhase(); 
+	EnterMenu("menu_profiles_create_name")
+end
+
+local function loadProfile()
+	local slot=menu_profiles.items[new_profile.selectedButton].slot
+	if CommandLine["-profilenr"]~=nil and CommandLineProfileLoaded == 1 then
+		CommandLineProfileLoaded = 2
+		slotnr = tonumber(CommandLine["-profilenr"])
+		if slotnr==nil or slotnr<=0 or slotnr>8 then
+			return
+		end
+		slot = menu_profiles.items[slotnr].slot
+	end
+
+
+	local data=Save.GetSaveGameInfo(slot)
+	
+
+	if data ~= nil and data.valid and data.slot ~= -1 then
+		new_profile=nil
+		if CommandLine["-host"] or CommandLine["-join"] then
+			if CommandLine["-host"] then
+				CreateGameFromCommandLine = true
+			else
+				JoinGameFromCommandLine = true
+			end
+			if CommandLine["-lan"] then
+				MultiplayerMode = MPMODE_LAN
+				ProfileLoad(slot,entermenu("menu_lan_modeselect"),entermenu("menu_profiles"))
+			else
+				MultiplayerMode = MPMODE_GAMESPY
+				ProfileLoad(slot,entermenu("menu_multiplayer_gamespy_checkavailability"),entermenu("menu_profiles"))
+			end
+		else
+			ProfileLoad(slot,entermenu("menu_mainmenu"),entermenu("menu_profiles"))
+		end
+	end
+end
+
+
+local function CreateNewProfile()
+
+	PlayerProfile:StartCareer()
+	CupManager:Clear()
+	
+	PlayerProfile:SetName(new_profile.name)
+	PlayerProfile:SetGender(new_profile.gender-1)
+	--//PlayerProfile:SetDifficulty(new_profile.difficulty)
+	--//PlayerProfile:SetAvatar(new_profile.gender,new_profile.helmet,new_profile.suit)
+
+	ProfileSave(new_profile.slot,entermenu("menu_mainmenu"),entermenu("menu_mainmenu"))
+end
+
+local function CheckSaveDevice()
+	Save.CheckSaveDevice()
+
+	local current_state=Save.GetSaveFlowState()
+
+	local old_state=state.save_state or current_state
+
+	state.old_state=old_state
+	state.save_state=current_state
+end
+
+local function SetHelpButtons(select,del)
+
+	
+	local t={}
+	if select then
+		table.insert(t,BUTTON_OK)
+		table.insert(t,TRANSLATOR(UI_SELECT))
+	end
+
+	if menu_profiles.back then
+		table.insert(t,BUTTON_BACK)
+		table.insert(t,TRANSLATOR(UI_BACK))
+	end
+
+	if del then
+		table.insert(t,BUTTON_EXTRA)
+		table.insert(t,TRANSLATOR(UI_DELETEPROFILE))
+	end
+
+	GUI:SetHelpButtons(unpack(t))
+
+end
+
+
+local function SetProfileData(index)
+	--//name
+
+
+
+	local slot=menu_profiles.items[index].slot
+	local data=Save.GetSaveGameInfo(slot)
+
+	if not data or slot == -1 then   --//"create new profile"
+
+		GetWindow("profile_name"):SetTitle(TRANSLATOR(ICON_PROFILE_CREATENEWPROFILE))
+
+		GetWindow("money_data"):SetTitle(L"")
+		GetWindow("car_data"):SetTitle(L"")
+		GetWindow("class_data"):SetTitle(L"")
+		GetWindow("cups_data"):SetTitle(L"")
+		GetWindow("unlocked_data"):SetTitle(L"")
+		GetWindow("progress_data"):SetTitle(L"")
+
+	
+		--//GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+		SetHelpButtons(true)
+
+	else
+		if data.valid and data.slot ~= -1 then
+			local car
+			if data.current_car > -1 then
+				car=db.FlatOut2.Cars:GetProperty("Car",data.current_car)
+			end
+
+			GetWindow("profile_name"):SetTitle(data.name)
+		
+			GetWindow("money_data"):SetTitle(MONEY(data.money))
+
+			if car then
+				GetWindow("car_data"):SetTitle(ConvertToWString(car.Name))
+			else
+				GetWindow("car_data"):SetTitle(L"")
+			end
+
+			if data.current_class ~= 0 then
+				GetWindow("class_data"):SetTitle(testclasses[data.current_class])
+			else
+				GetWindow("class_data"):SetTitle(L"")
+			end
+
+			GetWindow("cups_data"):SetTitle(ConvertToWString(string.format("%d / %d",data.cups_completed,PlayerProfile:GetNumTotalCups())))
+			GetWindow("unlocked_data"):SetTitle(ConvertToWString(string.format("%d / %d",data.cars_unlocked,data.cars_total)))
+			GetWindow("progress_data"):SetTitle(ConvertToWString(string.format("%d%%",data.progress)))
+
+
+			--//GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_DELETE))
+			SetHelpButtons(true,true)
+
+
+		else
+			local corrupt=TRANSLATOR(ERROR_CORRUPTED_SAVE_XBOX)
+			if PS2 then
+				corrupt=TRANSLATOR(ERROR_CORRUPTED_SAVE_PS2)
+			end
+
+			GetWindow("profile_name"):SetTitle(corrupt)
+
+			GetWindow("money_data"):SetTitle(L"")
+			GetWindow("car_data"):SetTitle(L"")
+			GetWindow("class_data"):SetTitle(L"")
+			GetWindow("cups_data"):SetTitle(L"")
+			GetWindow("unlocked_data"):SetTitle(L"")
+			GetWindow("progress_data"):SetTitle(L"")
+
+
+			--//GUI:SetHelpButtons(nil,nil,BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_DELETE))
+			SetHelpButtons(nil,true)
+		end
+	end	
+
+end
+
+
+
+local function UpdateButtons()
+	local i
+	for i=1,8 do
+		local v=Save.GetSaveGameInfo(i-1)
+		if not v or v.slot == -1 then 
+			menu_profiles.items[i][1]=TRANSLATOR(ICON_PROFILE_CREATENEWPROFILE)
+			menu_profiles.items[i][2]=createNewProfile
+			menu_profiles.items[i][3]=ICON(menu_profiles,"icon_profile_x")
+			menu_profiles.items[i].slot=i-1
+		else
+			menu_profiles.items[i][1]=v.name
+			menu_profiles.items[i][2]=loadProfile
+			menu_profiles.items[i][3]=ICON(menu_profiles,string.format("icon_profile_%d",i))
+		end
+		menu_profiles.items[i].slot=i-1
+	end
+	GUI:HideMenuButtons()
+	Event:AddTimer(function() 
+						GUI:InitMenuButtons(menu_profiles.items)
+						GUI:ShowMenuButtons()
+						GUI:SetActiveItem(GUI:GetActiveItem())
+						SetProfileData(GUI:GetActiveItem())
+					end,400,nil,TRUE)
+
+	state.old_state = state.save_state
+end
+
+
+menu_profiles.back=nil 
+
+function menu_profiles.create(self)
+	self.parent:create(self)
+
+	self:addResource("profile_elements.tga",profile_elements,profile_elements_size)
+
+	self:loadResources()
+
+	state={}
+
+	self.items={}
+
+	new_profile = newTransaction()
+
+	Save.UpdateSaveGameInfo()
+	while not Save.GetSaveGameInfoValid() do
+		Save.UpdateSaveFlow()
+	end
+
+	local i
+	for i=1,8 do
+		local v=Save.GetSaveGameInfo(i-1)
+		local t
+		if not v or v.slot == -1 then 
+			t=MENUITEM(TRANSLATOR(ICON_PROFILE_CREATENEWPROFILE),createNewProfile,ICON(self,"icon_profile_x"))
+		else
+			t=MENUITEM(v.name,loadProfile,ICON(self,string.format("icon_profile_%d",i)))
+		end
+		t.slot=i-1
+		
+		table.insert(self.items,t)
+	end
+end
+
+
+function menu_profiles.init(self)
+	self.parent:init(self)
+
+
+	Frame{Position=POS(30,57),Size=SIZE(246,286)}:AttachResource(self:getResource("profile_picture_bg"))
+
+	Frame{Position=POS(231,158),Size=SIZE(410,178)}:AttachResource(self:getResource("profile_text_bg"))
+
+	--//Frame{Position=POS(0,343),Size=SIZE(640,65),Layer=1}:AttachResource(self:getResource("profile_icons_bg"))
+
+	StaticText{Name="profile_name",Position=POS(248,162),Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	local text_titles = {
+		{ "money", TRANSLATOR(TITLE_PROFILE_MONEY), POS(417,196) },
+		{ "car", TRANSLATOR(TITLE_PROFILE_CURRENTCAR), POS(424,222) },
+		{ "class", TRANSLATOR(TITLE_PROFILE_CURRENTCLASS), POS(431,246) },
+		{ "cups", TRANSLATOR(TITLE_PROFILE_CUPSPASSED), POS(438,271) },
+		{ "unlocked", TRANSLATOR(TITLE_PROFILE_CARSUNLOCKED), POS(445,294) },
+		{ "progress", TRANSLATOR(TITLE_PROFILE_GAMEPROGRESS), POS(452,317) },
+	}
+
+	--//just get font height
+	local _,height=wm.GetTextExtents(L"W",fontmedium())
+
+	local text_x=417
+	local text_y=196
+	local k,v
+	for k,v in pairs(text_titles) do
+    	StaticText{Name=string.format("%s_text",v[1]),Title=v[2],Position=POS(v[3][1]-10,v[3][2]),Align=FONTF_RIGHT,Font=fontmedium(),Color=GetPaletteColor(34)}
+		StaticText{Name=string.format("%s_data",v[1]),Position=POS(v[3][1]+10,v[3][2]),Font=fontmedium(),Color=GetPaletteColor(33)}
+	end
+	
+
+
+	if new_profile.selectedButton then
+		GUI:SetActiveItem(new_profile.selectedButton)
+	end
+
+	GUI:SetBackground("data/menu/generic5_bg.tga")
+	
+	if CommandLine["-profilenr"] and not CommandLineProfileLoaded then
+		ShowThinkingWindow()
+	end
+	
+	StartTime = nil
+
+--//	UpdateButtons()
+end
+
+function menu_profiles.deinit(self)
+	self.parent:deinit(self)
+end
+
+
+function menu_profiles.startshow(self)
+	Save.SetSaveDevicePoll(true)
+	self.parent:startshow(self)
+end
+
+function menu_profiles.starthide(self)
+	Save.SetSaveDevicePoll(false)
+	self.parent:starthide(self)
+end
+
+
+function menu_profiles.buttonChange(self,oldbutton,newbutton)
+	new_profile.selectedButton=newbutton
+	SetProfileData(newbutton)
+end
+
+function menu_profiles.buttonPressed(self,button,selected)
+	if button == KeyCodes.BUTTON_INFO then	
+		local function ok(value)
+
+			local v=Save.GetSaveGameInfo(new_profile.selectedButton-1)
+			new_profile.goingtodelete=nil
+
+			if value == TRUE then
+				ProfileDelete(v.slot)
+			else
+				--//GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_DELETE),TRUE)				
+				if not v.valid or v.slot == -1 then
+					SetHelpButtons(false,true)
+				else
+					SetHelpButtons(true,true)
+				end
+
+				GUI:ShowMenuButtons()
+			end
+			
+		end
+		
+		local v=Save.GetSaveGameInfo(new_profile.selectedButton-1)
+		if not v then
+			return
+		end
+
+		new_profile.goingtodelete=true
+		GUI:HideMenuButtons()
+		ConfirmationDialog(TRANSLATOR(TITLE_PROFILE_DELETE),ok)
+	end
+end
+
+
+function menu_profiles.eventhandler(self,event)
+	if event.id == EVENT_SAVEFLOW_SAVEINFO_UPDATED then
+		if new_profile.goingtodelete and GUI:IsConfirmationDialogActive() then
+			GUI:CloseConfirmationDialog(FALSE)
+		end
+		UpdateButtons()
+	end
+end
+
+function menu_profiles.update(self, time)
+	if StartTime == nil then
+		StartTime = time
+	end
+
+	if not GUI:IsMenuAnimating() and CommandLine["-profilenr"] and not CommandLineProfileLoaded then
+		CommandLineProfileLoaded = 1
+		HideThinkingWindow()
+		loadProfile()
+	end	
+	
+
+	if new_profile then
+--//		CheckSaveDevice()
+--//		UpdateSaveData()
+--//		UpdateButtons()
+	end
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--//  create profile name
+--//---------------------------------------------------------------------------------------------------------------------------------
+
+
+menu_profiles_create_name = CreateMenuFromTemplate("template_basic")
+menu_profiles_create_name.options.title=TRANSLATOR(TITLE_PLAYERNAME)
+menu_profiles_create_name.back=function() new_profile:prevPhase(); EnterMenu("menu_profiles") end
+
+
+function menu_profiles_create_name.create(self)
+	self.parent:create(self)
+
+
+	self:addResource("keyboard.tga",keyboard,keyboard_size)
+
+	self:loadResources()
+
+	new_profile.name = new_profile.name or PlayerProfile:GetName()
+
+--//	self.items={ MENUITEM(L"",function() new_profile:nextPhase(); EnterMenu("menu_profiles_create_avatar") end, ICON(self)) }
+end
+
+function menu_profiles_create_name.init(self)
+	self.parent:init(self)
+
+
+	--//StaticText{Title=TRANSLATOR(TITLE_PLAYERNAME),Position=POS(100,88),Font=fontlarge()}
+
+	wm.SetTextInput(new_profile.name or PlayerProfile:GetName())
+
+	local keyboard=VirtualKeyboard{Name="kb",Font=fontmedium(),Title=TRANSLATOR(TITLE_PLAYERNAME),TitleFont=fontlarge(),MaxSize=8,
+		TitleResources={ self:getResource("keyboard_title_bars_tip"), self:getResource("keyboard_title_bars_main") },
+		InputResources={ self:getResource("keyboard_title_bars_tip2"), self:getResource("keyboard_title_bars_main2") },
+		KeyboardResources={ self:getResource("keyboard_bg_tip"), self:getResource("keyboard_bg_main")} }
+	
+
+	function keyboard.onBack(self)
+		new_profile:prevPhase()
+		EnterMenu("menu_profiles")
+	end
+
+	function keyboard.onAction(self)
+--//		PlayerProfile:SetNameFromKeyboard()	
+		new_profile.name=wm.GetTextInput()
+		new_profile:nextPhase()
+		EnterMenu("menu_profiles_select_gender")
+	end
+
+	GUI:SetBackground("data/menu/generic2_bg.tga")
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+end
+
+
+function menu_profiles_create_name.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_profiles_create_name.update(self)
+	if PC then
+		W("kb"):ProcessKeyQueue()
+	end
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// selecte gender
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_profiles_select_gender = CreateMenuFromTemplate("template_basic")
+
+menu_profiles_select_gender.options.title=TRANSLATOR(TITLE_PROFILE_GENDER)
+menu_profiles_select_gender.back=function() new_profile:prevPhase(); EnterMenu("menu_profiles_create_name") end
+
+
+
+local function SetGender()
+
+	if new_profile.gender == 1 then
+		W("gender_male_glow"):ShowWindow()
+		W("gender_female_glow"):HideWindow()
+
+		menu_profiles_select_gender.active=W("gender_male_glow")
+		GUI:SwitchButtonText(TRANSLATOR(ICON_PROFILE_MALE))
+	else
+		W("gender_female_glow"):ShowWindow()
+		W("gender_male_glow"):HideWindow()
+
+		menu_profiles_select_gender.active=W("gender_female_glow")
+
+		GUI:SwitchButtonText(TRANSLATOR(ICON_PROFILE_FEMALE))
+	end
+end
+
+
+function menu_profiles_select_gender.create(self)
+	self.parent:create(self)
+	
+	self:addResource("track_racing_1.tga",track_racing_1,track_racing_1_size)
+
+	self:loadResources()
+
+	new_profile.gender = new_profile.gender or 1
+
+	self.items={  }
+
+end
+
+function menu_profiles_select_gender.init(self)
+	self.parent:init(self)
+
+	local w,p
+
+	Frame{Name="gender_female_glow",Position=POS(104,149),Size=SIZE(118,224)}:AttachResource(self:getResource("female_gender_selection"))
+	Frame{Name="gender_male_glow",Position=POS(379,72),Size=SIZE(137,311)}:AttachResource(self:getResource("male_gender_selection"))
+
+
+	--//Frame{Position=POS(0,314),Size=SIZE(640,24),DrawBackgroundColor=TRUE,Color=GetPaletteColor(0)}:SetAlpha(0.5)
+
+	--//StaticText{Title=TRANSLATOR(ICON_PROFILE_FEMALE),Position=POS(159,314),Font=fontlarge(),Color=GetPaletteColor(34),Align=FONTF_CENTER}
+	--//StaticText{Title=TRANSLATOR(ICON_PROFILE_MALE),Position=POS(477,314),Font=fontlarge(),Color=GetPaletteColor(34),Align=FONTF_CENTER}
+
+	--//Frame{Name="gender_female_box",Position=POS(103,315),Size=SIZE(113,22),DrawBackgroundColor=TRUE,Color=GetPaletteColor(1)}:SetAlpha(0.5)
+	--//Frame{Name="gender_male_box",Position=POS(421,315),Size=SIZE(113,22),DrawBackgroundColor=TRUE,Color=GetPaletteColor(1)}:SetAlpha(0.5)
+
+
+	self.curtime=1
+	self.timerhandle=Event:AddTimer(function(event) 
+										local t = menu_profiles_select_gender.curtime + (event.data/1000)
+										menu_profiles_select_gender.curtime = t
+
+										local a=0.75+math.sin(t*4)*0.25
+
+										menu_profiles_select_gender.active:SetAlpha(a)
+
+									end,0)
+
+	SetGender()
+
+	local handler=InputHandler{}
+
+
+	handler.onKeyPressed = function(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_LEFT then
+			new_profile.gender = new_profile.gender - 1
+			if new_profile.gender < 1 then
+				new_profile.gender=2
+			end
+			playmenusound_move()
+			SetGender()
+		end
+
+		if virtualkey == KeyCodes.BUTTON_RIGHT then
+			new_profile.gender = new_profile.gender + 1
+			if new_profile.gender > 2 then
+				new_profile.gender=1
+			end
+			playmenusound_move()
+			SetGender()
+		end
+
+		if virtualkey == KeyCodes.BUTTON_START then
+			new_profile:nextPhase()
+			playmenusound_action()
+			CreateNewProfile()
+		end
+
+		if virtualkey == KeyCodes.BUTTON_SELECT then
+			new_profile:prevPhase()
+			playmenusound_back()
+			EnterMenu("menu_profiles_create_name")
+		end
+
+	end
+	
+	GUI:SetBackground("data/menu/gender_selection_bg.tga")
+
+end
+
+function menu_profiles_select_gender.deinit(self)
+	self.parent:deinit(self)
+
+	Event:RemoveTimer(self.timerhandle)
+
+end
+
+
+
+

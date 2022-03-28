@@ -1,0 +1,605 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CarSelectionGenericMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 8.9.2005 14:58:54
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+menu_carselection = CreateMenuFromTemplate("template_cars")
+
+function IsStuntCar(car)
+	local cars=StuntCars
+
+	if not cars then return false end
+
+	for k,v in pairs(cars) do
+		if car == v then return true end
+	end
+
+end
+
+function CarlistAllCars()
+	local cars={}
+	local locked={}
+
+	for i=0,Garage:GetNumCars()-1 do
+		local t={}
+		t.index=i
+		if Garage:IsCarLocked(i) then
+			table.insert(locked,t)
+		else
+			table.insert(cars,t)
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(cars,v)
+	end
+
+	return cars	
+end
+
+function CarlistUnpurchasedFromClass(index)
+	local cars=Classes[index].ClassCars
+
+	local t={}
+	local locked={}
+
+	if not cars then LOG("CarlistUnpurchasedFromClass: class %d doesn't have ClassCars",index); return t; end
+
+	for k,v in pairs(cars) do
+		if not Garage:IsCarPurchased(v) then
+			if Garage:IsCarLocked(v) then
+				table.insert(locked,{index=v})
+			else
+				table.insert(t,{ index=v })
+			end
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(t,v)
+	end
+
+	return t
+end
+
+
+function CarlistFromClass(index,only_purchased,all_cars)
+	local cars=Classes[index].ClassCars
+
+	local t={}
+	local locked={}
+
+
+	if not cars then LOG("CarlistFromClass: class %d doesn't have ClassCars",index); return t; end
+
+	for k,v in pairs(cars) do
+		if only_purchased then
+			if Garage:IsCarPurchased(v) then
+				table.insert(t,{ index=v })
+			end
+		else
+			if all_cars or not Garage:IsCarLocked(v) then
+				if Garage:IsCarLocked(v) then
+					table.insert(locked,{index=v})
+				else
+					table.insert(t,{ index=v })
+				end
+			end
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(t,v)
+	end
+
+	return t
+end
+
+function CarlistAllUnlocked()
+	local t={}
+
+	for i=0,db.FlatOut2.Cars:GetPropertyArraySize("Car")-1 do
+
+		if not Garage:IsCarLocked(i) and not IsStuntCar(i) then
+			table.insert(t,{ index=i })
+		end
+	end
+
+	return t
+end
+
+function CarlistStuntCars()
+	local cars=StuntCars
+
+	local t={}
+
+	if not cars then LOG("CarlistStuntCars: StuntCars not defined."); return t; end
+
+	for k,v in pairs(cars) do
+		table.insert(t,{ index=v })
+	end
+
+	return t
+end
+
+
+function CarlistAllPurchased()
+	local cars={}
+
+	for i=0,Garage:GetNumCars()-1 do
+		if Garage:IsCarPurchased(i) then
+			local t={}
+			t.index=i
+			table.insert(cars,t)
+		end
+	end
+
+	return cars
+end
+
+function GetCarDataIndex(car_idx)
+	local index=1
+
+	local car_data=db.FlatOut2.Cars:GetProperty("Car",car_idx)
+
+	local _,__,index=string.find(car_data.DataPath,"_(%d+)/")
+
+
+	return index
+end
+
+
+function EnterCarSelection(okaction,backaction,carlist,purchase,all_available,only_description,show_tutorial,background,testtrack_menudata,show_class,title,hide_menubar_car)
+	menu_carselection.carlist=carlist or CarlistAllCars()
+	menu_carselection.back=backaction
+	menu_carselection.okaction=okaction
+	menu_carselection.shop_mode=purchase
+	menu_carselection.show_class=show_class
+	menu_carselection.show_tutorial=show_tutorial
+	menu_carselection.all_available=all_available
+	menu_carselection.only_description=only_description
+	menu_carselection.background=background
+	menu_carselection.testtrack_menudata=testtrack_menudata
+	menu_carselection.title=title
+	menu_carselection.hide_menubar_car=hide_menubar_car
+	EnterMenu("menu_carselection")
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// palette selector
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+function CreatePaletteSelector(menu)
+
+	local w=Frame{Name="car_palette",Position=POS(650,200),Size=SIZE(20,75)}
+	w:AttachResource(menu:getResource("black_transparent_50"))
+
+
+	w.show=function(self)
+		AnimateWindowPos(self,POS(650,200),POS(575,200),0.2)
+	end
+
+	w.hide=function(self)
+		AnimateWindowPos(self,{ self:GetPosition() }, POS(650,200),0.2)
+	end
+
+	w.setSelected = function(self,itemnum)
+		self.selector:setSelected(itemnum)
+	end
+
+	local white=menu:getResource("white_transparent")
+	local pos=POS(3,3)
+	local size=SIZE(14,9)
+
+	w.childs={}	
+
+	for i=1,5 do
+		w.childs[i]=Frame{Position=pos,Size=size,Color=GetPaletteColor(1),Parent=w}:AttachResource(white)
+		
+		pos[2] = pos[2]+size[2]+6
+	end
+
+	w.selector = Frame{Name="car_palette_selector",Position=POS(0,0),Parent=w,Size=SIZE(3+size[1]+3,3+size[2]+3)}
+	w.selector.parent=w
+
+	w.selector.childs={}
+
+	w.selector.childs[1]=Frame{Position=POS(0,1),Size=SIZE(3,size[2]+2+2),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	w.selector.childs[2]=Frame{Position=POS(1,0),Size=SIZE(size[1]+2+2,3),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	w.selector.childs[3]=Frame{Position=POS(3+size[1],1),Size=SIZE(3,size[2]+2+2),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	w.selector.childs[4]=Frame{Position=POS(1,3+size[2]),Size=SIZE(size[1]+2+2,3),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+
+	w.selector.setSelected=function(self,itemnum)
+		local items=self.parent.childs
+		local item=items[itemnum]
+
+		local pos = { item:GetPosition() }
+
+		self:SetPosition(pos[1]-3,pos[2]-3)
+	end
+
+
+
+
+end
+
+function SetPaletteSelector(item)
+	local w=W("car_palette")
+
+	if w then
+		w:setSelected(item)
+		return true
+	end
+end
+
+
+function ShowPaletteSelector()
+	local w=W("car_palette")
+
+	if w then
+		w:show()
+	end
+end
+
+function HidePaletteSelector()
+	local w=W("car_palette")
+
+	if w then
+		w:hide()
+	end
+end
+
+
+
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+local classes = { TRANSLATOR(TITLE_DERBYCLASS),TRANSLATOR(TITLE_STREETCLASS),TRANSLATOR(TITLE_RACINGCLASS),TRANSLATOR(TITLE_BONUS),TRANSLATOR(TITLE_STUNT) }
+local drive = { TRANSLATOR(TITLE_RWD), TRANSLATOR(TITLE_FWD), TRANSLATOR(TITLE_4WD) }
+
+
+function menu_carselection.create(self)
+	self.parent:create(self)
+
+	self:addResource("car_icons.tga",car_icons,car_icons_size)
+	self:addResource("car_icons_locked.tga",car_icons_locked,car_icons_locked_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+
+	if menu_carselection.shop_mode then
+		menu_carselection.options.title=TRANSLATOR(TITLE_SELECTCAR)
+	else
+		menu_carselection.options.title=menu_carselection.title or TRANSLATOR(TITLE_GARAGE)
+	end
+
+	self.items = {}
+
+end
+
+
+function menu_carselection.init(self)
+	self.parent:init(self)
+
+	Frame{Name="garage_cars_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local parent=ButtonBar{ Slots=7,Name="garage_cars",Padding=0,SlotSize=SIZE(107,56),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+	
+	menu_carselection.goingforward=nil
+	menu_carselection.goingback=nil
+
+	parent.HideButtons = function(self)
+		local pos={ self:GetPosition() }
+		self.origpos={ -60,337 }
+		AnimateWindowPos(self,pos,POS(self.origpos[1],self.origpos[2]+150),0.2)
+		local w=W("garage_cars_bg")
+		w.origpos={ 0,335 }
+		AnimateWindowPos(w,pos,POS(w.origpos[1],w.origpos[2]+150),0.2)
+	end
+
+	parent.ShowButtons = function(self)
+		local pos={ self:GetPosition() }
+		AnimateWindowPos(self,{ self:GetPosition() },self.origpos or POS(-60,337),0.3)
+
+		local w=W("garage_cars_bg")
+		AnimateWindowPos(w,{ w:GetPosition() },w.origpos or POS(0,335),0.3)
+	end
+
+	parent.onButtonChange = function(self,id)
+		if menu_carselection.goingback or menu_carselection.goingforward then
+			return
+		end
+
+
+		playmenusound_move()
+		if not Garage:IsCarPurchased(menu_carselection.SelectedCar) then
+			Garage:SetCarSkinIndex(menu_carselection.SelectedCar,1)
+		end
+
+		menu_carselection.SelectedCar=menu_carselection.GarageCars[id].index
+		menu_carselection.SelectedSkin=1 --//Garage:GetCarSkinIndex(menu_carselection.SelectedCar)+1
+
+
+		if menu_carselection.only_description then
+			SetCarDescription(menu_carselection.SelectedCar)
+		end
+
+		if menu_carselection.testtrack_menudata and not Garage:IsCarLocked(menu_carselection.SelectedCar) then
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR),TRUE)
+		else
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+		end
+
+
+		UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+	end
+
+	parent.onMoveUp = function(self,id)
+		if menu_carselection.goingforward or menu_carselection.goingback then
+			return
+		end
+
+		if menu_carselection.only_description then return end
+
+		if menu_carselection.SelectedSkin then
+			if menu_carselection.SelectedSkin > 1 then
+				menu_carselection.SelectedSkin = menu_carselection.SelectedSkin - 1
+			else
+				menu_carselection.SelectedSkin = 5 
+			end
+--//			if SetPaletteSelector(menu_carselection.SelectedSkin) then
+				GUI:LoadCarSkin(menu_carselection.SelectedSkin)
+--//				Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin)
+				playmenusound_move()
+--//			end
+		end
+	end
+
+	parent.onMoveDown = function(self,id)
+		if menu_carselection.goingforward or menu_carselection.goingback then
+			return 
+		end
+
+		if menu_carselection.only_description then return end
+
+		if menu_carselection.SelectedSkin then
+			if menu_carselection.SelectedSkin < 5 then
+				menu_carselection.SelectedSkin = menu_carselection.SelectedSkin + 1
+			else
+				menu_carselection.SelectedSkin = 1
+			end
+			
+--//			if SetPaletteSelector(menu_carselection.SelectedSkin) then
+				GUI:LoadCarSkin(menu_carselection.SelectedSkin)
+--//				Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin-1)
+				playmenusound_move()
+--//			end
+		end		
+	end
+
+	parent.onChildAction = function(self,id)
+		if menu_carselection.goingforward or menu_carselection.goingback then
+			return
+		end
+
+		local menucar=menu_carselection.GarageCars[id]
+		local index=menucar.index
+
+		if menu_carselection.shop_mode then
+			local value=Garage:GetCarValue(index)
+			if Garage:IsCarLocked(index) then
+				playmenusound_error()
+			else
+				if PlayerProfile:EnoughMoney(value) and menu_carselection.okaction then
+					playmenusound_action()
+
+					local function confirmation_end(value)
+						if value==TRUE then
+							menu_carselection.goingforward=true
+							menu_carselection.okaction(index,menu_carselection.SelectedSkin)
+						else
+							W("garage_cars"):ShowButtons()
+							if menu_carselection.testtrack_menudata then
+								GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR))
+							else
+								GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+							end
+						end
+					end
+					W("garage_cars"):HideButtons()
+					GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_YES),BUTTON_BACK,TRANSLATOR(UI_NO))
+					ConfirmationDialog(TRANSLATOR(MESSAGE_BUYCARQUERY),confirmation_end)
+				else
+					playmenusound_error()
+					W("garage_cars"):HideButtons()
+					MessageBox(TRANSLATOR(MESSAGE_NOTENOUGHMONEY),MESSAGEBOX_OK,function() ShowCarInfoWindows(); W("garage_cars"):ShowButtons() end)
+				end
+			end
+		else
+			if (menu_carselection.all_available or not Garage:IsCarLocked(index)) and menu_carselection.okaction then
+				playmenusound_action()
+				menu_carselection.goingforward=true
+				menu_carselection.okaction(index, menu_carselection.SelectedSkin)
+			end
+		end
+	end
+
+	function parent.onBack(self)
+		if menu_carselection.goingback or menu_carselection.goingforward then
+			return
+		end
+
+		--//Garage:SetCarSkinIndex(menu_carselection.SelectedCar,1)
+		if menu_carselection.show_tutorial and Garage:GetNumCarsPurchased() == 0 then
+			playmenusound_back()
+			menu_carselection.goingback=true
+			EnterMenu("menu_singleplayer")
+		else
+			playmenusound_back()
+			menu_carselection.goingback=true
+			menu_carselection.SelectedCar=nil
+			menu_carselection.SelectedSkin=nil
+			menu_carselection.back()
+		end
+	end
+
+	function parent.onButtonY(self)
+		if menu_carselection.goingforward or menu_carselection.goingback then
+			return
+		end
+
+		if menu_carselection.testtrack_menudata then 
+			if not Garage:IsCarLocked(menu_carselection.SelectedCar) then
+				playmenusound_action()
+				menu_carselection.goingforward=true
+				EnterTestTrack(menu_carselection.SelectedCar,menu_carselection.testtrack_menudata,menu_carselection.SelectedSkin)
+			else 
+				playmenusound_error()
+			end
+		end
+	end
+	
+
+	if PS2 or PC then
+		parent.onButtonX = parent.onButtonY
+		parent.onButtonY=nil
+	end
+
+	StaticText{Name="car_logo",Position=POS(580,257),Align=FONTF_RIGHT,Font=fonthuge()}
+
+	local pos=POS(50,66)
+
+	if self.only_description then
+		HideMenuBarMoney()
+		HideMenuBarCar()
+		--//StaticText{Name="car_description",Position=POS(50,80),Size=SIZE(200,400),Font=fontsmall(),Color=GetPaletteColor(34)}
+	else
+		CreateCarInfoWindows(self,pos,false,false,menu_carselection.shop_mode or menu_carselection.show_class)		
+		if self.hide_menubar_car then
+			HideMenuBarCar()
+		end
+	end
+
+--//	CreatePaletteSelector(self)
+
+
+
+	if self.shop_mode then
+		StaticText{Name="car_price",Title=L"$ERR",Position=POS(578,298),Font=fontlarge(),Align=FONTF_RIGHT,Color=GetPaletteColor(34)}
+	end
+
+
+
+	if menu_carselection.show_tutorial then
+		if menu_carselection.testtrack_menudata then
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR))
+		else
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT))
+		end
+	elseif menu_carselection.testtrack_menudata then
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR),TRUE)
+	else
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+	end
+	
+
+	local cars={}
+	local id,button
+	local first
+
+	local i
+	local cars={}
+	for i=1,table.getn(self.carlist) do
+		local car=self.carlist[i]
+		if car then
+			local iconname
+
+			if not menu_carselection.all_available and Garage:IsCarLocked(car.index) then
+				iconname=string.format("car_%d_icon_locked",GetCarDataIndex(car.index))
+			else
+				iconname=string.format("car_%d_icon",GetCarDataIndex(car.index))
+			end
+
+			local id,button=parent:AddButton(self:getResource(iconname)) --//ICON(self,iconname))
+			table.insert(cars,id,{ index=car.index,button=button})
+			
+			if not first then first=id end
+		end
+	end
+
+	self.GarageCars=cars
+
+	local cur_car=self.SelectedCar or PlayerProfile:GetActiveCar()
+	if cur_car < 0 or self.shop_mode then
+		cur_car=self.GarageCars[first].index
+	end
+	self.SelectedCar=cur_car
+	self.SelectedSkin=1 --//Garage:GetCarSkinIndex(self.SelectedCar)
+
+	if menu_carselection.only_description then
+		SetCarDescription(cur_car)
+	end		
+
+--//	SetPaletteSelector(self.SelectedSkin)
+	parent:SetSelectedButton(0,FALSE)
+	parent:onButtonChange(1)
+
+
+	GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+
+end
+
+function menu_carselection.update(self,time)
+	self.parent:update(self,time)
+end
+
+function menu_carselection.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_carselection.startshow(self)
+	self.parent:startshow(self)
+
+	if self.show_tutorial and not PlayerProfile:IsCareerWelcome3Displayed() then
+		W("garage_cars"):HideButtons()
+		MessageBox(TRANSLATOR(CAREER_WELCOME_CARSHOP), MESSAGEBOX_OK,function() W("garage_cars"):ShowButtons() end)
+		PlayerProfile:SetCareerWelcome3Displayed(true)
+	end
+
+	--//ShowPaletteSelector()
+
+end
+
+function menu_carselection.starthide(self)
+	self.parent:starthide(self)
+
+	GUI:HideCar()
+	--//HidePaletteSelector()
+
+end
+
+function menu_carselection.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+
+

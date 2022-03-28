@@ -1,0 +1,1227 @@
+--///////////////////////////////////////////////////////////////////////////
+--// OptionsMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 7.11.2005 17:37:35
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+if PS2 then
+dofile("data/menu/ps2_controller.bed")
+elseif XBOX then
+dofile("data/menu/xbox_controller.bed")
+end
+
+dofile("data/menu/profile_elements.bed")
+
+
+local controller = {
+	pad=1,
+	top_left_shake=1,
+	top_right_shake=1,
+	bottom_left_shake=1,
+	bottom_right_shake=1,
+}
+
+local controller_layouts
+local pad_layout
+
+local TYPE_SLIDER = 1
+local TYPE_VALUE = 2
+local TYPE_COMMAND = 3
+local TYPE_KEY = 4
+
+local change_controller_actionmap
+local start_remap
+
+local xbox_pad_layout = {
+	{ key = Input.CONTROLLER_BUTTON_LEFT_TRIGGER, pos=POS(225,109), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_BUTTON_UP, pos=POS(225,169), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_BUTTON_SELECT, pos=POS(225,189), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_BUTTON_START, pos=POS(225,209), align=FONTF_RIGHT },
+
+	{ key = Input.CONTROLLER_BUTTON_RIGHT_TRIGGER, pos=POS(413,109), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_X, pos=POS(413,129), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_Y, pos=POS(413,149), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_B, pos=POS(413,169), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_A, pos=POS(413,189), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_EXTRA1, pos=POS(413,209), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_EXTRA2, pos=POS(413,229), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_RIGHT_STICK, pos=POS(413,249), align=FONTF_LEFT },
+}
+
+local ps2_pad_layout = {
+	{ key = Input.CONTROLLER_BUTTON_UP, pos=POS(225,189), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_BUTTON_SELECT, pos=POS(304,100), align=FONTF_CENTER },
+	{ key = Input.CONTROLLER_BUTTON_START, pos=POS(313,263), align=FONTF_CENTER },
+
+	{ key = Input.CONTROLLER_BUTTON_Y, pos=POS(413,169), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_B, pos=POS(413,189), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_A, pos=POS(413,209), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_X, pos=POS(413,229), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_EXTRA1, pos=POS(225,129), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_BUTTON_EXTRA2, pos=POS(413,129), align=FONTF_LEFT },
+	{ key = Input.CONTROLLER_BUTTON_EXTRA3, pos=POS(225,149), align=FONTF_RIGHT },
+	{ key = Input.CONTROLLER_RIGHT_STICK, pos=POS(413,249), align=FONTF_LEFT },
+}
+
+local xbox_layouts = {
+	[1] = {
+		[Input.CONTROLLER_BUTTON_A] = { title=TRANSLATOR(CONFIG_RAGDOLL) },
+		[Input.CONTROLLER_BUTTON_B] = { title=TRANSLATOR(CONFIG_HANDBRAKE) },
+		[Input.CONTROLLER_BUTTON_X] = { title=TRANSLATOR(CONFIG_LOOK) },
+		[Input.CONTROLLER_BUTTON_Y] = { title=TRANSLATOR(CONFIG_RESET) },
+		[Input.CONTROLLER_BUTTON_EXTRA1] = { title=TRANSLATOR(CONFIG_PLAYERLIST) },
+		[Input.CONTROLLER_BUTTON_EXTRA2] = { title=TRANSLATOR(CONFIG_CAMERA) },
+
+		[Input.CONTROLLER_BUTTON_LEFT_TRIGGER] = { title=TRANSLATOR(CONFIG_BRAKE) },
+		[Input.CONTROLLER_BUTTON_RIGHT_TRIGGER] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+
+		[Input.CONTROLLER_BUTTON_UP] = { title=TRANSLATOR(CONFIG_STEERING) },
+		[Input.CONTROLLER_BUTTON_START] = { title=TRANSLATOR(CONFIG_PAUSE) },
+		[Input.CONTROLLER_RIGHT_STICK] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+	},
+
+	[2] = {
+		[Input.CONTROLLER_BUTTON_A] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+		[Input.CONTROLLER_BUTTON_B] = { title=TRANSLATOR(CONFIG_HANDBRAKE) },
+		[Input.CONTROLLER_BUTTON_X] = { title=TRANSLATOR(CONFIG_BRAKE) },
+		[Input.CONTROLLER_BUTTON_Y] = { title=TRANSLATOR(CONFIG_RESET) },
+		[Input.CONTROLLER_BUTTON_EXTRA1] = { title=TRANSLATOR(CONFIG_PLAYERLIST) },
+		[Input.CONTROLLER_BUTTON_EXTRA2] = { title=TRANSLATOR(CONFIG_CAMERA) },
+
+		[Input.CONTROLLER_BUTTON_LEFT_TRIGGER] = { title=TRANSLATOR(CONFIG_LOOK) },
+		[Input.CONTROLLER_BUTTON_RIGHT_TRIGGER] = { title=TRANSLATOR(CONFIG_RAGDOLL) },
+
+		[Input.CONTROLLER_BUTTON_UP] = { title=TRANSLATOR(CONFIG_STEERING) },
+		[Input.CONTROLLER_BUTTON_START] = { title=TRANSLATOR(CONFIG_PAUSE) },
+		[Input.CONTROLLER_RIGHT_STICK] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+
+	},
+}
+
+--[[--/*
+	  XBOX              PS2
+	BUTTON_A,           ><
+	BUTTON_B,           ()
+	BUTTON_X,           [] 
+	BUTTON_Y,           /\
+	BUTTON_EXTRA1,					//! BLACK on xbox, L1 on PS2
+	BUTTON_EXTRA2,					//! WHITE on xbox, R1 on PS2	
+	BUTTON_EXTRA3,					//! Left thumb on xbox, L2 on PS2
+	BUTTON_EXTRA4,					//! Right thumb on xbox, R2 on PS2
+--]]--*/
+local ps2_layouts = {
+	[1] = {
+		[Input.CONTROLLER_BUTTON_A] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+		[Input.CONTROLLER_BUTTON_B] = { title=TRANSLATOR(CONFIG_HANDBRAKE) },
+		[Input.CONTROLLER_BUTTON_X] = { title=TRANSLATOR(CONFIG_BRAKE) },
+		[Input.CONTROLLER_BUTTON_Y] = { title=TRANSLATOR(CONFIG_RESET) },
+		[Input.CONTROLLER_BUTTON_EXTRA1] = { title=TRANSLATOR(CONFIG_LOOK) },
+		[Input.CONTROLLER_BUTTON_EXTRA3] = { title=TRANSLATOR(CONFIG_PLAYERLIST) },
+		[Input.CONTROLLER_BUTTON_EXTRA2] = { title=TRANSLATOR(CONFIG_RAGDOLL) },
+
+		[Input.CONTROLLER_BUTTON_SELECT] =  { title=TRANSLATOR(CONFIG_CAMERA) },
+		[Input.CONTROLLER_BUTTON_UP] = { title=TRANSLATOR(CONFIG_STEERING) },
+		[Input.CONTROLLER_BUTTON_START] = { title=TRANSLATOR(CONFIG_PAUSE) },
+		[Input.CONTROLLER_RIGHT_STICK] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+	},
+
+	[2] = {
+		[Input.CONTROLLER_BUTTON_A] = { title=TRANSLATOR(CONFIG_RAGDOLL) },
+		[Input.CONTROLLER_BUTTON_X] = { title=TRANSLATOR(CONFIG_LOOK) },
+		[Input.CONTROLLER_BUTTON_B] = { title=TRANSLATOR(CONFIG_HANDBRAKE) },
+		[Input.CONTROLLER_BUTTON_Y] = { title=TRANSLATOR(CONFIG_RESET) },
+		[Input.CONTROLLER_BUTTON_EXTRA1] = { title=TRANSLATOR(CONFIG_BRAKE) },
+		[Input.CONTROLLER_BUTTON_EXTRA3] = { title=TRANSLATOR(CONFIG_PLAYERLIST) },
+		[Input.CONTROLLER_BUTTON_EXTRA2] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+
+		[Input.CONTROLLER_BUTTON_SELECT] =  { title=TRANSLATOR(CONFIG_CAMERA) },
+		[Input.CONTROLLER_BUTTON_UP] = { title=TRANSLATOR(CONFIG_STEERING) },
+		[Input.CONTROLLER_BUTTON_START] = { title=TRANSLATOR(CONFIG_PAUSE) },
+		[Input.CONTROLLER_RIGHT_STICK] = { title=TRANSLATOR(CONFIG_THROTTLE) },
+	},
+}
+
+local options_game_pc = {
+	[1] = { title=TRANSLATOR(OPTIONS_METERS), type=TYPE_VALUE, category="Game", setting="ImperialUnits", data = { TRANSLATOR(OPTIONS_METERS_KPH), TRANSLATOR(OPTIONS_METERS_MPH) } },
+	[2] = { title=TRANSLATOR(OPTIONS_RACEMAP), type=TYPE_VALUE, category="Game", setting="IngameMap", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[3] = { title=TRANSLATOR(OPTIONS_BONUSES), type=TYPE_VALUE, category="Game", setting="ShowBonus", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[4] = { title=TRANSLATOR(OPTIONS_INTRODUCTIONS), type=TYPE_VALUE, category="Game", setting="ShowTutorials", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[5] = { title=TRANSLATOR(PC_GRAPHICS_TEXTURE), type=TYPE_VALUE, category="Visual", setting="TextureQuality", data = { TRANSLATOR(PC_GRAPHICS_TEXTURE_VERYLOW), TRANSLATOR(PC_GRAPHICS_TEXTURE_LOW), TRANSLATOR(PC_GRAPHICS_TEXTURE_MEDIUM), TRANSLATOR(PC_GRAPHICS_TEXTURE_HIGH), TRANSLATOR(PC_GRAPHICS_TEXTURE_VERYHIGH), } },
+	[6] = { title=TRANSLATOR(PC_GRAPHICS_VIEW), type=TYPE_SLIDER, category="Visual",setting="Visibility", data = { 100 } },
+	[7] = {},
+	[8] = { title=TRANSLATOR(OPTIONS_RESET), type=TYPE_COMMAND, data = function() reset_defaults() end },
+}
+
+
+local options_game = {
+	[1] = { title=TRANSLATOR(OPTIONS_METERS), type=TYPE_VALUE, category="Game", setting="ImperialUnits", data = { TRANSLATOR(OPTIONS_METERS_KPH), TRANSLATOR(OPTIONS_METERS_MPH) } },
+	[2] = { title=TRANSLATOR(OPTIONS_RACEMAP), type=TYPE_VALUE, category="Game", setting="IngameMap", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[3] = { title=TRANSLATOR(OPTIONS_BONUSES), type=TYPE_VALUE, category="Game", setting="ShowBonus", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[4] = { title=TRANSLATOR(OPTIONS_INTRODUCTIONS), type=TYPE_VALUE, category="Game", setting="ShowTutorials", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[5] = {},
+	[6] = { title=TRANSLATOR(OPTIONS_RESET), type=TYPE_COMMAND, data = function() reset_defaults() end },
+}
+
+local options_sound = {
+	[1] = { title=TRANSLATOR(OPTIONS_SFXVOLUME), type=TYPE_SLIDER, category="Audio", setting="InterfaceSfxVolume", data = { 100 } },
+	[2] = { title=TRANSLATOR(OPTIONS_MUSICVOLUME), type=TYPE_SLIDER, category="Audio", setting="InterfaceMusicVolume", data = { 100 } },
+	[3] = { title=TRANSLATOR(OPTIONS_CHANNELS), type=TYPE_VALUE, category="Audio", setting="ChannelMode", data = { TRANSLATOR(OPTIONS_CHANNELS_MONO), TRANSLATOR(OPTIONS_CHANNELS_STEREO), TRANSLATOR(OPTIONS_CHANNELS_SURROUND) } },
+}
+
+
+local options_controller = {
+	[1] = { title=TRANSLATOR(PC_CONTROLLER_FORCEFEEDBACK), type=TYPE_VALUE, category="Control", setting="ForceFeedback", data = { TRANSLATOR(OPTIONS_OFF), TRANSLATOR(OPTIONS_ON) } },
+	[2] = { title=TRANSLATOR(PC_CONTROLLER_FORCELEVEL), type=TYPE_SLIDER, category="Control", setting="ForceMagnitude", data = { 100 } },
+	[3] = { title=TRANSLATOR(PC_CONTROLLER_SENSITIVITY), type=TYPE_SLIDER, category="Control", setting="ControllerSensitivity", data = { 100 } },
+	[4] = { title=TRANSLATOR(PC_CONTROLLER_DEADZONE), type=TYPE_SLIDER, category="Control", setting="ControllerDeadzone", data = { 100 } },
+	[5] = { title=TRANSLATOR(CAR_TRANSMISSION), type=TYPE_VALUE, category="Game", setting="ManualTransmission", data = { TRANSLATOR(CAR_TRANSMISSION_AUTO), TRANSLATOR(CAR_TRANSMISSION_MANUAL) } },
+	[6] = { title=TRANSLATOR(OPTIONS_CONTROLLER), type=TYPE_VALUE, category="Control", setting="Controller", action=change_controller_actionmap, data = { } },
+}
+
+local key_config = {
+	[1] = { title=TRANSLATOR(CONFIG_THROTTLE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_UP } },
+	[2] = { title=TRANSLATOR(CONFIG_BRAKE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_DOWN } },
+	[3] = { title=TRANSLATOR(CONFIG_STEERLEFT), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_LEFT } },
+	[4] = { title=TRANSLATOR(CONFIG_STEERRIGHT), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_RIGHT } },
+	[5] = { title=TRANSLATOR(CONFIG_GEARUP), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_RIGHT_TRIGGER } },
+	[6] = { title=TRANSLATOR(CONFIG_GEARDOWN), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_LEFT_TRIGGER } },
+	[7] = { title=TRANSLATOR(CONFIG_NITRO), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_B } },
+	[8] = { title=TRANSLATOR(CONFIG_HANDBRAKE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_A } },
+	[9] = { title=TRANSLATOR(CONFIG_CAMERA), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_Y } },
+	[10] = { title=TRANSLATOR(CONFIG_RESET), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA2 } },
+	[11] = { title=TRANSLATOR(CONFIG_PLAYERLIST), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA4 } },
+	[12] = { title=TRANSLATOR(CONFIG_LOOK), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA1 } },
+}
+
+
+local options = {
+	[1] = options_game,
+	[2] = options_sound,
+}
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+local function create_value(item,parent)
+	
+	local value=0
+	local o
+
+	if item.category ~= "" and item.setting ~= "" then
+		value=Settings[item.category][item.setting]
+	end
+	if value == true then
+		value=1 
+	else
+		value=0
+	end
+
+
+
+	local arrowsize=GetResourceSize(menu_options:getResource("selection_arrow_l"))
+	local parentsize={ parent:GetSize() }
+
+	o=StaticText{Title=item.data[value+1] or L"ERROR", Position=POS(parent.itempos[1]+11+arrowsize[1]+4,0),Font=fontlarge(),Parent=parent}
+
+	o.leftarrow=Frame{Position=POS(parent.itempos[1]+11,(parentsize[2]/2-arrowsize[2]/2)),Size=arrowsize,Parent=parent}:AttachResource(menu_options:getResource("selection_arrow_r"))
+	o.rightarrow=Frame{Position=POS(parent.itempos[1]+11,(parentsize[2]/2-arrowsize[2]/2)),Size=arrowsize,Parent=parent}:AttachResource(menu_options:getResource("selection_arrow_l"))
+
+
+
+	o.leftarrow:HideWindow()
+	o.rightarrow:HideWindow()
+
+	o.item=item
+	o.parent=parent
+
+	o.activate = function(self)
+		self:SetColor(GetPaletteColor(33),false)
+
+		if table.getn(self.item.data) > 1 then
+			self.leftarrow:ShowWindow()
+			self.rightarrow:ShowWindow()
+		end
+	end
+
+	o.deactivate = function(self)
+		self:SetColor(GetPaletteColor(1),false)
+		self.leftarrow:HideWindow()
+		self.rightarrow:HideWindow()
+
+	end
+
+	o.moveLeft = function(self)
+		local value=self:getValue()
+
+		if value > 0 then
+			self:setValue(value-1)
+		else
+			self:setValue(table.getn(self.item.data)-1)
+		end
+
+		playmenusound_move()
+		self:setTitle()
+	end
+
+	o.moveRight = function(self)
+		local value=self:getValue()
+		local maxvalue=table.getn(self.item.data)
+
+		if value < maxvalue-1 then
+			self:setValue(value+1)
+		else
+			self:setValue(0)
+		end
+
+		playmenusound_move()
+		self:setTitle()
+	end
+
+	o.setTitle = function(self)
+		local value=self:getValue()		
+
+		self:SetTitle(self.item.data[value+1] or L"ERROR")
+
+
+		local textw=wm.GetTextWidth(self:GetTitle(),fontlarge())
+
+		local _,y=self.rightarrow:GetPosition()
+		local arrowsize=GetResourceSize(menu_options:getResource("selection_arrow_l"))
+
+		self.rightarrow:SetPosition(self.parent.itempos[1]+11+arrowsize[1]+4+textw+4,y)
+
+	end
+
+	o.setValue = function(self,value)
+
+		if self.item.action then
+			self.item.action(self:getValue(),value)
+		end
+
+		if self.item.category ~= "" and self.item.setting ~= "" then
+			Settings[self.item.category][self.item.setting]=value
+		end
+	end
+
+
+	o.getValue = function(self)
+		local value=0
+		if self.item.category ~= "" and self.item.setting ~= "" then
+			value=Settings[self.item.category][self.item.setting]
+		end
+		if type(value) == "boolean" then
+			if value == true then
+				value=1
+			else
+				value=0
+			end
+		end
+
+		return value
+	end
+
+	o:setTitle()
+	o:SetAlpha(0)
+
+
+	return o
+end
+
+
+local function create_slider(item,parent)
+
+	
+	local value=0
+	local o
+
+	local arrowsize=GetResourceSize(menu_options:getResource("selection_arrow_l"))
+	local parentsize={ parent:GetSize() }
+
+	if item.category ~= "" and item.setting ~= "" then
+		value=Settings[item.category][item.setting]
+	end
+
+	local bgcolor={ 0,0,0,0.5*MAX_VERTEXCOLOR_A }
+	o=ProgressBar{Position=POS(parent.itempos[1]+11+arrowsize[1]+4,7),Size=SIZE(120,10),DrawGradient=FALSE,
+							Color=GetPaletteColor(22),BackgroundColor=bgcolor,
+							Ticks=item.data[1],Value=0,Parent=parent}
+
+
+	o.textvalue=StaticText{Title=L"", Position=POS(parent.itempos[1]+11+arrowsize[1]+4+120+4+arrowsize[1]+4,2),Font=fontmedium(),Color=GetPaletteColor(33),Parent=parent}
+
+	o.leftarrow=Frame{Position=POS(parent.itempos[1]+11,(parentsize[2]/2-arrowsize[2]/2)),Size=arrowsize,Parent=parent}:AttachResource(menu_options:getResource("selection_arrow_r"))
+	o.rightarrow=Frame{Position=POS(parent.itempos[1]+11,(parentsize[2]/2-arrowsize[2]/2)),Size=arrowsize,Parent=parent}:AttachResource(menu_options:getResource("selection_arrow_l"))
+
+	o.leftarrow:HideWindow()
+	o.rightarrow:HideWindow()
+
+	o.parent=parent
+
+
+	o.item=item
+
+	o.activate = function(self) 
+		self.leftarrow:ShowWindow()
+		self.rightarrow:ShowWindow()
+	end
+
+	o.deactivate = function(self) 
+		self.leftarrow:HideWindow()
+		self.rightarrow:HideWindow()
+	end
+
+	o.moveLeft = function(self)
+		local value=self:getValue()
+		local adj=self.item.data[1]/10
+
+		value = math.max(value-adj,0)
+
+		self:setValue(value)
+		playmenusound_move()
+	
+		self:setTitle()
+	end
+
+	o.moveRight = function(self)
+		local value=self:getValue()
+		local adj=self.item.data[1]/10
+
+		value = math.min(value + adj,self.item.data[1])
+		self:setValue(value)
+		playmenusound_move()
+
+		self:setTitle()
+	end
+
+	o.setTitle = function(self)
+		local value=self:getValue()		
+
+		self:SetValue(value)
+		self.textvalue:SetTitle(ConvertToWString(string.format("%d%%",value)))
+
+		local _,y=self.rightarrow:GetPosition()
+		local arrowsize=GetResourceSize(menu_options:getResource("selection_arrow_l"))
+
+		self.rightarrow:SetPosition(self.parent.itempos[1]+11+arrowsize[1]+4+120+4,y)
+	end
+
+	o.setValue = function(self,value)
+		if self.item.category ~= "" and self.item.setting ~= "" then
+			if self.item.setting == "InterfaceMusicVolume" then
+				if value == 0 then
+					Event:PostEvent(event(EVENT_MUSIC_STOP))
+				elseif Settings[self.item.category][self.item.setting] == 0 and value > 0 then
+					Event:PostEvent(event(EVENT_MUSIC_PLAY_TITLE))
+				end
+			end
+			Settings[self.item.category][self.item.setting]=value
+		end
+	end
+
+
+	o.getValue = function(self)
+		local value=0
+		if self.item.category ~= "" and self.item.setting ~= "" then
+			value=Settings[self.item.category][self.item.setting]
+		end
+
+		return value
+	end
+
+	o:setTitle()
+	o:SetAlpha(0)
+	o.textvalue:SetAlpha(0)
+
+	return o
+end
+
+
+local function create_command(item,parent)
+
+	titlew=wm.GetTextWidth(parent.title:GetTitle(),fontlarge())
+
+	local arrowsize=GetResourceSize(menu_options:getResource("white_arrow_right"))
+	local parentsize={ parent:GetSize() }
+
+	local o=Frame{Position=POS((parent.itempos[1]-11)-(titlew+arrowsize[1]),parentsize[2]/2-arrowsize[2]/2),Size=arrowsize,Parent=parent}
+	o:AttachResource(menu_options:getResource("white_arrow_right"))
+
+
+	o.item=item
+
+	o.activate = emptyfunction()
+	o.deactivate = emptyfunction()
+	o.moveLeft = emptyfunction()
+	o.moveRight = emptyfunction()
+	o.setTitle = emptyfunction()
+	o.getValue = function(self) return 0 end
+	o.setValue = emptyfunction()
+
+	o.onPressed = function(self)
+		if type(self.item.data) == "function" then
+			self.item.data()
+		end
+	end
+
+	o:SetAlpha(0)
+
+	return o
+end
+
+local function create_key(item,parent)
+
+
+	local o=StaticText{Position=POS(parent.itempos[1]+11,parent.itempos),Font=fontlarge(),Parent=parent}
+
+	o.item=item
+
+	o.activate = function(self)
+		self:SetColor(GetPaletteColor(33),false)
+	end
+
+	o.deactivate = function(self)
+		self:SetColor(GetPaletteColor(33),false)
+	end
+
+	o.setTitle = function(self,status) 
+		if status == Input.CONTROLLER_REMAP_PENDING then
+			self:SetTitle(L"???")
+		else
+			self:SetTitle(Input.GetButtonName(Settings.Control.Controller,self.item.data[1]))
+		end
+	end
+
+
+	o.moveLeft = emptyfunction()
+	o.moveRight = emptyfunction()
+
+	o.getValue = function(self) 
+	
+		return 
+	end
+	o.setValue = function(self,value)
+
+
+	end
+
+	o.onPressed = function(self)
+		start_remap(self,Settings.Control.Controller,self.item.data[1])
+	end
+
+	o:setTitle()
+	o:SetAlpha(0)
+
+	return o
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+local function create_option(item,parent)
+
+
+	local o
+
+	parent.title=StaticText{Title=item.title,Position=POS(parent.itempos[1]-11,0),Font=fontlarge(),Align=FONTF_RIGHT,Parent=parent}
+
+
+	parent.moveLeft = function(self)
+		self.value:moveLeft()
+	end
+
+	parent.moveRight = function(self)
+		self.value:moveRight()
+	end
+
+
+	if item.type == TYPE_VALUE then
+		o=create_value(item,parent)
+	elseif item.type == TYPE_SLIDER then
+		o=create_slider(item,parent)
+	elseif item.type == TYPE_COMMAND then
+		o=create_command(item,parent)
+	elseif item.type == TYPE_KEY then
+		o=create_key(item,parent)
+	else
+		error("invalid option type")
+	end
+
+	parent.value=o
+	parent.title:SetAlpha(0)
+
+end
+
+
+
+
+local function create_options(options)
+	
+	local pos=POS(0,80)
+	local parent
+
+	local itempos=POS(266,3)
+	local gfxpos=POS(104,0)
+
+	for k,v in ipairs(options) do
+		if v.title then
+
+		
+
+--//			if v.type == TYPE_COMMAND then
+--//				parent=Frame{Position=pos,Size=SIZE(320,24)}
+--//			else
+				parent=Frame{Position=pos,Size=SIZE(640,24)}
+--//			end
+
+			parent.gfx={}
+			parent.gfx[1]=Frame{Position=POS(0,0),Size=SIZE(gfxpos[1],24),Parent=parent}:AttachResource(menu_options:getResource("options_bar"))
+			parent.gfx[2]=Frame{Position=gfxpos,Size=SIZE(360,24),Parent=parent}:AttachResource(menu_options:getResource("options_bar_center"))
+			parent.gfx[3]=Frame{Position=POS(gfxpos[1]+360,0),Size=SIZE(640-360-gfxpos[1],24),Parent=parent}:AttachResource(menu_options:getResource("options_bar"))
+
+			parent.gfx[1]:SetAlpha(0)
+			parent.gfx[2]:SetAlpha(0)
+			parent.gfx[3]:SetAlpha(0)
+
+			parent.itempos=CopyTable(itempos)
+
+			parent.activate = function(self)
+				self:AttachResource(menu_options:getResource("white_transparent"))
+				self:SetAlpha(0.3)
+
+				self.value:activate()
+			end
+
+			parent.deactivate = function(self)
+--//				self:AttachResource(menu_options:getResource("black_transparent_50"))
+				self:SetAlpha(0)
+
+				self.value:deactivate()
+			end
+
+			parent.onPressed = function(self)
+				if self.value.onPressed then
+					self.value:onPressed()
+				end
+			end
+
+			create_option(v,parent)
+
+			v.frame=parent
+
+			parent:deactivate()
+
+		end
+
+		pos[2] = pos[2] + 26
+		itempos[1] = itempos[1] + 8
+		gfxpos[1] = gfxpos[1] + 8
+	end
+end
+
+
+local function hide_options(options)
+	for k,v in ipairs(options) do
+
+		local frame=v.frame
+
+		if frame then
+			frame.handle=AnimateWindowAlpha(frame,frame:GetAlpha(),0.0,0.2,0.0,frame.handle)
+
+			frame.title.handle=AnimateWindowAlpha(frame.title,frame.title:GetAlpha(),0.0,0.2,0.0,frame.title.handle)
+			frame.value.handle=AnimateWindowAlpha(frame.value,frame.value:GetAlpha(),0.0,0.2,0.0,frame.value.handle)
+
+			if frame.value.textvalue then
+				frame.value.textvalue.handle=AnimateWindowAlpha(frame.value.textvalue,frame.value.textvalue:GetAlpha(),0.0,0.2,0.0,frame.value.textvalue.handle)
+			end
+
+			if frame.value.leftarrow then
+				frame.value.leftarrow.handle=AnimateWindowAlpha(frame.value.leftarrow,frame.value.leftarrow:GetAlpha(),0.0,0.2,0.0,frame.value.leftarrow.handle)
+				frame.value.rightarrow.handle=AnimateWindowAlpha(frame.value.rightarrow,frame.value.rightarrow:GetAlpha(),0.0,0.2,0.0,frame.value.rightarrow.handle)
+			end
+
+			if frame.gfx[1] then
+				frame.gfx[1].handle=AnimateWindowAlpha(frame.gfx[1],frame.gfx[1]:GetAlpha(),0.0,0.2,0.0,frame.gfx[1].handle)
+				frame.gfx[2].handle=AnimateWindowAlpha(frame.gfx[2],frame.gfx[2]:GetAlpha(),0.0,0.2,0.0,frame.gfx[2].handle)
+				frame.gfx[3].handle=AnimateWindowAlpha(frame.gfx[3],frame.gfx[3]:GetAlpha(),0.0,0.2,0.0,frame.gfx[3].handle)
+			end
+		end
+	end
+end
+
+
+local function show_options(options,showall)
+	for k,v in ipairs(options) do
+
+		
+		local frame=v.frame
+
+		if frame then
+			local alpha=1
+
+			if not showall and k > 10 then
+				alpha=0
+			end
+
+			frame.value:setTitle()
+
+			--//frame.handle=AnimateWindowAlpha(frame,frame:GetAlpha(),0.0,0.2,0.0,frame.handle)
+
+			frame.title.handle=AnimateWindowAlpha(frame.title,frame.title:GetAlpha(),alpha,0.2,0.0,frame.title.handle)
+			frame.value.handle=AnimateWindowAlpha(frame.value,frame.value:GetAlpha(),alpha,0.2,0.0,frame.value.handle)
+
+			if frame.value.textvalue then
+				frame.value.textvalue.handle=AnimateWindowAlpha(frame.value.textvalue,frame.value.textvalue:GetAlpha(),alpha,0.2,0.0,frame.value.textvalue.handle)
+			end
+
+			if frame.value.leftarrow then
+				frame.value.leftarrow.handle=AnimateWindowAlpha(frame.value.leftarrow,frame.value.leftarrow:GetAlpha(),alpha,0.2,0.0,frame.value.leftarrow.handle)
+				frame.value.rightarrow.handle=AnimateWindowAlpha(frame.value.rightarrow,frame.value.rightarrow:GetAlpha(),alpha,0.2,0.0,frame.value.rightarrow.handle)
+			end
+
+			if frame.gfx[1] then
+				frame.gfx[1].handle=AnimateWindowAlpha(frame.gfx[1],frame.gfx[1]:GetAlpha(),alpha,0.2,0.0,frame.gfx[1].handle)
+				frame.gfx[2].handle=AnimateWindowAlpha(frame.gfx[2],frame.gfx[2]:GetAlpha(),alpha,0.2,0.0,frame.gfx[2].handle)
+				frame.gfx[3].handle=AnimateWindowAlpha(frame.gfx[3],frame.gfx[3]:GetAlpha(),alpha,0.2,0.0,frame.gfx[3].handle)
+			end
+
+		end
+	end
+end
+
+local function create_layouts()
+	for _,layout in pairs(controller_layouts) do
+
+		for k,v in pairs(pad_layout) do
+			if layout[v.key] then
+				local w=StaticText{Title=layout[v.key].title or L"",Position=v.pos,Font=fontsmall(), Align=v.align}
+				w:SetAlpha(0)
+				layout[v.key].window=w
+			end
+		end
+	end
+end
+
+
+local function show_layout(num)
+	if num == 3 then return end
+
+	for k,v in pairs(controller_layouts) do
+		local alpha=0
+		if k == num then
+			alpha=1
+		end
+		
+		for kk,vv in pairs(v) do
+			vv.window.handle=AnimateWindowAlpha(vv.window,vv.window:GetAlpha(),alpha,0.2,0.0,vv.window.handle)
+		end
+	end
+end
+
+local function hide_layout()
+	for k,v in pairs(controller_layouts) do
+		local alpha=0
+		
+		for kk,vv in pairs(v) do
+			vv.window.handle=AnimateWindowAlpha(vv.window,vv.window:GetAlpha(),alpha,0.2,0.0,vv.window.handle)
+		end
+	end
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+local function get_undo(options)
+	local t={}
+
+	for k,v in pairs(options) do
+		if v.frame then
+			t[k]=v.frame.value:getValue()
+		end
+	end
+
+	return t
+end
+
+
+local function do_undo(options,values)
+	for k,v in pairs(options) do
+		if v.frame then
+			v.frame.value:setValue(values[k])
+			v.frame.value:setTitle()
+		end
+	end
+
+end
+
+local function settings_changed(options,values)
+	for k,v in pairs(options) do
+		if v.frame then
+			if v.frame.value:getValue() ~= values[k] then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+reset_defaults = function()
+	GUI:DefaultSettings()
+	Event:PostEvent(event(EVENT_MUSIC_PLAY_TITLE))
+	menu_options.changed=true
+
+	for k,v in pairs(W("inputhandler").options) do
+		if v.frame then
+			v.frame.value:setTitle()
+		end
+	end
+
+end
+
+local function toggle_forcefeedback()
+	if Settings.Control.ForceFeedback then
+		Settings.Control.ForceFeedback=FALSE
+		if W("vibration_status") then
+			W("vibration_status"):SetTitle(TRANSLATOR(OPTIONS_OFF))
+		end
+	else
+		if W("vibration_status") then
+			W("vibration_status"):SetTitle(TRANSLATOR(OPTIONS_ON))
+			GUI:SetVibration()
+		end
+		Settings.Control.ForceFeedback=TRUE
+	end
+	menu_options.changed=true
+end
+
+
+change_controller_actionmap = function(old_controller,new_controller)
+	
+	if old_controller then
+		Input.SaveActionMap(old_controller)
+	end
+
+	--//turn force feedback off
+	if new_controller == 0 and Settings.Control.ForceFeedback then
+		toggle_forcefeedback()
+	end
+
+	Settings.Control.ControllerGuid=Input.GetControllerGuid(new_controller)
+	Input.LoadActionMap(new_controller)
+
+end
+
+
+local function get_pc_controllers()
+
+	local item=options_controller[6]
+
+	item.data={}
+	for i=0,Input.GetNumControllers()-1 do
+		table.insert(item.data,Input.GetControllerName(i))
+	end
+
+	item.action=change_controller_actionmap
+
+end
+
+
+
+local remapWindow
+
+
+local function end_remap(controller)
+	if remapWindow then
+		Input.RemapEnd(controller)
+
+		for k,v in pairs(W("inputhandler").options) do
+			if v.frame then
+				v.frame.value:setTitle()
+			end
+		end
+		Input.SaveActionMap(controller)
+		remapWindow=nil
+		wm.SetExclusive(nil)
+	end
+end
+
+
+start_remap = function(window,controller,button)
+
+	
+
+	if not remapWindow then
+		remapWindow=window
+
+		wm.SetExclusive(window)
+
+		Input.RemapBegin(controller,button)
+		remapWindow:setTitle(Input.CONTROLLER_REMAP_PENDING)
+		wm.RepostEvent()
+	else
+		if Input.Remap(controller) ~= Input.CONTROLLER_REMAP_PENDING then
+			end_remap(controller)
+		else
+			wm.RepostEvent()
+		end
+
+	end
+end
+
+
+local function enter_controller()
+	GUI:HideMenuButtons()
+	menu_options.in_controller=true
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	Event:AddTimer(function()
+						menu_options.items=menu_options.controlleritems
+						GUI:InitMenuButtons(menu_options.items)
+						GUI:SetActiveItem(Settings.Control.ControllerLayout+1)
+						GUI:ShowMenuButtons()
+					end, 0.4,nil,TRUE)
+end
+
+local function exit_controller()
+	GUI:HideMenuButtons()
+	menu_options.in_controller=nil
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	Event:AddTimer(function()
+						menu_options.items=menu_options.defaultitems
+						GUI:InitMenuButtons(menu_options.items)
+						GUI:SetActiveItem(3)
+						GUI:ShowMenuButtons()
+					end, 0.4,nil,TRUE)
+end
+
+
+
+menu_options = CreateMenuFromTemplate("template_basic")
+
+
+
+
+menu_options.options.title=TRANSLATOR(TITLE_OPTIONS)
+menu_options.back=function() 
+							if menu_options.in_controller then
+								exit_controller()
+							else
+								if PC or menu_options.changed then
+									if PS2 then
+										if menu_options.old_channelmode ~= Settings.Audio.ChannelMode then
+											AUDIO.ResetSpeakerMode()
+										end
+									end
+									ProfileSave(Save.GetLastSaveSlotUsed(),entermenu("menu_mainmenu"),entermenu("menu_options"))
+								else 
+									EnterMenu("menu_mainmenu") 
+								end
+							end
+					end
+
+
+local function set_focus(category)
+	
+	local w=W("inputhandler")
+	show_options(options[category],true)
+	w:SetFocus()
+	w.item=nil
+	w.undo=get_undo(options[category])
+
+	w.category=category
+	w.options=options[category]
+	w:activate(1)
+
+	GUI:HideMenuButtons()
+	GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+end
+
+
+function menu_options.create(self)
+	self.parent:create(self)
+
+	local iconname="icon_xbox_vibration_on"
+
+	
+
+	if PS2 then
+		self:addResource("ps2_controller.tga",ps2_controller,ps2_controller_size)
+		iconname="icon_ps2_vibration_on"
+		menu_options.old_channelmode=Settings.Audio.ChannelMode
+		options[1]=options_game
+	elseif XBOX then
+		self:addResource("xbox_controller.tga",xbox_controller,xbox_controller_size)		
+		iconname="icon_xbox_vibration_on"
+
+		--//remove sound channel from xbox
+
+		if options_sound[3] then
+			table.remove(options_sound,3)
+		end
+
+		options[1]=options_game
+	elseif PC then
+		options[1]=options_game_pc
+		if options_sound[3] then
+			table.remove(options_sound,3)
+		end
+	end
+
+	self:addResource("profile_elements.tga",profile_elements,profile_elements_size)
+
+	self:loadResources()
+
+	
+
+	self.controlleritems = {
+		MENUITEM(TRANSLATOR(ICON_OPTIONS_LAYOUT_1),function() Settings.Control.ControllerLayout=0; menu_options.changed=true; exit_controller() end,ICON(self,"icon_preset_1")),
+		MENUITEM(TRANSLATOR(ICON_OPTIONS_LAYOUT_2),function() Settings.Control.ControllerLayout=1; menu_options.changed=true; exit_controller() end,ICON(self,"icon_preset_2")),
+		MENUITEM(TRANSLATOR(UI_VIBRATION),toggle_forcefeedback,ICON(self,iconname))
+	}
+
+	self.defaultitems={
+		MENUITEM(TRANSLATOR(ICON_OPTIONS_GAMEOPTIONS),function() set_focus(1) end,ICON(self,"icon_game_options")),
+		MENUITEM(TRANSLATOR(ICON_OPTIONS_SOUNDOPTIONS),function() set_focus(2) end,ICON(self,"icon_sound_options")),
+		MENUITEM(TRANSLATOR(ICON_OPTIONS_CONTROLLEROPTIONS),function() enter_controller() end,ICON(self,"icon_controller_options")),
+	}
+
+
+	if PC then
+		self.defaultitems[3]=MENUITEM(TRANSLATOR(ICON_OPTIONS_CONTROLLEROPTIONS),function() set_focus(3) end,ICON(self,"icon_controller_options"))
+		self.defaultitems[4]=MENUITEM(TRANSLATOR(ICON_OPTIONS_CONFIGURECONTROLS),function() set_focus(4) end,ICON(self,"icon_controller_options"))
+
+
+		options[3]=options_controller
+		options[4]=key_config
+
+
+		get_pc_controllers()
+		change_controller_actionmap(nil,Settings.Control.Controller)
+
+	end
+
+	self.items = self.defaultitems
+
+	menu_options.changed=nil
+
+end
+
+function menu_options.init(self)
+	self.parent:init(self)
+
+
+	local tbl
+	local prefix
+
+	if PS2 then
+		controller_layouts=ps2_layouts
+		pad_layout=ps2_pad_layout
+		tbl=ps2_controller
+		prefix="ps2_"
+	elseif XBOX then
+		controller_layouts=xbox_layouts
+		pad_layout=xbox_pad_layout
+		tbl=xbox_controller
+		prefix="xbox_"
+	end
+
+	if XBOX or PS2 then
+		for k,v in pairs(controller) do
+			controller[k]=self:getResource(prefix..k)
+		end
+	end
+
+	for k,v in pairs(options) do
+		create_options(v)
+	end
+
+	local input=InputHandler{Name="inputhandler"}
+
+	if not PC then
+		local w=Frame{Name="controller",Position=POS(227,117),Size=GetResourceSize(controller.pad)}
+		w:AttachResource(controller.pad)
+		w:SetAlpha(0)
+
+		StaticText{Name="vibration_title",Title=TRANSLATOR(UI_VIBRATION),Position=POS(344,300),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(34)}:SetAlpha(0)
+		StaticText{Name="vibration_status",Position=POS(346,300),Font=fontsmall(),Color=GetPaletteColor(33)}:SetAlpha(0)
+
+		create_layouts()
+	end
+
+	input.onKeyPressed = function(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_SELECT then
+			--//do_undo(self.options,self.undo)
+			menu_options.changed=menu_options.changed or settings_changed(self.options,self.undo)
+			show_options(options[self.category])
+			playmenusound_back()
+			GUI:SetActiveItem(self.category)
+			self:deactivate(self.item)
+			GUI:ShowMenuButtons()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+			self.undo=nil
+
+		elseif virtualkey == KeyCodes.BUTTON_START then
+			--[[--/*
+			GUI:SetActiveItem(self.category)
+			self:deactivate(self.item)
+			
+			GUI:ShowMenuButtons()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+			self.undo=nil
+			menu_options.changed=true
+			--]]--*/
+			--//playmenusound_action()
+
+			if self.options[self.item].frame.value.item.type ~= TYPE_KEY then
+				playmenusound_action()
+			end
+
+			self.options[self.item].frame:onPressed()
+
+		elseif virtualkey == KeyCodes.BUTTON_LEFT then
+			playmenusound_move()
+			self.options[self.item].frame:moveLeft()
+
+		elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+			playmenusound_move()
+			self.options[self.item].frame:moveRight()
+
+		elseif virtualkey == KeyCodes.BUTTON_DOWN then
+			local maxitems=table.getn(self.options)
+
+			local value=self.item+1
+			if value > maxitems then
+				value=1
+			end
+
+			while not self.options[value].title do
+				value=value + 1
+				if value > maxitems then
+					value=0
+				end
+			end
+
+			self:activate(value)
+			
+			playmenusound_move()
+
+		elseif virtualkey == KeyCodes.BUTTON_UP then
+
+			local value=self.item-1
+
+			if value < 1 then
+				value=table.getn(self.options)
+			end
+
+			while not self.options[value].title do
+				value=value-1
+
+				if value < 1 then
+					value=table.getn(self.options)
+				end
+			end
+
+			self:activate(value)
+
+			playmenusound_move()
+		end
+	end
+
+	input.activate = function(self,item)
+
+		local old_type
+
+		if self.item then
+			self:deactivate(self.item)
+			old_type=self.options[self.item].type
+		else
+			--//old_type=self.options[item].type
+		end
+
+
+		self.item=item
+
+		if old_type ~= self.options[item].type then
+			if self.options[item].type == TYPE_COMMAND or self.options[item].type == TYPE_KEY then
+				GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+			else
+				GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK))
+			end
+		end
+
+		self.options[item].frame:activate()
+
+	end
+
+	input.deactivate = function(self,item)
+
+		self.options[item].frame:deactivate()
+
+	end
+
+
+
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+	--//GUI:SetBackground("data/menu/canvas_bg.tga")
+	GUI:SetBackgroundVideo("data/video/bg_main")
+end
+
+
+function menu_options.deinit(self)
+	self.parent:deinit(self)
+	
+
+end
+
+
+function menu_options.buttonChange(self,oldbutton,newbutton)
+	
+	if menu_options.in_controller then
+		show_layout(newbutton)
+	else
+		if newbutton == 3 then
+			if not PC then
+				if Settings.Control.ForceFeedback then
+					W("vibration_status"):SetTitle(TRANSLATOR(OPTIONS_ON))
+				else
+					W("vibration_status"):SetTitle(TRANSLATOR(OPTIONS_OFF))
+				end
+
+				W("controller").handle=AnimateWindowAlpha(W("controller"),W("controller"):GetAlpha(),1.0,0.2,0.0,W("controller").handle)
+				W("vibration_title").handle=AnimateWindowAlpha(W("vibration_title"),W("vibration_title"):GetAlpha(),1.0,0.2,0.0,W("vibration_title").handle)
+				W("vibration_status").handle=AnimateWindowAlpha(W("vibration_status"),W("vibration_status"):GetAlpha(),1.0,0.2,0.0,W("vibration_status").handle)
+				show_layout(Settings.Control.ControllerLayout+1)
+			end
+		else
+			if not PC then
+				W("controller").handle=AnimateWindowAlpha(W("controller"),W("controller"):GetAlpha(),0.0,0.2,0.0,W("controller").handle)
+				W("vibration_title").handle=AnimateWindowAlpha(W("vibration_title"),W("vibration_title"):GetAlpha(),0.0,0.2,0.0,W("vibration_title").handle)
+				W("vibration_status").handle=AnimateWindowAlpha(W("vibration_status"),W("vibration_status"):GetAlpha(),0.0,0.2,0.0,W("vibration_status").handle)
+				hide_layout()
+			end
+		end
+
+		for k,v in ipairs(options) do
+			if k == newbutton then
+				show_options(v)
+			else
+				hide_options(v)
+			end
+		end
+	end
+end
+

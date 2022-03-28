@@ -1,0 +1,20 @@
+keyboard_size = { 512,128 }
+keyboard = {
+	
+	keyboard_small = {  0, 0, 43, 33 },
+	keyboard_big = {  46, 0, 81, 33 },
+	keyboard_selection = {  0, 0, 43, 33 },
+	keyboard_selection_big = {  46, 0, 81, 33 },
+
+	keyboard_title_bars_tip = {  0, 74, 512, 25 },
+	keyboard_title_bars_main = {  100, 74, 512, 25 },
+	keyboard_title_bars_tip2 = {  0, 100, 512, 25 },
+	keyboard_title_bars_main2 = {  110, 100, 512, 25 },
+
+	keyboard_bg_tip = {  0, 34, 512, 38 },
+	keyboard_bg_main = {  101, 34, 411, 38 },
+
+	name_backdrop = {  131, 4, 191, 25 },
+
+
+}

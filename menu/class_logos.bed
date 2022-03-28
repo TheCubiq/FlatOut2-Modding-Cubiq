@@ -1,0 +1,9 @@
+class_logos_size = { 256, 256 }
+class_logos = {
+	
+	class_logo_1 = {  3, 3, 110, 105 }, -- class name
+	class_logo_2 = {  119, 3, 110, 105 }, -- class name
+	class_logo_3 = {  3, 114, 110, 105 }, -- class name
+	class_logo_4 = {  119, 114, 110, 105 }, -- class name
+
+}

@@ -1,0 +1,1792 @@
+--///////////////////////////////////////////////////////////////////////////
+--// GameSpyLogin.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 9.8.2005 15:36
+--// 
+--// @Author Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/keyboard.bed")
+
+local EventListener
+
+local SelectedEmail
+local NewProfileName
+local Password1
+local Password2
+
+local ActiveItem
+
+local FocusedEmailList
+
+local InputTitle
+local InputOK
+local InputBackMenu
+local InputMaxSize
+local InputText
+local InputEventListenerFunc
+local InputMode
+
+local StartCreateProfile
+local ResetCreateAccountMenu
+
+local function GameSpyError(errno, nextmenu)
+	-- TODO errno-specific messages&actions
+	HideThinkingWindow()
+	ShowMessageBox(POS(0,85), nil, GAMESPY_GENERIC_ERROR, UI_OK, entermenu(nextmenu))
+end
+
+
+--
+-- TEXT INPUT
+--
+
+menu_multiplayer_gamespy_textinput = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_textinput.options.title = ConvertToWString(InputTitle)
+
+local function ShowVirtualKeyboard(mode, title, header, default, maxsize, inputok, back, eventlistener)
+	InputMode = mode
+	InputTitle = title
+	InputMaxSize = maxsize
+	InputOK = inputok
+	InputDefaultInput = default
+	menu_multiplayer_gamespy_textinput.options.title = title
+	menu_multiplayer_gamespy_textinput.back = entermenu(back)
+	InputEventListenerFunc = eventlistener
+	EnterMenu("menu_multiplayer_gamespy_textinput")
+end
+
+function menu_multiplayer_gamespy_textinput.create(self)
+	self.parent:create(self)
+	
+	self:addResource("keyboard.tga",keyboard,keyboard_size)
+	self:loadResources()
+	
+	self.items = { }
+end
+
+function menu_multiplayer_gamespy_textinput.init(self)
+	self.parent:init(self)
+	
+	if InputEventListenerFunc ~= nil then
+		EventListener = Event:AddListener(InputEventListenerFunc, EVENTTYPE_NETWORK)
+	end
+
+	if InputDefaultInput then
+		wm.SetTextInput(L(InputDefaultInput))
+	else
+		wm.SetTextInput(L"")
+	end
+	
+	local kb=VirtualKeyboard{Font=fontmedium(),Title=InputTitle,TitleFont=fontlarge(),MaxSize=InputMaxSize, Mode=InputMode,
+		TitleResources={ self:getResource("keyboard_title_bars_tip"), self:getResource("keyboard_title_bars_main") },
+		InputResources={ self:getResource("keyboard_title_bars_tip2"), self:getResource("keyboard_title_bars_main2") },
+		KeyboardResources={ self:getResource("keyboard_bg_tip"), self:getResource("keyboard_bg_main")} }
+
+	kb:SetFocus()
+
+	function kb.onBack(self)
+		menu_multiplayer_gamespy_textinput.back()
+	end
+
+	function kb.onAction(self)
+		InputText = ConvertFromWString(wm.GetTextInput())
+		if InputText ~= "" then
+			InputOK()
+		end
+	end
+end
+
+function menu_multiplayer_gamespy_textinput.deinit(self)
+	self.parent:deinit(self)
+	
+	if InputEventListenerFunc ~= nil then
+		Event:RemoveListener(EventListener)
+	end
+end
+
+function menu_multiplayer_gamespy_textinput.update(self, time)
+	self.parent:update(self,time)
+end
+
+--
+-- PASSWORD INPUT
+--
+
+menu_multiplayer_gamespy_passinput = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_passinput.options.title = ConvertToWString(InputTitle)
+
+local function ShowPasswordInput(mode, title, header, maxsize, inputok, back, eventlistener)
+	InputMode = mode
+	InputTitle = title
+	InputMaxSize = maxsize
+	InputOK = inputok
+	menu_multiplayer_gamespy_passinput.options.title = title
+	menu_multiplayer_gamespy_passinput.back = entermenu(back)
+	InputEventListenerFunc = eventlistener
+	EnterMenu("menu_multiplayer_gamespy_passinput")
+end
+
+function menu_multiplayer_gamespy_passinput.create(self)
+	self.parent:create(self)
+	
+	self:addResource("keyboard.tga",keyboard,keyboard_size)
+	self:loadResources()
+	
+	self.items = { }
+end
+
+function menu_multiplayer_gamespy_passinput.init(self)
+	self.parent:init(self)
+	
+	if InputEventListenerFunc ~= nil then
+		EventListener = Event:AddListener(InputEventListenerFunc, EVENTTYPE_NETWORK)
+	end
+
+	wm.SetTextInput(L"")
+	local kb=VirtualKeyboard{Font=fontmedium(),Title=InputTitle,TitleFont=fontlarge(),MaxSize=InputMaxSize, Mode=InputMode,
+		TitleResources={ self:getResource("keyboard_title_bars_tip"), self:getResource("keyboard_title_bars_main") },
+		InputResources={ self:getResource("keyboard_title_bars_tip2"), self:getResource("keyboard_title_bars_main2") },
+		KeyboardResources={ self:getResource("keyboard_bg_tip"), self:getResource("keyboard_bg_main")} }
+
+	kb:SetFocus()
+
+	function kb.onBack(self)
+		menu_multiplayer_gamespy_passinput.back()
+	end
+
+	function kb.onAction(self)
+		InputText = ConvertFromWString(wm.GetTextInput())
+		if InputText ~= "" then
+			InputOK()
+		end
+	end
+end
+
+function menu_multiplayer_gamespy_passinput.deinit(self)
+	self.parent:deinit(self)
+	
+	if InputEventListenerFunc ~= nil then
+		Event:RemoveListener(EventListener)
+	end
+end
+
+function menu_multiplayer_gamespy_passinput.update(self, time)
+	self.parent:update(self,time)
+end
+
+
+
+--
+-- GAMESPY AVAILABILITY CHECK
+--
+
+menu_multiplayer_gamespy_checkavailability = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_checkavailability.options.title = GAMESPY_AVAILABILITY_CHECK
+
+local StartTime
+local PrevTime
+
+function menu_multiplayer_gamespy_checkavailability.create(self)
+	self.parent:create(self)
+	
+	self:loadResources()
+	
+	self.items = { }
+end
+
+function menu_multiplayer_gamespy_checkavailability.init(self)
+	self.parent:init(self)
+
+	local w = StaticText { Title=GAMESPY_SEARCHING, Position=POS(320,230), Size=SIZE(640,20), Font=fontlarge(), Color=GetPaletteColor(34), Align=FONTF_CENTER }
+	ShowThinkingWindow()
+	GameSpy.CreateInstance()
+	GameSpy.StartAvailableCheck()
+
+	StartTime = nil
+	PrevTime = nil
+
+	State = "GAMESPY"
+	
+	local handler = InputHandler{}
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if GUI:IsMenuAnimating() then
+			return
+		end
+		
+		if VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			handler:HideWindow()
+			HideThinkingWindow()
+--			State = "IDLE"
+			GameSpy.CancelAvailableCheck()
+			if GameSpyPresence.HasInstance() then
+				Network:DeleteGameSpyPresence()
+			end
+			GameSpy.DeleteInstance()
+			NetworkConfiguration.Disconnect()
+			State = "DISCONNECT"
+		end
+	end
+	handler:SetFocus()
+	GUI:SetHelpButtons(BUTTON_BACK, UI_BACK)
+end
+
+function menu_multiplayer_gamespy_checkavailability.deinit(self)
+	self.parent:deinit(self)
+end
+
+function menu_multiplayer_gamespy_checkavailability.update(self,time)
+	self.parent:update(self,time)
+
+	if menu_multiplayer_gamespy_checkavailability.error then
+		return
+	end
+	
+	if StartTime == nil then
+		StartTime = time
+	end
+	
+	if State == "GAMESPY" then
+		if GameSpy.IsAvailableCheckReady() then
+			if not GameSpy.IsAvailable() then
+				State = "ERROR"
+				HideThinkingWindow()
+				MessageBox(
+					GAMESPY_NOT_AVAILABLE,
+					MESSAGEBOX_OK,
+					function(value)
+--						ShowThinkingWindow()
+						State = "DISCONNECT"
+						NetworkConfiguration.Disconnect()
+						if GameSpyPresence.HasInstance() then
+							Network:DeleteGameSpyPresence()
+						end
+						GameSpy.DeleteInstance()
+					end
+				)
+			else
+				State = "READY"
+				Network:CreateGameSpyPresence()
+			end
+		end
+	elseif State == "DISCONNECT" then
+		if PrevTime == nil then
+			PrevTime = time
+		end
+		local dt = time - PrevTime
+		PrevTime = time
+		
+		local res = NetworkConfiguration.Update(dt*1000)
+		if res ~= NetworkConfiguration.RES_WAITING then
+			State = "IDLE"
+			HideThinkingWindow()
+			StopNetwork()
+			EnterMenu("menu_multiplayer_networkconfig")
+		end	
+	end
+	
+	if State == "READY" and time > StartTime + 2 then
+		HideThinkingWindow()
+		EnterMenu("menu_multiplayer_gamespy_login")
+	end	
+end
+
+
+
+--
+-- SELECT ACCOUNT
+--
+
+local CurrentTime
+local Disconnecting
+
+menu_multiplayer_gamespy_login = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_login.options.title = TITLE_GAMESPY_LOGIN
+menu_multiplayer_gamespy_login.back = function() ShowThinkingWindow(); Disconnecting = true; NetworkConfiguration.Disconnect(); Network:DeleteGameSpyPresence(); GameSpy.DeleteInstance(); end
+
+local function GetUserNicksNewAccount(email, password)
+	ShowThinkingWindow()
+	GameSpyPresence.GetAccountProfiles(email, password)
+end
+
+local function GetUserNicks(password)
+	ShowThinkingWindow()
+	if password ~= nil then
+		GameSpyPresence.GetAccountProfiles(password)
+	else
+		GameSpyPresence.GetAccountProfiles()
+	end
+end
+
+local LoginEvents
+
+local function EnterPasswordScreen()
+	ShowPasswordInput(
+		VKMODE_GAMESPY_PASSWORD,
+		TITLE_GAMESPY_ENTERPASSWORD,
+		HEADER_GAMESPY_LOGIN_INPUTPASSWORD,
+		30,
+		function()
+			Password1 = InputText
+			if NewAccount then
+				GetUserNicksNewAccount(SelectedEmail, Password1)
+			else
+				GetUserNicks(Password1)
+			end
+		end,
+		"menu_multiplayer_gamespy_login",
+		LoginEvents
+	)
+end
+
+LoginEvents = function (event)
+	HideThinkingWindow()
+	if event.id==EVENT_GAMESPY_EMAIL_CHECKED then
+		if event.data == 1 then
+			if not NewAccount and GameSpyPresence.GetStorePassword() then
+				GetUserNicks()
+			else
+				local win = wm.GetWindow("box")
+				if win then
+					win:HideWindow()
+				end
+				MessageBox(
+					GAMESPY_ACCOUNT_WELCOME,
+					MESSAGEBOX_OK,
+					function()
+						EnterPasswordScreen()
+					end
+				)
+			end
+		else
+			local msg = WStringConcat(GAMESPY_CREATEACCOUNT_NOACCOUNT, ConvertToWString("\n"..SelectedEmail.."\n "))
+			msg = WStringConcat(msg, GAMESPY_CREATEACCOUNT_NOACCOUNT2)
+			MessageBox(
+				msg,
+				MESSAGEBOX_YESNO,
+				function(value)
+					if value == TRUE then
+						ResetCreateAccountMenu()
+						EnterMenu("menu_multiplayer_gamespy_create_account")
+					end
+				end
+			)
+		end
+	elseif event.id==EVENT_GAMESPY_NICKS_RECEIVED then
+		if NewAccount then
+			NewAccount = false
+			ProfileSave(Save.GetLastSaveSlotUsed(),
+						function()
+							if GameSpyPresence.GetNumValidProfiles() == 0 then
+								MessageBox(
+									GAMESPY_ACCOUNT_NOVALIDPROFILE,
+									MESSAGEBOX_OK,
+									function()
+										StartCreateProfile("menu_multiplayer_gamespy_login")
+									end
+								)
+							else
+								EnterMenu("menu_multiplayer_gamespy_select_profile")
+							end
+						end,
+						entermenu("menu_multiplayer_gamespy_login"))	
+		elseif GameSpyPresence.GetNumValidProfiles() == 0 then
+			MessageBox(
+				GAMESPY_ACCOUNT_NOVALIDPROFILE,
+				MESSAGEBOX_OK,
+				function()
+					StartCreateProfile("menu_multiplayer_gamespy_login")
+				end
+			)
+		else
+			EnterMenu("menu_multiplayer_gamespy_select_profile")
+		end
+	elseif event.id==EVENT_GAMESPY_ERROR then
+		if event.data == GameSpyPresence.GP_LOGIN_BAD_PASSWORD then
+			MessageBox(GAMESPY_ACCOUNT_PASSWORD_AGAIN, MESSAGEBOX_OK, function() EnterPasswordScreen() end)
+		else
+			GameSpyError(event.data, "menu_multiplayer_gamespy_login")
+		end
+	end
+end
+
+
+
+local BuildSelectAccountMenuButtons
+local AccountWindows
+local AnimHandle
+
+local function HideAccountList()
+	for k,v in pairs(AccountWindows) do
+		if v.MaxAlpha then
+			AnimHandle = AnimateWindowAlpha(v,v.MaxAlpha,0.0,0.2,0.0)
+		else
+			AnimHandle = AnimateWindowAlpha(v,1.0,0.0,0.2,0.0)
+		end
+	end
+	wm.GetWindow("downarrow_glow"):HideWindow()
+	wm.GetWindow("downarrow"):HideWindow()
+	wm.GetWindow("uparrow_glow"):HideWindow()
+	wm.GetWindow("uparrow"):HideWindow()
+	AnimateWindowAlpha(wm.GetWindow("gamespytext"),0.0,1.0,0.2,0.2)
+	BuildSelectAccountMenuButtons()
+end
+
+local function ShowAccountList()
+	wm.GetWindow("accountbox"):ShowWindow()
+	for k,v in pairs(AccountWindows) do
+		if v.MaxAlpha then
+			AnimHandle = AnimateWindowAlpha(v,0.0,v.MaxAlpha,0.2,0.2)
+		else
+			AnimHandle = AnimateWindowAlpha(v,0.0,1.0,0.2,0.2)
+		end
+	end
+	AnimateWindowAlpha(wm.GetWindow("gamespytext"),1.0,0.0,0.2,0.0)
+end
+
+
+
+local function StartSelectAccount()
+	if GameSpyPresence.GetNumAccounts() > 0 then
+		GUI:HideMenuButtons()
+		wm.GetWindow("emaillist"):SetSelectedRow(1)
+		ShowAccountList()
+		wm.GetWindow("inputhandler"):SetFocus()
+		GUI:SetHelpButtons(BUTTON_OK, UI_SELECT, BUTTON_BACK, UI_BACK, BUTTON_EXTRA, UI_DELETE)
+	end
+end
+
+local function DeleteAccount()
+	local emailList = wm.GetWindow("emaillist")
+	GameSpyPresence.SetCurrentAccount (emailList:GetSelectedRow())
+	GameSpyPresence.DeleteAccount()
+	
+	local num = GameSpyPresence.GetNumAccounts()
+	emailList:SetNumRows(num)
+	emailList:Refresh()
+	
+	ProfileSave(Save.GetLastSaveSlotUsed(),
+				entermenu("menu_multiplayer_gamespy_login"),
+				entermenu("menu_multiplayer_gamespy_login"))
+	
+	if num == 0 then
+		HideAccountList()
+	end
+end
+
+local function StartCreateNewAccount(defaultemail)
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_EMAIL,
+		TITLE_GAMESPY_ENTEREMAIL,
+		HEADER_GAMESPY_INPUTEMAIL,
+		defaultemail,
+		30,
+		function()
+			if GameSpyPresence.IsEmailValid(InputText) then
+				NewAccount = true
+				ShowThinkingWindow()
+				SelectedEmail = InputText
+				GameSpyPresence.CheckAccount(SelectedEmail)
+			else
+				MessageBox(
+					L("The e-mail\n"..InputText.."\nis not valid. The valid format for an e-mail is username@hostname.com"),
+					MESSAGEBOX_OK,
+					function() end
+				)
+			end
+		end,
+		"menu_multiplayer_gamespy_login",
+		LoginEvents
+	)
+end
+
+
+
+BuildSelectAccountMenuButtons = function(creating)
+	menu_multiplayer_gamespy_login.items = { }
+	if GameSpyPresence.GetNumAccounts() > 0 then
+		menu_multiplayer_gamespy_login.items = { { ICON_GAMESPY_SELECTACCOUNT, function() NewAccount = false; StartSelectAccount(); end, ICON(menu_multiplayer_gamespy_login, "icon_select_account") } }
+	end
+	if GameSpyPresence.GetNumAccounts() < 8 then	
+		table.insert(menu_multiplayer_gamespy_login.items, { ICON_GAMESPY_CREATENEWACCOUNT, function() StartCreateNewAccount() end, ICON(menu_multiplayer_gamespy_login, "icon_create_account") } )
+	end
+	
+	if not creating then
+		GUI:HideMenuButtons()
+		GUI:InitMenuButtons(menu_multiplayer_gamespy_login.items)
+		GUI:ShowMenuButtons()
+		GUI:SetActiveItem(1)
+	end
+end
+
+
+
+function menu_multiplayer_gamespy_login.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	
+	GameSpyPresence.LoadAccountData()
+	
+	BuildSelectAccountMenuButtons(true)
+end
+
+function menu_multiplayer_gamespy_login.init(self)
+	self.parent:init(self)
+
+--	local controller = GUI:GetLastActiveController()
+--	GameSpyPresence.SetControllerId(controller)
+--	GUI:SetMenuController(controller)
+	
+	AnimHandle = nil
+	
+	EventListener = Event:AddListener(LoginEvents, EVENTTYPE_NETWORK)
+	
+	local Layout=
+	{
+		BoxPos=POS(88,105),
+		BoxSize=SIZE(464,220),
+		
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(34),
+		TitleSize=SIZE(20,10),
+		TitlePos=POS(14,9),
+
+		UpArrowCenter=POS(414,28),
+		DownArrowCenter=POS(414,209),
+		
+		ListLeft=2,
+		ListTop=36,
+		ListFont=fontmedium(),
+		ListColor=GetPaletteColor(34),
+		ListNrColor=GetPaletteColor(33),
+		ListSelectedItemColor=GetPaletteColor(14),
+		ListItemColor={0,0,0,0.5*MAX_VERTEXCOLOR_A},
+		ListNumRows=8,
+		RowWidth=460,
+		RowHeight=18,
+		RowPadding=3,
+		
+		NrPos=POS(46, 0),
+		NrSize=SIZE(40, 40),
+		EmailPos=POS(52, 0),
+		EmailSize=SIZE(400, 20),
+		
+		TextFont=fontmedium(),
+		TextPos=POS(15,21),
+		TextSize=SIZE(434,190),
+		TextColor=GetPaletteColor(34)
+	}
+
+	AccountWindows = { }
+	
+	local box = Frame { Name="box", Position=Layout.BoxPos, Size=Layout.BoxSize, ShowBorders=TRUE }
+	local accountbox = Frame { Name="accountbox", Position=POS(0,0), Size=Layout.BoxSize, Parent=box }
+	
+	local w = StaticText { Title=HEADER_SELECT_ACCOUNT, Position=Layout.TitlePos, Size=Layout.TitleSize, Font=Layout.TitleFont, Color=Layout.TitleColor, Parent=accountbox }
+	table.insert(AccountWindows, w)
+	
+	local function MakeArrow(pos, name, iconname)
+		local arrowSize = GetResourceSize(self:getResource(iconname))
+		w = Frame { Name=name, Position=POS(pos[1] - arrowSize[1] / 2, pos[2] - arrowSize[2] / 2), Size=arrowSize, Parent=accountbox }:AttachResource(self:getResource(iconname))
+		table.insert(AccountWindows, w)
+	end
+	
+	MakeArrow(Layout.UpArrowCenter, "uparrow_glow", "scroll_up_glow")
+	MakeArrow(Layout.UpArrowCenter, "uparrow", "scroll_up_icon")
+	MakeArrow(Layout.DownArrowCenter, "downarrow_glow", "scroll_down_glow")
+	MakeArrow(Layout.DownArrowCenter, "downarrow", "scroll_down_icon")
+	
+	for i = 1,8 do
+		w = Frame { Name="listitembg_row"..i, Position=POS(Layout.ListLeft, Layout.ListTop + (Layout.RowHeight+Layout.RowPadding)*(i-1)), Size=SIZE(Layout.RowWidth, Layout.RowHeight), DrawBackgroundColor=TRUE, Color=Layout.ListItemColor, Alpha=0.0, Parent=accountbox }
+		w:SetAlpha(0.0)
+		w.MaxAlpha = 0.5
+		table.insert(AccountWindows, w)
+	end
+	
+	local listboxParams={
+		ListBoxTemplate={Name="emaillist", Parent=accountbox},
+		Left=Layout.ListLeft,
+		Top=Layout.ListTop,
+		LeftPadding=0,
+		RightPadding=0,
+		TopPadding=0,
+		BottomPadding=0,
+		RowWidth=Layout.RowWidth,
+		RowHeight=Layout.RowHeight,
+		RowPadding=Layout.RowPadding,
+		RowTemplate={},
+		RowTemplateType="Button",
+		RowTemplateCust=function(Row, RowNr)
+		end,
+		NumRows=Layout.ListNumRows,
+		Coloumns={
+			[1]={
+			Name="number", -- _row# is added
+			ColoumnTemplate={Position=Layout.NrPos, Size=Layout.NrSize, Font=Layout.ListFont, Color=Layout.ListNrColor, Align=FONTF_RIGHT },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				table.insert(AccountWindows, Coloumn)
+			end
+			},		
+			[2]={
+			Name="email", -- _row# is added
+			ColoumnTemplate={Position=Layout.EmailPos, Size=Layout.EmailSize, Font=Layout.ListFont, Color=Layout.ListColor },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				table.insert(AccountWindows, Coloumn)
+			end
+			},		
+		}
+	}
+
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local number=wm.GetWindow("number_row"..ControlRowNr)
+		local email=wm.GetWindow("email_row"..ControlRowNr)
+		local bg=wm.GetWindow("listitembg_row"..ControlRowNr)
+
+		number:SetTitle(L(RowNr.."."))
+		GameSpyPresence.SetCurrentAccount(RowNr)
+		email:SetTitle(EscapeString(L(GameSpyPresence.GetAccountEmail())))
+		
+		local a,c
+		if RowNr == list:GetSelectedRow() then
+			if AnimHandle and IsAnimationActive(AnimHandle) then
+				a = bg:GetColor(true)[4]
+			else
+				a = 1.0
+			end
+			c = Layout.ListSelectedItemColor
+			bg.MaxAlpha = 1.0
+		else
+			if AnimHandle and IsAnimationActive(AnimHandle) then
+				a = bg:GetColor(true)[4]
+			else
+				a = 0.5
+			end
+			c = Layout.ListItemColor
+			bg.MaxAlpha = 0.5
+		end
+		if PS2 then
+			bg:SetColor({2*c[1]-1,2*c[2]-1,2*c[3]-1,a*MAX_VERTEXCOLOR_A}, false)
+		else
+			bg:SetColor({c[1],c[2],c[3],a*MAX_VERTEXCOLOR_A}, false)
+		end
+	end
+	
+	list.onShowScrollUpArrow=function()
+		wm.GetWindow("uparrow_glow"):ShowWindow()
+		wm.GetWindow("uparrow"):ShowWindow()
+	end
+	
+	list.onShowScrollDownArrow=function()
+		wm.GetWindow("downarrow_glow"):ShowWindow()
+		wm.GetWindow("downarrow"):ShowWindow()
+	end
+	
+	list.onHideScrollUpArrow=function()
+		wm.GetWindow("uparrow_glow"):HideWindow()
+		wm.GetWindow("uparrow"):HideWindow()
+	end
+	
+	list.onHideScrollDownArrow=function()
+		wm.GetWindow("downarrow_glow"):HideWindow()
+		wm.GetWindow("downarrow"):HideWindow()
+	end
+	
+	list:SetNumRows(GameSpyPresence.GetNumAccounts())
+	table.insert(AccountWindows, list)
+	
+	accountbox:HideWindow()
+	
+	local label=StaticText {
+		Title=GAMESPY_ACCOUNT_INTRO, Name="gamespytext",
+		Font=Layout.TextFont, Position=Layout.TextPos, Size=Layout.TextSize, Color=Layout.TextColor, Parent=box,
+	}
+	label:WordWrap()
+	
+	local handler = InputHandler { Name="inputhandler" }
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey == KeyCodes["BUTTON_START"] then
+			ShowThinkingWindow()
+			GameSpyPresence.SetCurrentAccount(list:GetSelectedRow())
+			SelectedEmail = GameSpyPresence.GetAccountEmail()
+			GameSpyPresence.CheckAccount(SelectedEmail)
+		elseif VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			HideAccountList()
+			GUI:SetHelpButtons(BUTTON_OK, UI_SELECT, BUTTON_BACK, UI_BACK)
+		elseif VirtualKey == KeyCodes["BUTTON_X"] then
+			GameSpyPresence.SetCurrentAccount(list:GetSelectedRow())
+			local msg = WStringConcat(GAMESPY_ACCOUNT_DELETE_CONFIRM, L("\n"..GameSpyPresence.GetAccountEmail().."?"))
+			MessageBox(
+				msg,
+				MESSAGEBOX_YESNO,
+				function(value)
+					if value == TRUE then
+						DeleteAccount()
+					end
+				end
+			)
+		elseif VirtualKey == KeyCodes["BUTTON_UP"] then
+			list:MovePrev()
+		elseif VirtualKey == KeyCodes["BUTTON_DOWN"] then
+			list:MoveNext()
+		end
+	end
+
+	CurrentTime = 0
+	Disconnecting = false
+end
+
+function menu_multiplayer_gamespy_login.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+
+function menu_multiplayer_gamespy_login.update(self, time)
+	self.parent:update(self, time)
+
+	local alpha = 1 - 0.20 + math.sin(time * 6) * 0.20
+	wm.GetWindow("uparrow_glow"):SetAlpha(alpha)
+	wm.GetWindow("downarrow_glow"):SetAlpha(alpha)
+
+	if Disconnecting then
+		if CurrentTime==0 then
+			CurrentTime=time
+		end
+		local dt=time-CurrentTime
+		CurrentTime=time
+
+		local res = NetworkConfiguration.Update(dt*1000)
+		if res ~= NetworkConfiguration.RES_WAITING then
+			Disconnecting = false
+			HideThinkingWindow()
+			StopNetwork()
+			EnterMenu("menu_multiplayer_networkconfig")
+		end
+	end
+end
+
+--
+-- CREATE ACCOUNT
+--
+
+menu_multiplayer_gamespy_create_account = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_create_account.options.title = TITLE_GAMESPY_CREATEACCOUNT
+menu_multiplayer_gamespy_create_account.back = function() StartCreateNewAccount(SelectedEmail) end
+
+local CreateAccountSelRow = 2
+local StorePassword
+
+function menu_multiplayer_gamespy_create_account.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	self.items = { }
+end
+
+local function CreateAccount()
+	ShowThinkingWindow()
+	GameSpyPresence.CreateAccount(SelectedEmail, NewProfileName, Password1, StorePassword)
+end
+
+local function CreateAccountEvents(event)
+	HideThinkingWindow()
+	if event.id == EVENT_GAMESPY_USER_CREATED then
+		if GameSpyPresence.GetStorePassword() then
+			GetUserNicks()
+		else
+			GetUserNicks(Password1)
+		end
+	elseif event.id == EVENT_GAMESPY_NICKS_RECEIVED then
+		ProfileSave(Save.GetLastSaveSlotUsed(),
+					entermenu("menu_multiplayer_gamespy_select_profile"),
+					entermenu("menu_multiplayer_gamespy_login"))
+	elseif event.id == EVENT_GAMESPY_ERROR then
+		if event.data == GameSpyPresence.GP_NEWUSER_BAD_NICK then
+			local msg = WStringConcat(GAMESPY_ACCOUNT_PROFILEAVAILABLE1, EscapeString(ConvertToWString(" "..NewProfileName.." ")))
+			msg = WStringConcat(msg, GAMESPY_ACCOUNT_PROFILEAVAILABLE2)
+			MessageBox(
+				msg,
+				MESSAGEBOX_OK,
+				function()
+					ShowVirtualKeyboard(
+						VKMODE_GAMESPY_NICKNAME,
+						TITLE_GAMESPY_ENTERNEWPROFILE,
+						HEADER_GAMESPY_ENTERNEWPROFILE,
+						NewProfileName,
+						20,
+						function() NewProfileName = InputText; CreateAccount(); end,
+						"menu_multiplayer_gamespy_create_account",
+						CreateAccountEvents
+					)
+				end
+			)
+		else
+			GameSpyError(event.data, "menu_multiplayer_gamespy_login")
+		end
+	end
+end
+
+local CreateAccountGetProfileName,CreateAccountGetPassword,CreateAccountConfirmPassword,CreateAccountToggleStorePassword,CreateAccountCheckInputAndCreateAccount
+
+local CreateAccountItems = {
+	{ GAMESPY_ACCOUNTOPTIONS_EMAIL, L"", function() end },
+	{ GAMESPY_ACCOUNTOPTIONS_PROFILENAME, L"", function() CreateAccountGetProfileName() end },
+	{ GAMESPY_ACCOUNTOPTIONS_PASSWORD, L"******", function() CreateAccountGetPassword() end },
+	{ GAMESPY_ACCOUNTOPTIONS_VERIFYPASSWORD, L"******", function() CreateAccountConfirmPassword() end },
+	{ GAMESPY_ACCOUNTOPTIONS_STOREPASSWORD, UI_YES, function() CreateAccountToggleStorePassword() end },
+	{ nil },
+	{ GAMESPY_ACCOUNTOPTIONS_DONE, L"", function() CreateAccountCheckInputAndCreateAccount() end },
+}
+
+
+local CALabel = 1
+local CAValue = 2
+local CAAction = 3
+
+local CAEmail = 1
+local CAProfile = 2
+local CAPassword = 3
+local CAVerifyPassword = 4
+local CAStorePassword = 5
+local CADone = 7
+
+ResetCreateAccountMenu = function()
+	CreateAccountSelRow = 2
+	NewProfileName = nil
+	Password1 = nil
+	Password2 = nil
+	CreateAccountItems[CAProfile][CAValue] = L""
+	CreateAccountItems[CAStorePassword][CAValue] = UI_YES
+end
+
+CreateAccountGetProfileName = function()
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_NICKNAME,
+		TITLE_GAMESPY_ENTERNEWPROFILE,
+		HEADER_GAMESPY_ENTERNEWPROFILE,
+		NewProfileName,
+		20,
+		function()
+			NewProfileName = InputText
+			CreateAccountItems[CAProfile][CAValue] = ConvertToWString(InputText)
+			EnterMenu("menu_multiplayer_gamespy_create_account")
+		end,
+		"menu_multiplayer_gamespy_create_account"
+	)
+end
+
+CreateAccountGetPassword = function()
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_PASSWORD,
+		TITLE_GAMESPY_ENTERPASSWORD,
+		HEADER_GAMESPY_LOGIN_INPUTPASSWORD,
+		nil,
+		30,
+		function()
+			Password1 = InputText
+			EnterMenu("menu_multiplayer_gamespy_create_account")
+		end,
+		"menu_multiplayer_gamespy_create_account"
+	)
+end
+
+CreateAccountConfirmPassword = function()
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_PASSWORD,
+		TITLE_GAMESPY_CONFIRMPASSWORD,
+		HEADER_GAMESPY_LOGIN_CONFIRMPASSWORD,
+		nil,
+		30,
+		function()
+			Password2 = InputText
+			EnterMenu("menu_multiplayer_gamespy_create_account")
+		end,
+		"menu_multiplayer_gamespy_create_account"
+	)
+end
+
+CreateAccountToggleStorePassword = function()
+	CreateAccountItems[CAStorePassword][CAValue] = (CreateAccountItems[CAStorePassword][CAValue] == UI_YES) and UI_NO or UI_YES
+	wm.GetWindow("accountoptions"):Refresh()
+end
+
+CreateAccountCheckInputAndCreateAccount = function()
+	if NewProfileName == nil then
+		MessageBox(GAMESPY_ACCOUNT_PROFILE_NAME, MESSAGEBOX_OK, function(value) end)
+	elseif Password1 == nil or Password2 == nil then
+		MessageBox(GAMESPY_ACCOUNT_ENTERPASSWORD2, MESSAGEBOX_OK, function(value) end)
+	elseif Password1 ~= Password2 then
+		MessageBox(GAMESPY_ACCOUNT_NOMATCH, MESSAGEBOX_OK, function(value) end)
+	else
+		if CreateAccountItems[CAStorePassword][CAValue] == UI_YES then
+			StorePassword = true
+		else
+			StorePassword = false
+		end
+		CreateAccount()
+	end
+end
+
+function menu_multiplayer_gamespy_create_account.init(self)
+	self.parent:init(self)
+	
+	EventListener = Event:AddListener(CreateAccountEvents, EVENTTYPE_NETWORK)
+	
+	local Layout={
+		BoxPos=POS(88,105),
+		BoxSize=SIZE(464,220),
+
+		TitlePos=POS(14,9),
+		TitleSize=SIZE(20,20),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(34),
+
+		ListLeft=2,
+		ListTop=36,
+		ListFont=fontmedium(),
+		RowWidth=460,
+		RowHeight=18,
+		RowPadding=3,
+		ListNumRows=8,
+
+		LabelFontColor = GetPaletteColor(33),
+		OptionFontColor = GetPaletteColor(34),
+
+		LabelPos=POS(50,0),
+		LabelSize=SIZE(328,18),
+		
+		OptionPos=POS(425,0),
+		OptionSize=SIZE(328,18),
+		
+		ListFont = fontmedium(),
+		ListProfileColor=GetPaletteColor(34),
+		ListSelectedItemColor=GetPaletteColor(14),
+		ListItemColor={0,0,0,0.5*MAX_VERTEXCOLOR_A},		
+	}
+
+	local box = Frame { Name="box", Position=Layout.BoxPos, Size=Layout.BoxSize, ShowBorders=TRUE }
+	
+	StaticText { Title=GAMESPY_NEW_ACCOUNT, Position=Layout.TitlePos, Size=Layout.TitleSize, Font=Layout.TitleFont, Color=Layout.TitleColor, Parent=box }
+	
+	for i = 1,8 do
+		local w = Frame { Name="listitembg_row"..i, Position=POS(Layout.ListLeft, Layout.ListTop + (Layout.RowHeight+Layout.RowPadding)*(i-1)), Size=SIZE(Layout.RowWidth, Layout.RowHeight), DrawBackgroundColor=TRUE, Parent=box }
+		local c = Layout.ListItemColor
+		w:SetColor({c[0],c[1],c[2],0.5*MAX_VERTEXCOLOR_A}, false)
+	end
+	
+	local listboxParams={
+	ListBoxTemplate={Name="accountoptions", Parent=box },
+	Left=Layout.ListLeft,
+	Top=Layout.ListTop,
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=640,
+	RowHeight=Layout.RowHeight,
+	RowPadding=Layout.RowPadding,
+	RowTemplate={Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_NONE},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+	end,
+	NumRows=table.getn(CreateAccountItems),
+	Coloumns={
+			[1]={
+			Name="label", -- _row# is added
+			ColoumnTemplate={Position=Layout.LabelPos, Size=Layout.LabelSize, Font=Layout.ListFont, Color=Layout.LabelFontColor },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},		
+
+			[2]={
+			Name="option", -- _row# is added
+			ColoumnTemplate={Position=Layout.OptionPos, Size=Layout.OptionSize, Font=Layout.ListFont, Color=Layout.OptionFontColor, Align=FONTF_RIGHT },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},
+		}
+	}
+
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local label=wm.GetWindow(string.format("label_row%i", RowNr))
+		local option=wm.GetWindow(string.format("option_row%i", RowNr))
+		local bg=wm.GetWindow("listitembg_row"..ControlRowNr)
+		
+		local c,a
+		if RowNr == list:GetSelectedRow() then
+			c = Layout.ListSelectedItemColor
+			a = 1.0
+		else
+			c = Layout.ListItemColor
+			a = 0.5
+		end
+		
+		if PS2 then
+			bg:SetColor({2*c[1]-1,2*c[2]-1,2*c[3]-1,a*MAX_VERTEXCOLOR_A}, false)
+		else
+			bg:SetColor({c[1],c[2],c[3],a*MAX_VERTEXCOLOR_A}, false)
+		end
+
+		if CreateAccountItems[RowNr][CALabel] ~= nil then
+			label:SetTitle(CreateAccountItems[RowNr][CALabel])
+			local value
+			if RowNr == CAStorePassword then
+				option:SetTitle(CreateAccountItems[RowNr][CAValue])
+			else
+				option:SetTitle(EscapeString(CreateAccountItems[RowNr][CAValue]))
+			end
+			if RowNr == CAEmail then
+				label:SetColor(Layout.OptionFontColor, false)
+			end
+		end
+	end
+
+	list:SetNumRows(table.getn(CreateAccountItems))
+	list:SetSelectedRow(CreateAccountSelRow)
+	
+	CreateAccountItems[CAEmail][CAValue] = ConvertToWString(SelectedEmail)
+	
+	local handler=InputHandler{ Name="inputhandler" }
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey==KeyCodes["BUTTON_START"] then
+			CreateAccountSelRow = list:GetSelectedRow()
+			CreateAccountItems[list:GetSelectedRow()][CAAction]()
+		elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+			menu_multiplayer_gamespy_create_account.back()
+		elseif VirtualKey==KeyCodes["BUTTON_UP"] then
+			if list:GetSelectedRow() > 2 then
+				repeat
+					list:MovePrev()
+				until CreateAccountItems[list:GetSelectedRow()][CALabel] ~= nil
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_DOWN"] then
+			repeat
+				list:MoveNext()
+			until CreateAccountItems[list:GetSelectedRow()][CALabel] ~= nil
+		elseif VirtualKey==KeyCodes["BUTTON_LEFT"] or VirtualKey==KeyCodes["BUTTON_RIGHT"] then
+			local selectedRow = list:GetSelectedRow()
+			if selectedRow == CAStorePassword then
+				CreateAccountToggleStorePassword()
+			end
+		end
+	end
+
+	handler:SetFocus()
+end
+
+function menu_multiplayer_gamespy_create_account.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+
+function menu_multiplayer_gamespy_create_account.update(self, time)
+	self.parent:update(self,time)
+end
+
+--
+-- ACCOUNT OPTIONS
+--
+
+menu_multiplayer_gamespy_account_options = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_account_options.options.title = TITLE_GAMESPY_CHANGEOPTIONS
+menu_multiplayer_gamespy_account_options.back = entermenu("menu_multiplayer_gamespy_select_profile")
+
+local AccountOptionsSelRow = 2
+local NewPassword1
+local NewPassword2
+
+function menu_multiplayer_gamespy_account_options.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	self.items = { }
+end
+
+local AccountOptionsGetPassword,AccountOptionsConfirmPassword,AccountOptionsToggleStorePassword,AccountOptionsCheckAndStoreOptions
+
+local AccountOptionsItems = {
+	{ GAMESPY_ACCOUNTOPTIONS_EMAIL, L"", function() end },
+	{ GAMESPY_ACCOUNTOPTIONS_PASSWORD, L"******", function() AccountOptionsGetPassword() end },
+	{ GAMESPY_ACCOUNTOPTIONS_VERIFYPASSWORD, L"******", function() AccountOptionsConfirmPassword() end },
+	{ GAMESPY_ACCOUNTOPTIONS_STOREPASSWORD, UI_YES, function() AccountOptionsToggleStorePassword() end },
+	{ nil },
+	{ nil },
+	{ GAMESPY_ACCOUNTOPTIONS_DONE, L"", function() AccountOptionsCheckAndStoreOptions() end },
+}
+
+local AOLabel = 1
+local AOValue = 2
+local AOAction = 3
+
+local AOEmail = 1
+local AOPassword = 2
+local AOVerifyPassword = 3
+local AOStorePassword = 4
+local AODone = 7
+
+
+AccountOptionsEvents = function(event)
+	HideThinkingWindow()
+	if event.id == EVENT_GAMESPY_CONNECTED then
+		GameSpyPresence.ChangeAccountPassword(Password1)
+		GameSpyPresence.Logout()
+		if GameSpyPresence.GetStorePassword() then
+			ProfileSave(Save.GetLastSaveSlotUsed(),
+						entermenu("menu_multiplayer_gamespy_select_profile"),
+						entermenu("menu_multiplayer_gamespy_account_options"))
+		else		
+			EnterMenu("menu_multiplayer_gamespy_select_profile")
+		end
+	elseif event.id==EVENT_GAMESPY_ERROR then
+		GameSpyError(event.data, "menu_multiplayer_select_profile")
+	end
+end
+
+ResetAccountOptionsMenu = function()
+	AccountOptionsSelRow = 2
+	if GameSpyPresence.GetStorePassword() then
+		AccountOptionsItems[AOStorePassword][AOValue] = UI_YES
+	else
+		AccountOptionsItems[AOStorePassword][AOValue] = UI_NO
+	end	
+	NewPassword1 = ""
+	NewPassword2 = ""
+end
+
+AccountOptionsGetPassword = function()
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_PASSWORD,
+		TITLE_GAMESPY_ENTERPASSWORD,
+		HEADER_GAMESPY_LOGIN_INPUTPASSWORD,
+		nil,
+		30,
+		function()
+			NewPassword1 = InputText
+			EnterMenu("menu_multiplayer_gamespy_account_options")
+		end,
+		"menu_multiplayer_gamespy_account_options"
+	)
+end
+
+AccountOptionsConfirmPassword = function()
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_PASSWORD,
+		TITLE_GAMESPY_CONFIRMPASSWORD,
+		HEADER_GAMESPY_LOGIN_CONFIRMPASSWORD,
+		nil,
+		30,
+		function()
+			NewPassword2 = InputText
+			EnterMenu("menu_multiplayer_gamespy_account_options")
+		end,
+		"menu_multiplayer_gamespy_account_options"
+	)
+end
+
+AccountOptionsCheckAndStoreOptions = function()
+	local optionsChanged = false
+	local storePassword
+	
+	if AccountOptionsItems[AOStorePassword][AOValue] == UI_YES then
+		storePassword = true
+	else
+		storePassword = false
+	end
+
+	if storePassword ~= GameSpyPresence.GetStorePassword() then
+		optionsChanged = true
+		GameSpyPresence.SetStorePassword(storePassword)
+	end
+
+	if NewPassword1 ~= "" and NewPassword2 ~= "" then
+		if NewPassword1 == NewPassword2 then
+			Password1 = NewPassword1
+			GameSpyPresence.SetCurrentProfile(1)
+			GameSpyPresence.Login()
+			ShowThinkingWindow()
+		else
+			MessageBox(GAMESPY_ACCOUNT_NOMATCH, MESSAGEBOX_OK, function(value) end)
+		end
+	else
+		if optionsChanged then
+			ProfileSave(Save.GetLastSaveSlotUsed(),
+						entermenu("menu_multiplayer_gamespy_select_profile"),
+						entermenu("menu_multiplayer_gamespy_account_options"))
+		else		
+			EnterMenu("menu_multiplayer_gamespy_select_profile")
+		end
+	end	
+end
+
+AccountOptionsToggleStorePassword = function()
+	AccountOptionsItems[AOStorePassword][AOValue] = (AccountOptionsItems[AOStorePassword][AOValue] == UI_YES) and UI_NO or UI_YES
+	wm.GetWindow("accountoptions"):Refresh()
+end
+
+function menu_multiplayer_gamespy_account_options.init(self)
+	self.parent:init(self)
+	EventListener = Event:AddListener(AccountOptionsEvents, EVENTTYPE_NETWORK)
+
+	local Layout={
+		BoxPos=POS(88,105),
+		BoxSize=SIZE(464,220),
+
+		TitlePos=POS(14,9),
+		TitleSize=SIZE(20,20),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(34),
+
+		ListLeft=2,
+		ListTop=36,
+		ListFont=fontmedium(),
+		RowWidth=460,
+		RowHeight=18,
+		RowPadding=3,
+		ListNumRows=8,
+
+		LabelFontColor = GetPaletteColor(33),
+		OptionFontColor = GetPaletteColor(34),
+
+		LabelPos=POS(50,0),
+		LabelSize=SIZE(328,18),
+		
+		OptionPos=POS(425,0),
+		OptionSize=SIZE(328,18),
+		
+		ListFont = fontmedium(),
+		ListProfileColor=GetPaletteColor(34),
+		ListSelectedItemColor=GetPaletteColor(14),
+		ListItemColor={0,0,0,0.5*MAX_VERTEXCOLOR_A},		
+	}
+
+	local box = Frame { Name="box", Position=Layout.BoxPos, Size=Layout.BoxSize, ShowBorders=TRUE }
+	
+	StaticText { Title=HEADER_ACCOUNT_OPTIONS, Position=Layout.TitlePos, Size=Layout.TitleSize, Font=Layout.TitleFont, Color=Layout.TitleColor, Parent=box }
+	
+	for i = 1,8 do
+		local w = Frame { Name="listitembg_row"..i, Position=POS(Layout.ListLeft, Layout.ListTop + (Layout.RowHeight+Layout.RowPadding)*(i-1)), Size=SIZE(Layout.RowWidth, Layout.RowHeight), DrawBackgroundColor=TRUE, Parent=box }
+		local c = Layout.ListItemColor
+		w:SetColor({c[0],c[1],c[2],0.5*MAX_VERTEXCOLOR_A}, false)
+	end
+	
+	local listboxParams={
+	ListBoxTemplate={Name="accountoptions", Parent=box },
+	Left=Layout.ListLeft,
+	Top=Layout.ListTop,
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=640,
+	RowHeight=Layout.RowHeight,
+	RowPadding=Layout.RowPadding,
+	RowTemplate={Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_NONE},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+	end,
+	NumRows=table.getn(AccountOptionsItems),
+	Coloumns={
+			[1]={
+			Name="label", -- _row# is added
+			ColoumnTemplate={Position=Layout.LabelPos, Size=Layout.LabelSize, Font=Layout.ListFont, Color=Layout.LabelFontColor },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},		
+
+			[2]={
+			Name="option", -- _row# is added
+			ColoumnTemplate={Position=Layout.OptionPos, Size=Layout.OptionSize, Font=Layout.ListFont, Color=Layout.OptionFontColor, Align=FONTF_RIGHT },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},
+		}
+	}
+
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local label=wm.GetWindow(string.format("label_row%i", RowNr))
+		local option=wm.GetWindow(string.format("option_row%i", RowNr))
+		local bg=wm.GetWindow("listitembg_row"..ControlRowNr)
+		
+		local c,a
+		if RowNr == list:GetSelectedRow() then
+			c = Layout.ListSelectedItemColor
+			a = 1.0
+		else
+			c = Layout.ListItemColor
+			a = 0.5
+		end
+		
+		if PS2 then
+			bg:SetColor({2*c[1]-1,2*c[2]-1,2*c[3]-1,a*MAX_VERTEXCOLOR_A}, false)
+		else
+			bg:SetColor({c[1],c[2],c[3],a*MAX_VERTEXCOLOR_A}, false)
+		end
+--[[		if RowNr == list:GetSelectedRow() then
+			bg:SetColor(Layout.ListSelectedItemColor, false)
+		else
+			local c = Layout.ListItemColor
+			bg:SetColor({c[1],c[2],c[3],0.5*MAX_VERTEXCOLOR_A}, false)
+		end--]]
+
+		if AccountOptionsItems[RowNr][AOLabel] ~= nil then
+			label:SetTitle(AccountOptionsItems[RowNr][AOLabel])
+			if RowNr == AOStorePassword then
+				option:SetTitle(AccountOptionsItems[RowNr][AOValue])
+			else
+				option:SetTitle(EscapeString(AccountOptionsItems[RowNr][AOValue]))
+			end
+			if RowNr == AOEmail then
+				label:SetColor(Layout.OptionFontColor, false)
+			end
+		end
+	end
+
+	list:SetNumRows(table.getn(AccountOptionsItems))
+	list:SetSelectedRow(AccountOptionsSelRow)
+	
+	AccountOptionsItems[AOEmail][AOValue] = ConvertToWString(GameSpyPresence.GetAccountEmail())
+	if GameSpyPresence.GetStorePassword() then
+		AccountOptionsItems[AOStorePassword][AOValue] = UI_YES
+	else
+		AccountOptionsItems[AOStorePassword][AOValue] = UI_NO
+	end
+	
+	local handler=InputHandler{ Name="inputhandler" }
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey==KeyCodes["BUTTON_START"] then
+			AccountOptionsSelRow = list:GetSelectedRow()
+			AccountOptionsItems[list:GetSelectedRow()][AOAction]()
+		elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+			menu_multiplayer_gamespy_account_options.back()
+		elseif VirtualKey==KeyCodes["BUTTON_UP"] then
+			if list:GetSelectedRow() > 2 then
+				repeat
+					list:MovePrev()
+				until AccountOptionsItems[list:GetSelectedRow()][AOLabel] ~= nil
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_DOWN"] then
+			repeat
+				list:MoveNext()
+			until AccountOptionsItems[list:GetSelectedRow()][AOLabel] ~= nil
+		elseif VirtualKey==KeyCodes["BUTTON_LEFT"] or VirtualKey==KeyCodes["BUTTON_RIGHT"] then
+			local selectedRow = list:GetSelectedRow()
+			if selectedRow == AOStorePassword then
+				AccountOptionsToggleStorePassword()
+			end
+		end
+	end
+
+	handler:SetFocus()
+end
+
+function menu_multiplayer_gamespy_account_options.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+
+function menu_multiplayer_gamespy_account_options.update(self, time)
+	self.parent:update(self,time)
+end
+
+--
+-- SELECT PROFILE
+--
+
+menu_multiplayer_gamespy_select_profile = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_select_profile.options.title = TITLE_GAMESPY_SELECTPROFILE
+menu_multiplayer_gamespy_select_profile.back = entermenu("menu_multiplayer_gamespy_login")
+
+local ListActive
+local CreateProfileState
+local ProfileCreated
+local BuildProfileMenuButtons
+
+local CREATE_PROFILE = 1
+local REGISTER_UNICK = 2
+
+--[[
+	Profile creation:
+	1. Get new profile name
+	2. Try to create a new profile using that name
+	3a. If successful, set unique nick
+	3b. If a profile with the same name already exists, find that profile and login with it, then try to set unique nick
+	4a. If unique nick was set successfully, go to profile selection menu
+	4b. If unique nick was not set successfully, start again from step 1.
+--]]
+	
+local function CreateProfile()
+	ShowThinkingWindow()
+	CreateProfileState = CREATE_PROFILE
+--[[	local pidx = GameSpyPresence.FindProfile(NewProfileName)
+	if pidx ~= 0 then
+		-- A profile with this name already exists; skip profile creation and try to set unique nick
+		CreateProfileState = REGISTER_UNICK
+		GameSpyPresence.SetCurrentProfile(pidx)
+		GameSpyPresence.Login()
+	else--]]
+	if not GameSpyPresence.IsUserLoggedIn() then
+		-- Need to login with an existing profile before creating a new profile!
+		GameSpyPresence.SetCurrentProfile(1)
+		GameSpyPresence.Login()
+	else
+		GameSpyPresence.CreateProfile(NewProfileName, connectionType)	
+	end
+end
+
+local function CreateProfileEvents(event)
+	if event.id == EVENT_GAMESPY_PROFILE_CREATED then
+		CreateProfileState = REGISTER_UNICK
+		ProfileCreated = true
+		GameSpyPresence.Logout()
+		-- The new profile is already set as the current profile
+		GameSpyPresence.Login()
+	elseif event.id == EVENT_GAMESPY_CONNECTED then
+		if CreateProfileState == CREATE_PROFILE then
+			GameSpyPresence.CreateProfile(NewProfileName, connectionType)
+		elseif CreateProfileState == DELETE_FAILED_PROFILE then
+			GameSpyPresence.DeleteProfile()
+		else
+			GameSpyPresence.RegisterUniqueNick(NewProfileName)
+		end
+	elseif event.id == EVENT_GAMESPY_UNIQUENICK_REGISTERED then
+		GameSpyPresence.Logout()
+		if GameSpyPresence.GetStorePassword() then
+			GetUserNicks()
+		else
+			GetUserNicks(Password1)
+		end			
+	elseif event.id == EVENT_GAMESPY_NICKS_RECEIVED then
+		HideThinkingWindow()
+		EnterMenu("menu_multiplayer_gamespy_select_profile")
+	elseif event.id == EVENT_GAMESPY_ERROR then
+		if event.data == GameSpyPresence.GP_NEWPROFILE_BAD_NICK then
+			-- A profile with the same name already exists; if it belongs to the current account, login and try to set the unique nick
+			CreateProfileState = REGISTER_UNICK
+			GameSpyPresence.Logout()
+			local profnum = GameSpyPresence.FindProfile(NewProfileName)
+			if profnum == -1 then
+				-- This should not happen
+				local msg = WStringConcat(GAMESPY_ACCOUNT_PROFILEAVAILABLE1, ConvertToWString(" "..NewProfileName.." "))
+				msg = WStringConcat(msg, GAMESPY_ACCOUNT_PROFILEAVAILABLE2)
+				MessageBox(
+					msg,
+					MESSAGEBOX_OK,
+					function()
+						StartCreateProfile("menu_multiplayer_gamespy_select_profile")
+					end
+				)
+			else
+				GameSpyPresence.SetCurrentProfile(profnum)
+				GameSpyPresence.Login()
+			end
+		elseif event.data == GameSpyPresence.GP_UNIQUENICK_RESERVED then
+			HideThinkingWindow()
+			if ProfileCreated then
+				-- Delete the profile only if it was created by us (see above)
+				CreateProfileState = DELETE_FAILED_PROFILE
+				GameSpyPresence.Logout()
+				GameSpyPresence.SetCurrentProfile(GameSpyPresence.FindProfile(NewProfileName))
+				GameSpyPresence.Login()
+				--GameSpyPresence.DeleteProfile()
+			end
+			local msg = WStringConcat(GAMESPY_ACCOUNT_PROFILEAVAILABLE1, ConvertToWString("\n"..NewProfileName.."\n"))
+			msg = WStringConcat(msg, GAMESPY_ACCOUNT_PROFILEAVAILABLE2)
+			MessageBox(
+				msg,
+				MESSAGEBOX_OK,
+				function()
+					-- Just stay in the virtual keyboard screen
+					--StartCreateProfile("menu_multiplayer_gamespy_select_profile")
+				end
+			)
+		else
+			GameSpyError(event.data, "menu_multiplayer_gamespy_select_profile")
+		end
+	end
+end
+
+local function SelectProfileEvents(event)
+	HideThinkingWindow()
+	if event.id == EVENT_GAMESPY_CONNECTED then
+		if DeletingProfile then
+			DeletingProfile = false
+			local list = wm.GetWindow("profilelist")
+			GameSpyPresence.SetCurrentProfile(list:GetSelectedRow())
+			GameSpyPresence.DeleteProfile()
+			
+			-- Clear the background of the deleted profile row if needed
+			local numprofiles = GameSpyPresence.GetNumValidProfiles()
+			if numprofiles < 8 and list:GetSelectedRow() == numprofiles + 1 then
+				wm.GetWindow("listitembg_row"..(numprofiles+1)):SetColor({0,0,0,0.5*MAX_VERTEXCOLOR_A}, false)
+			end
+			list:SetNumRows(numprofiles)
+			if numprofiles == 1 then
+				GUI:SetHelpButtons(BUTTON_BACK, UI_BACK, BUTTON_OK, UI_SELECT)
+			end
+			list:Refresh()
+		else
+			GUI:EnableOnlineOptionsMenu(true)
+			GameSpyUpdateStatus()
+			EnterMenu("menu_multiplayer_gamespy")
+		end
+	elseif event.id==EVENT_GAMESPY_ERROR then
+		GameSpyError(event.data, "menu_multiplayer_gamespy_select_profile")
+	end
+end
+
+local function Login()
+	GameSpyPresence.SetCurrentProfile(wm.GetWindow("profilelist"):GetSelectedRow())
+	GameSpyPresence.Login()
+	ShowThinkingWindow()
+end
+
+local function StartSelectProfile()
+	ListActive = true
+	if GameSpyPresence.GetNumProfiles() > 1 then
+		GUI:SetHelpButtons(BUTTON_BACK, UI_BACK, BUTTON_OK, UI_SELECT, BUTTON_EXTRA, UI_DELETE)
+	else
+		GUI:SetHelpButtons(BUTTON_BACK, UI_BACK, BUTTON_OK, UI_SELECT)
+	end
+
+	GUI:HideMenuButtons()
+	wm.GetWindow("profilelist"):SetSelectedRow(1)
+	wm.GetWindow("profilelist"):Refresh()
+	wm.GetWindow("inputhandler"):ShowWindow()
+	wm.GetWindow("inputhandler"):SetFocus()
+end
+
+StartCreateProfile = function(backmenu)
+	ProfileCreated = false
+	ShowVirtualKeyboard(
+		VKMODE_GAMESPY_NICKNAME,
+		TITLE_GAMESPY_ENTERPROFILENAME,
+		HEADER_GAMESPY_ENTERPROFILENAME,
+		nil,
+		20,
+		function() NewProfileName = InputText; CreateProfile(); end,
+		backmenu,
+		CreateProfileEvents
+	)
+end
+
+local function DeleteProfile()
+	DeletingProfile = true
+	Login()
+end
+
+BuildProfileMenuButtons = function()
+	GUI:HideMenuButtons()
+	
+	menu_multiplayer_gamespy_select_profile.items = {
+		{ ICON_GAMESPY_LOGIN_SELECTPROFILE, function() StartSelectProfile() end, ICON(menu_multiplayer_gamespy_select_profile, "icon_select_player") },
+	}
+	
+	if GameSpyPresence.CanCreateProfile() then	
+		table.insert(menu_multiplayer_gamespy_select_profile.items, { ICON_GAMESPY_LOGIN_CREATENEWPROFILE, function() StartCreateProfile("menu_multiplayer_gamespy_select_profile") end, ICON(menu_multiplayer_gamespy_select_profile, "icon_add_player") } )
+	end
+	
+	table.insert(menu_multiplayer_gamespy_select_profile.items, { ICON_GAMESPY_LOGIN_ACCOUNTOPTIONS, function() ResetAccountOptionsMenu() EnterMenu("menu_multiplayer_gamespy_account_options") end, ICON(menu_multiplayer_gamespy_select_profile, "icon_options") } )
+	
+	GUI:InitMenuButtons(menu_multiplayer_gamespy_select_profile.items)
+	GUI:ShowMenuButtons()
+	GUI:SetActiveItem(1)
+end
+
+function menu_multiplayer_gamespy_select_profile.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	
+	BuildProfileMenuButtons()
+end
+
+function menu_multiplayer_gamespy_select_profile.init(self)
+	self.parent:init(self)
+	
+	ListActive = false
+	EventListener = Event:AddListener(SelectProfileEvents, EVENTTYPE_NETWORK)
+	
+	local Layout={
+		BoxPos=POS(88,105),
+		BoxSize=SIZE(464,220),
+
+		UpArrowCenter=POS(414,28),
+		DownArrowCenter=POS(414,209),
+
+		TitlePos=POS(14,9),
+		TitleSize=SIZE(20,20),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(34),
+		
+		ListLeft=2,
+		ListTop=36,
+		ListFont=fontmedium(),
+		RowWidth=460,
+		RowHeight=18,
+		RowPadding=3,
+		ListNumRows=8,
+
+		NrPos=POS(46,0),
+		NrSize=SIZE(20,18),
+		ListNrColor=GetPaletteColor(33),
+		ProfilePos=POS(50,0),
+		ProfileSize=SIZE(328,18),
+		ListProfileColor=GetPaletteColor(34),
+		ListSelectedItemColor=GetPaletteColor(14),
+		ListItemColor={0,0,0,0.5*MAX_VERTEXCOLOR_A},		
+	}
+
+	local box = Frame { Name="box", Position=Layout.BoxPos, Size=Layout.BoxSize, ShowBorders=TRUE }
+	
+	StaticText { Title=HEADER_SELECT_PROFILE, Position=Layout.TitlePos, Size=Layout.TitleSize, Font=Layout.TitleFont, Color=Layout.TitleColor, Parent=box }
+	local function MakeArrow(pos, name, iconname)
+		local arrowSize = GetResourceSize(self:getResource(iconname))
+		Frame { Name=name, Position=POS(pos[1] - arrowSize[1] / 2, pos[2] - arrowSize[2] / 2), Size=arrowSize, Parent=box }:AttachResource(self:getResource(iconname))
+	end
+	
+	MakeArrow(Layout.UpArrowCenter, "uparrow_glow", "scroll_up_glow")
+	MakeArrow(Layout.UpArrowCenter, "uparrow", "scroll_up_icon")
+	MakeArrow(Layout.DownArrowCenter, "downarrow_glow", "scroll_down_glow")
+	MakeArrow(Layout.DownArrowCenter, "downarrow", "scroll_down_icon")
+	
+	for i = 1,8 do
+		local w = Frame { Name="listitembg_row"..i, Position=POS(Layout.ListLeft, Layout.ListTop + (Layout.RowHeight+Layout.RowPadding)*(i-1)), Size=SIZE(Layout.RowWidth, Layout.RowHeight), DrawBackgroundColor=TRUE, Parent=box }
+		local c = Layout.ListItemColor
+		w:SetColor({c[0],c[1],c[2],0.5*MAX_VERTEXCOLOR_A}, false)
+	end
+	
+	local listboxParams={
+		ListBoxTemplate={Name="profilelist", Parent=box},
+		Left=Layout.ListLeft,
+		Top=Layout.ListTop,
+		LeftPadding=0,
+		RightPadding=0,
+		TopPadding=0,
+		BottomPadding=0,
+		RowWidth=Layout.RowWidth,
+		RowHeight=Layout.RowHeight,
+		RowPadding=Layout.RowPadding,
+		RowTemplate={},
+		RowTemplateType="Button",
+		RowTemplateCust=function(Row, RowNr)
+		end,
+		NumRows=Layout.ListNumRows,
+		Coloumns={
+			[1]={
+			Name="number", -- _row# is added
+			ColoumnTemplate={Position=Layout.NrPos, Size=Layout.NrSize, Font=Layout.ListFont, Color=Layout.ListNrColor, Align=FONTF_RIGHT },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},		
+
+			[2]={
+			Name="profile", -- _row# is added
+			ColoumnTemplate={Position=Layout.ProfilePos, Size=Layout.ProfileSize, Font=Layout.ListFont, Color=Layout.ListProfileColor },
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},
+		}
+	}
+
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local nr=wm.GetWindow("number_row"..ControlRowNr)
+		local profile=wm.GetWindow("profile_row"..ControlRowNr)
+		local bg=wm.GetWindow("listitembg_row"..ControlRowNr)
+		
+		nr:SetTitle(L(RowNr.."."))
+		GameSpyPresence.SetCurrentProfile(RowNr)
+		profile:SetTitle(EscapeString(L(GameSpyPresence.GetProfileUniqueNick())))
+
+		local c,a
+		if ListActive and RowNr == list:GetSelectedRow() then
+			c = Layout.ListSelectedItemColor
+			a = 1.0
+		else
+			c = Layout.ListItemColor
+			a = 0.5
+		end
+		
+		if PS2 then
+			bg:SetColor({2*c[1]-1,2*c[2]-1,2*c[3]-1,a*MAX_VERTEXCOLOR_A}, false)
+		else
+			bg:SetColor({c[1],c[2],c[3],a*MAX_VERTEXCOLOR_A}, false)
+		end
+--[[		if ListActive and RowNr == list:GetSelectedRow() then
+			bg:SetColor(Layout.ListSelectedItemColor, false)
+		else
+			local c = Layout.ListItemColor
+			bg:SetColor({c[1],c[2],c[3],0.5*MAX_VERTEXCOLOR_A}, false)
+		end--]]
+	end
+	
+	list.onShowScrollUpArrow=function()
+		wm.GetWindow("uparrow_glow"):ShowWindow()
+		wm.GetWindow("uparrow"):ShowWindow()
+	end
+	
+	list.onShowScrollDownArrow=function()
+		wm.GetWindow("downarrow_glow"):ShowWindow()
+		wm.GetWindow("downarrow"):ShowWindow()
+	end
+	
+	list.onHideScrollUpArrow=function()
+		wm.GetWindow("uparrow_glow"):HideWindow()
+		wm.GetWindow("uparrow"):HideWindow()
+	end
+	
+	list.onHideScrollDownArrow=function()
+		wm.GetWindow("downarrow_glow"):HideWindow()
+		wm.GetWindow("downarrow"):HideWindow()
+	end
+
+	list:SetNumRows(GameSpyPresence.GetNumValidProfiles())
+
+	local listhandler=InputHandler{ Name="inputhandler" }
+	listhandler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey==KeyCodes["BUTTON_START"] then
+			Login()
+		elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+			ListActive = false
+			list:Refresh()
+			listhandler:HideWindow()
+			BuildProfileMenuButtons()
+			GUI:SetHelpButtons(BUTTON_BACK, UI_BACK, BUTTON_OK, UI_SELECT)
+		elseif VirtualKey==KeyCodes["BUTTON_X"] then
+			if GameSpyPresence.GetNumProfiles() > 1 then
+				GameSpyPresence.SetCurrentProfile(list:GetSelectedRow())
+				local msg = WStringConcat(GAMESPY_PROFILE_DELETE_CONFIRM, L("\n"..GameSpyPresence.GetAccountProfileName().."?"))
+				MessageBox(msg, MESSAGEBOX_YESNO, function(value) if value == TRUE then DeleteProfile() end end)
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_UP"] then
+			list:MovePrev()
+		elseif VirtualKey==KeyCodes["BUTTON_DOWN"] then
+			list:MoveNext()
+		end
+	end
+
+	listhandler:HideWindow()
+end
+
+function menu_multiplayer_gamespy_select_profile.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+
+function menu_multiplayer_gamespy_select_profile.update(self, time)
+	self.parent:update(self, time)
+
+	local alpha = 1 - 0.20 + math.sin(time * 6) * 0.20
+	wm.GetWindow("uparrow_glow"):SetAlpha(alpha)
+	wm.GetWindow("downarrow_glow"):SetAlpha(alpha)
+end

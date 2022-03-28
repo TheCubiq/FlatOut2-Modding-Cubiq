@@ -1,0 +1,26 @@
+roads_size = { 512,256 }
+roads = {
+	
+	amateur_1 = { 3, 3, 91, 78 },
+
+	amateur_beginner = { 97, 3, 29, 53 },
+
+	beginner_1 = { 3, 84, 125, 126 },
+	beginner_2 = { 130, 3, 103, 116 },
+	beginner_3 = { 267, 3, 87, 113 },
+	beginner_4 = { 358, 3, 102, 116 },
+
+	extra_1 = { 128, 122, 36, 102 },
+
+-- cup overview roads
+
+	cup_overview_road_1 = { 167, 122, 59, 10 },
+	cup_overview_road_2 = { 167, 135, 49, 7 },
+	cup_overview_road_3 = { 167, 145, 53, 7 },
+	cup_overview_road_4 = { 167, 155, 47, 7 },
+	cup_overview_road_5 = { 167, 165, 58, 8 },
+	cup_overview_road_6 = { 167, 176, 49, 9 },
+	cup_overview_road_7 = { 167, 188, 53, 7 },
+	cup_overview_road_8 = { 167, 198, 48, 7 },
+
+}

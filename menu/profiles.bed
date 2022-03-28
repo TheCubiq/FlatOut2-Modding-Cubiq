@@ -1,0 +1,11 @@
+profiles_size = { 512,512 }
+profiles = {
+
+	card = { 3, 3, 411, 260 },
+	picture = { 3, 268, 118, 151 },
+	blue_stamp = { 126, 267, 91, 91 },
+	green_stamp = { 222, 267, 92, 91 },
+	red_stamp = { 319, 267, 91, 92 },
+
+
+}

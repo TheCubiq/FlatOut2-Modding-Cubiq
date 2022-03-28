@@ -1,0 +1,64 @@
+control_keys_size = { 256,128 }
+control_keys = {
+
+	ps2_square = { 0, 0, 17, 17 },
+	ps2_cross = { 17, 0, 17, 17 },
+	ps2_circle = { 34, 0, 17, 17 },
+	ps2_triangle = { 51, 0, 17, 17 },
+
+	ps2_left = { 68, 1, 15, 10 },
+	ps2_right = { 86, 1, 15, 10 },
+	ps2_up = { 111, 0, 10, 15 },
+	ps2_down = { 111, 18, 10, 15 },
+	ps2_left_right = { 68, 1, 33, 10 },
+	ps2_up_down = { 111, 0, 10, 33 },
+
+	ps2_select = { 121, 0, 13, 9 },
+	ps2_start = { 69, 30, 15, 9 },
+
+	ps2_l1 = {  169, 2, 28, 14 },
+	ps2_l2 = {  199, 2, 28, 19 },
+	ps2_r1 = {  199, 25, 28, 14 },
+	ps2_r2 = {  169, 21, 28, 19 },
+
+	xbox_a = {  0, 17, 17, 17 },
+	xbox_b = {  17, 17, 17, 17 },
+	xbox_x = {  34, 17, 17, 17 },
+	xbox_y = {  51, 17, 17, 17 },
+	xbox_black = {  69, 11, 17, 17 },
+	xbox_white = {  86, 11, 17, 17 },
+	xbox_trig_l = {  173, 2, 14, 14 },
+	xbox_trig_r = {  202, 25, 14, 14 },
+
+	ingame_options_icon_replay = {  0, 40, 41, 44 },
+	ingame_options_icon_restart_race = {  41, 40, 41, 44 },
+	ingame_options_icon_sound_options = {  82, 40, 41, 44 },
+	ingame_options_icon_quit = {  123, 40, 41, 44 },
+	ingame_options_icon_back_to_race = {  164, 40, 41, 44 },
+	ingame_options_icon_fast_forward = {  205, 40, 41, 44 },
+	ingame_options_icon_rewind = {  0, 85, 41, 43 },
+	ingame_options_icon_play = {  41, 85, 41, 43 },
+	ingame_options_icon_stop = {  82, 85, 41, 43 },
+	ingame_options_icon_pause = {  123, 85, 41, 43 },
+	ingame_options_icon_slow = {  164, 85, 41, 43 },
+
+	ingame_options_icon_glow = {  213, 85, 43, 43 },
+	
+	ingame_scroll_up_icon =		{  122, 13, 9, 8 },
+	ingame_scroll_down_icon =	{  122, 22, 9, 8 }, 
+	ingame_scroll_up_glow =		{  133, 11, 17, 15 },
+	ingame_scroll_down_glow = 	{  133, 25, 17, 15 },
+
+	ingame_scroll_left_icon =	{  239, 22, 8, 9 },
+	ingame_scroll_right_icon =	{  248, 22, 8, 9 }, 
+	ingame_scroll_left_glow =	{  152, 19, 15, 17 },
+	ingame_scroll_right_glow = 	{  151, 1, 15, 17 },
+
+	ingame_options_backdrop_middle = {  234, 0, 22, 20 },
+	ingame_options_ang_r =		 { 245, 0, 11, 20 },
+	ingame_options_ang_l = 		 { 234, 0, 11, 20 },
+	
+	ingame_options_arrow_left = {  103, 5, 7, 13 },
+	ingame_options_arrow_right = {  103, 19, 7, 13 },
+
+}

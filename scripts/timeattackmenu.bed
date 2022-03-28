@@ -1,0 +1,44 @@
+--///////////////////////////////////////////////////////////////////////////
+--// TimeAttackMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 15.4.2005 11:53:43
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+menu_singleplayer_timeattack = CreateMenuFromTemplate("template_basic")
+
+
+local menu=menu_singleplayer_timeattack
+
+menu.options.title=L"TIME ATTACK"
+menu.back=backmenu()
+
+
+function menu.create(self)
+	self.parent:create(self)
+
+
+	self:loadResources()
+
+end
+
+function menu.init(self)
+	self.parent:init(self)
+end
+
+function menu.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu.update(self,time)
+	self.parent:update(self,time)
+end
+
+

@@ -1,0 +1,168 @@
+--///////////////////////////////////////////////////////////////////////////
+--// Resources.lua
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 29.3.2005 15:33:55
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+ResourceDataPath="data/Menu/"
+
+function ICON(menu,name)
+
+	if not menu or not name then
+		return menu:getResource("icon_empty"),menu:getResource("icon_empty_s")
+	end
+	return menu:getResource(name),menu:getResource(name.."_s")
+end
+
+
+function LoadResources(tbl)
+	local k,v
+
+	local t = {}
+
+	for k,v in pairs(tbl) do
+		local r=wm.GetResource(v.name)
+
+		if r then
+			t[k]=r
+		else
+			if v.type == "image" then
+				t[k]=LoadImage(v.name,v.filename)
+			elseif v.type == "subimage" then
+				t[k]=SubImage(v.name,v.filename,v.coords,v.imagesize,v.specialtype)
+			end
+		end
+	end
+
+	return t
+end
+
+
+
+
+
+function SubImage(itemname,filename,coords,imagesize,special)
+
+	local r=wm.NewResource(SUBBITMAP,itemname,ResourceDataPath..filename,special or BITMAP)
+
+	local s={}
+
+	s[1] = coords[1] / imagesize[1]
+	s[2] = coords[2] / imagesize[2]
+	s[3] = coords[3] / imagesize[1]
+	s[4] = coords[4] / imagesize[2]
+
+	wm.SetOriginalImageSize(r,imagesize)
+	wm.SetSubCoordinates(r,s)
+	
+	return r
+end
+
+
+function LoadImage(itemname,filename)
+	if not filename then
+		filename=itemname
+	end
+
+	return wm.NewResource(BITMAP,itemname,ResourceDataPath..filename)
+end
+
+
+function LoadBackground(itemname,filename)
+	if not filename then
+		filename=itemname
+	end
+
+	return wm.NewResource(BITMAP_LARGE,itemname,ResourceDataPath..filename)
+end
+
+function GetResourceSize(img)
+	return wm.GetResourceSize(img)
+end
+
+function image(itemname)
+--[[--/*
+	if not itemname then return nil end
+
+	local f=wm.GetResource(itemname)
+	if not f then
+		f=LoadPicture(itemname)
+	end
+	return f
+--]]--*/	
+	return { type = "image",name=itemname,filename=itemname }
+end
+
+function window_background(itemname)
+	return image(itemname)
+end
+
+function background(itemname)
+	if not itemname then return nil end
+
+	local f=wm.GetResource(itemname)
+	if not f then
+		f=LoadBackground(itemname)
+	end
+	return f
+end
+
+
+function subimage(itemname,filename,coords,imagesize,specialtype)
+--[[--/*
+	if not itemname then return nil end
+
+	local f=SubImage(itemname,subitem)
+
+	return f
+--]]--*/
+	return { type="subimage",name=itemname,filename=filename,coords=coords,imagesize=imagesize,specialtype=specialtype }
+end
+
+function CreateSubImages(filename,imagestruct,imagesize,specialtype)
+	local k,v
+	
+	local t={}
+	for k,v in pairs(imagestruct) do
+		t[k]=subimage(k,filename,v,imagesize,specialtype)
+	end
+
+	return t
+end
+
+
+function noimage()
+	return nil
+end
+
+function fontsmall()
+	return wm.GetResource("FontSmall")
+end
+
+function fontsmallnumbers()
+	return wm.GetResource("FontSmallNumbers")
+end
+
+function fontmedium()
+	return wm.GetResource("FontMedium")
+end
+
+function fontlarge()
+	return wm.GetResource("FontLarge")
+end
+
+function fonttitle()
+	return wm.GetResource("Title")
+end
+
+function fonthuge()
+	return wm.GetResource("FontHuge")
+end
+
+

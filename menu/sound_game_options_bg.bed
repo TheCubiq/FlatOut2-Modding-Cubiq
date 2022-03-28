@@ -1,0 +1,7 @@
+sound_game_options_bg_size = { 512,512 }
+sound_game_options_bg = {
+	
+	sound_options_bg = {  3, 3, 407, 250 },
+	game_options_bg = {  3, 258, 306, 250 },
+
+}

@@ -1,0 +1,1390 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MenuTemplate.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2003 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// @date 16.4.2003 11:56:50
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+--//menu templates
+local MenuTemplates = {
+	template_empty = {
+		options = {
+			title = L"template_empty",
+		},
+
+			
+		--//create is for initializing resources, setting up items struct, etc. called before table is parsed
+		--//by Menu class
+		create = function(self,child)
+			child.name=getid()
+
+		end,
+
+		init = function(self,child)
+			StandardBarsAndButtons(child)
+
+			wm.SetGlobalAlpha(0.0)
+		end,
+
+		update = function(self,child,time)
+		end,
+
+		deinit = function(self,child)
+			if child then
+				child:clearResources()
+			else
+				self:clearResources()
+			end
+		end,
+
+		startshow = function(self,child)
+
+			local w={
+				SetGlobalAlpha = function(self,value)
+					wm.SetGlobalAlpha(value)
+				end,
+			}
+
+			AnimateValue(w,"value","SetGlobalAlpha",false,0.0,1.0,false,0.2,nil,nil,nil)
+
+
+
+			if menu_entered then
+				local w=GetWindow("menubar_top")
+				local xs,ys=w:GetSize()
+
+				w:ShowWindow()
+				w:SetPosition(0,-ys)
+				AnimateWindowPos(w,POS(0,-ys),POS(0,0),0.2)
+
+				w=GetWindow("menubar_bottom")
+				w:ShowWindow()
+				xs,ys=w:GetSize()
+				w:SetPosition(0,480)
+				AnimateWindowPos(w,POS(0,480),POS(0,480-ys),0.2)
+
+				menu_entered=nil
+			end
+		end,
+
+		starthide = function(self,child)
+
+			local w={
+                SetGlobalAlpha = function(self,value)
+					wm.SetGlobalAlpha(value)
+				end,
+			}
+
+			AnimateValue(w,"value","SetGlobalAlpha",false,1.0,0.0,false,0.2,nil,nil,nil)
+
+
+			--[[--/*
+			local w=GetWindow("menubar_top")
+			local xs,ys=w:GetSize()
+
+			AnimateWindowPos(w,POS(w:GetPosition()),POS(0,-ys),0.10)
+
+			w=GetWindow("menubar_bottom")
+			xs,ys=w:GetSize()
+
+			AnimateWindowPos(w,POS(w:GetPosition()),POS(0,480),0.10)
+			--]]--*/
+
+		end,
+
+		--//template creation code if needed, can take n arguments
+		createtemplate = function(self)
+
+		end,
+
+		eventhandler = function(self,child,event)
+			local e=event or child
+			if DEV and e.id == EVENT_SCREENSHOT then
+				W("debug_string"):HideWindow()
+			end
+
+			if DEV and e.id == EVENT_SCREENSHOT_DONE then
+				W("debug_string"):ShowWindow()
+			end
+		end,
+
+	}, --//end template_basic
+
+}
+
+
+--//menu template code
+local function template_clearResources(self)
+	if self.parent then
+		self.resourcelist=CopyTable(self.parent.resourcelist or {})
+	else
+		self.resourcelist={}
+	end
+end
+
+local function template_addResource(self,name,resource,imagesize,type)
+	if imagesize then
+		local substruct=resource
+		MergeTable(self.resourcelist,CreateSubImages(name,substruct,imagesize,type))
+	else
+		self.resourcelist[name]=resource
+	end
+end
+
+local function template_getResource(self,name)
+	local context_name=self.name.."#"..name
+
+	return self.resources[context_name] or wm.GetResource(name)
+end
+
+
+local function template_loadResources(self)
+	local list={}
+	local k,v
+	for k,v in pairs(self.resourcelist) do
+		local context_name=self.name.."#"..k
+		v.name=context_name
+		list[context_name]=v
+	end
+
+	self.resources=LoadResources(list)
+end
+
+function AddMenuTemplate(name,tmpl)
+	MenuTemplates[name]=tmpl
+end
+
+function GetMenuTemplate(name)
+	return MenuTemplates[name]
+end
+
+function CreateMenuFromTemplate(templatename,resources, ...)
+	local t = {}
+
+	local tmpl = MenuTemplates[templatename] or {}
+
+	--//options
+	t.options = CopyTable(tmpl.options or {})
+
+	t.parent = tmpl
+
+	--//t.name=getid()
+
+	--//resources
+	t.resourcelist = CopyTable(tmpl.resourcelist or {})
+
+	if resources then
+		MergeTable(t.resourcelist,resources)
+	end
+
+	local empty = function() end
+
+	--//functions
+	t.create=tmpl.create
+	t.init=tmpl.init
+	t.update=tmpl.update
+	t.deinit=tmpl.deinit
+	t.startshow=tmpl.startshow
+	t.starthide=tmpl.starthide
+	t.eventhandler=tmpl.eventhandler
+
+
+	t.addResource = tmpl.addResource or template_addResource
+	t.getResource = tmpl.getResource or template_getResource
+	t.loadResources = tmpl.loadResources or template_loadResources
+	t.clearResources = tmpl.clearResources or template_clearResources
+
+	t.items = CopyTable(tmpl.items or {})
+
+	if tmpl.createtemplate then
+		tmpl.createtemplate(t,unpack(arg))
+	end
+
+	return t
+end
+
+
+function HideMenuBarMoney()
+	local w=W("menubar_coin")
+	if w then
+		w:HideWindow()
+		W("menubar_money"):HideWindow()
+	end
+end
+
+function HideMenuBarCar()
+	local w=W("menubar_carname")
+	if w then
+		w:HideWindow()
+		W("menubar_tire"):HideWindow()
+	end
+end
+
+
+function StandardBarsAndButtons(menu,showmoney,showcarname)
+		--//upper bar
+
+		local bar_pos=POS(0,0)
+		local bar_size=SIZE(640,menu_bars.menu_bar_top[4])
+
+		if menu_entered then
+			bar_pos=POS(0,-bar_size[2])
+		end
+
+		local p=Frame{Name="menubar_top",Layer=4,IgnoreGlobalAlpha=1,Size=bar_size,Position=bar_pos}
+		p:AttachResource(menu:getResource("menu_bar_top"))
+--//		p:HideWindow()
+
+
+		if showmoney then
+			Frame{Name="menubar_coin",IgnoreGlobalAlpha=TRUE,Layer=4,Position=POS(450,23),Parent=p,Size=GetResourceSize(menu:getResource("coin"))}:AttachResource(menu:getResource("coin"))
+			--//local w,h=unpack(GetResourceSize(menu:getResource("coin")))
+			StaticText{Name="menubar_money",Title=L"$-1",Layer=4,Position=POS(580,38),Align=FONTF_RIGHT,IgnoreGlobalAlpha=TRUE,Parent=p,Font=fontlarge(),Color=GetPaletteColor(34)}
+
+			MenubarMoneyUpdate()
+		end
+
+		if showcarname and PlayerProfile:GetActiveCar() ~= -1 then
+			local tires={
+				"current_car_symbol_derby",
+				"current_car_symbol_racing",
+				"current_car_symbol_street",
+			}
+
+			local car_data=db.FlatOut2.Cars:GetProperty("Car",PlayerProfile:GetActiveCar())
+
+			local tire=menu:getResource(tires[Garage:GetCarClass(PlayerProfile:GetActiveCar())])
+			Frame{Name="menubar_tire",IgnoreGlobalAlpha=TRUE,Layer=4,Position=POS(307,23),Parent=p,Size=GetResourceSize(tire)}:AttachResource(tire)
+			StaticText{Name="menubar_carname",Title=ConvertToWString(car_data.Name),IgnoreGlobalAlpha=TRUE,Layer=4,Parent=p,Position=POS(314,40),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+		end
+
+
+		if DEV then
+			StaticText{Name="debug_string",Title=L"",IgnoreGlobalAlpha=1,Position=POS(0,0),Layer=5,Parent=p,Font=fontsmall(),Size=SIZE(600,480)}
+		end
+			
+
+		bar_size=SIZE(640,menu_bars.menu_bar_bottom[4])
+		bar_pos=POS(0,480-bar_size[2])
+
+		if menu_entered then
+			bar_pos=POS(0,460)
+		end
+		
+		--//bottom bar
+		p=Frame{Name="menubar_bottom",Layer=4,IgnoreGlobalAlpha=1,Size=bar_size,Position=bar_pos}
+		p:AttachResource(menu:getResource("menu_bar_bottom"))
+--//		p:HideWindow()
+
+		
+
+
+		--//help bar buttons
+		local help_buttons={}
+
+		table.insert(help_buttons,BUTTON_OK)
+		table.insert(help_buttons,TRANSLATOR(UI_SELECT))
+
+		if menu.back then
+			table.insert(help_buttons,BUTTON_BACK)
+			table.insert(help_buttons,TRANSLATOR(UI_BACK))
+		end
+
+		GUI:SetHelpButtons(unpack(help_buttons))
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+---//old stuff
+
+function BlackUpperBalk()
+	local size=GetResourceSize(menucommon.upperbalk)
+	size[2]=size[2]+TITLESAFE_Y
+	local parent=addparent(Frame{ Position=POS(0,0), Size=size, ShowBorders=FALSE, Layer=0} )
+	--//parent:AttachResource(menucommon.black_transparent)
+end
+
+
+function BlackLowerBalk()
+	local ppos=POS(0,392)
+
+	local p=addparent(Frame{ Position=ppos, Size=SIZE(640,480-392), ShowBorders=FALSE,Layer=0 } )
+	--//p:AttachResource(menucommon.black_transparent)
+
+end
+
+
+function StandardUpperBalk(showmoney)
+	local ppos=POS(0,TITLESAFE_Y-1)
+
+	local w=GetResourceSize(menucommon.upperbalk)
+
+	local parent=addparent(Frame{ Position=ppos, Size=SIZE(640,w[2]), ShowBorders=FALSE, Layer=0} )
+	parent:AttachResource(menucommon.upperbalk)
+
+
+--//	parent=addchild(Frame{Position=POS(0,0),Size=SIZE(640,w[2]),ShowBorders=FALSE,Parent=parent,Layer=5})
+--//	parent:AttachResource(menucommon.upperbalk)
+
+	if getplatform() ~= "PC" then
+		w=GetResourceSize(menucommon.upperbalk_ext)
+		addparent(Frame{Position=POS(0,0),Size=SIZE(640,w[2]), ShowBorders=FALSE,Layer=0 }):AttachResource(menucommon.upperbalk_ext)
+	end
+
+
+	balk_state.showmoney=showmoney
+--//	if showmoney then
+		addchild(Button{Name="money_icon",Parent=parent,Position=POS(410,31),Size=GetResourceSize(menucommon.rahaikoni),Parent=parent}):AttachResource(menucommon.rahaikoni)
+		GetWindow("money_icon"):HideWindow()
+
+		menustate.moneywindow=addchild(StaticText{Name="money",Title=ConvertToWString(""),Font=fontmedium(),Position=POS(440,31),Size=SIZE(64,32),Parent=parent})
+--//	end
+
+	UpdateBalkMoney()
+
+	return parent
+end
+
+function UpdateBalkMoney()
+	if not balk_state.showmoney then return end
+
+	local win=GetWindow("money")
+	if win then
+		win.title=ConvertToWString(string.format("$%d",PlayerProfile:GetMoney()))
+		win:SetTitle(win.title)
+
+		GetWindow("money_icon"):ShowWindow()
+	end
+end
+
+function SetBalkMoneyText(text)
+	local win=GetWindow("money")
+	if win then
+		win.title=text
+		win:SetTitle(win.title)
+
+		GetWindow("money_icon"):HideWindow()
+	end
+end
+
+function StandardLowerBalk(arrows,extrabutton,yesno,hidebuttons)
+
+	local ppos=POS(0,393)
+
+	
+	local w=GetResourceSize(menucommon.lowerbalk)
+	local p=addparent(Frame{ Position=ppos, Size=SIZE(640,w[2]), ShowBorders=FALSE,Layer=0 } )
+	p:AttachResource(menucommon.lowerbalk)
+
+
+	w=GetResourceSize(menucommon.lowerbalk_ext)
+
+	addparent(Frame{Position=POS(0,495-w[2]),Size=SIZE(640,w[2]), ShowBorders=FALSE,Layer=0 }):AttachResource(menucommon.lowerbalk_ext)
+
+
+
+
+--//	addchild(Frame{Position=RELATIVEPOS(POS(0,392),ppos),Size=SIZE(640,35),ShowBorders=FALSE,Parent=p}):AttachResource(menucommon.black_transparent)
+
+--//	p=addchild(Frame{Position=POS(0,0),Size=menucommon.lowerbalk,ShowBorders=FALSE,Parent=p,Layer=5})
+--//	p:AttachResource(menucommon.lowerbalk)
+--//	if getplatform() == "PC" then return p end
+
+	if hidebuttons then return p end
+
+
+	local extrapos1=RELATIVEPOS(POS(230,437),ppos)
+	local extrapos2=RELATIVEPOS(POS(253,437),ppos)
+
+	if extrabutton and not balk_state.backbutton then
+		extrapos1=RELATIVEPOS(POS(330,437),ppos)
+		extrapos2=RELATIVEPOS(POS(353,437),ppos)
+	end
+
+	if extrabutton then
+		local extrares
+		if getplatform() == "PS2" then
+			extrares=menucommon.ps2_ympyra
+		elseif getplatform() == "XBOX" then
+			extrares=menucommon.xbox_y
+		else
+			extrares=menucommon.del
+			extrapos2[1]=extrapos1[1]+GetResourceSize(extrares)[1]
+		end
+
+		addchild(Button{Name="balk_extrabutton",Position=extrapos1,Layer=6,Size=GetResourceSize(extrares),Parent=p}):AttachResource(extrares)
+		addchild(StaticText{Name="balk_extrabuttontext",Title=extrabutton,Layer=6,Position=extrapos2,Size=SIZE(64,32),Font=fontsmall(),Parent=p})
+	end
+
+
+	if balk_state.backbutton then
+		--//backbutton
+		local pos=RELATIVEPOS(POS(373,437),ppos)
+		if getplatform() == "PC" then
+			pos=RELATIVEPOS(POS(350+GetResourceSize(menucommon.backbutton)[1],437),ppos)
+		end
+
+
+		addchild(Button{Name="balk_backbutton",Position=RELATIVEPOS(POS(350,437),ppos),Layer=6,Size=GetResourceSize(menucommon.backbutton),Parent=p}):AttachResource(menucommon.backbutton)
+		addchild(StaticText{Name="balk_backbuttontext",Title=MENU_BACK,Layer=6,Position=pos,Size=SIZE(64,32),Font=fontsmall(),Parent=p})
+	end
+
+	if balk_state.forwardbutton then
+		--//forwardbutton
+		local pos=POS(476,437)
+		if getplatform() == "PC" then
+			pos=POS(453+GetResourceSize(menucommon.okbutton)[1],437)
+		end
+
+		addchild(Button{Name="balk_forwardbutton",Position=RELATIVEPOS(POS(453,437),ppos),Layer=6,Size=GetResourceSize(menucommon.okbutton),Parent=p}):AttachResource(menucommon.okbutton)
+		addchild(StaticText{Name="balk_forwardbuttontext",Title=MENU_SELECT,Layer=6,Position=RELATIVEPOS(pos,ppos),Size=SIZE(64,32),Font=fontsmall(),Parent=p})
+	end
+
+	if arrows then
+		addchild(Button{Name="balk_arrow_left", Position=RELATIVEPOS(POS(54,401),ppos),Layer=6,Size=GetResourceSize(menucommon.selection_arrow_l),Parent=p}):AttachResource(menucommon.control_arrow_left_pal_3)
+		addchild(Button{Name="balk_arrow_right",Position=RELATIVEPOS(POS(571,401),ppos),Layer=6,Size=GetResourceSize(menucommon.selection_arrow_r),Parent=p}):AttachResource(menucommon.control_arrow_right_pal_3)
+	end
+
+	if yesno then
+		ShowYesNoBox()
+	end
+
+	w=addchild(StaticText{Name="lowerbalk_text",Position=RELATIVEPOS(POS(304,403),ppos),Size=SIZE(200,32),Parent=p,Font=font18()})
+	w:HideWindow()
+
+
+	return p
+end
+
+function ResetBalkButtonsText()
+	local w=GetWindow("balk_forwardbuttontext")
+
+	if w then
+		w:SetTitle(MENU_SELECT)
+	end
+
+	w=GetWindow("balk_backbuttontext")
+
+	if w then
+		w:SetTitle(MENU_BACK)
+	end
+end
+
+function SetBalkButtonsText(forwardbutton,backbutton,extrabutton)
+	
+	if forwardbutton then
+		local w=GetWindow("balk_forwardbuttontext")
+		if w then
+			w:SetTitle(forwardbutton)
+		end
+	end
+
+	if backbutton then
+		local w=GetWindow("balk_backbuttontext")
+		if w then
+			w:SetTitle(backbutton)
+		end
+	end
+
+	if extrabutton then
+		local w=GetWindow("balk_extrabuttontext")
+		if w then
+			w:SetTitle(extrabutton)
+		end
+	end
+end
+
+
+function HideForwardButton()
+	local win=GetWindow("balk_forwardbutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_forwardbuttontext")
+
+	if win then win:HideWindow() end
+end
+
+function ShowForwardButton()
+	local win=GetWindow("balk_forwardbutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_forwardbuttontext")
+
+	if win then win:ShowWindow() end
+end
+
+
+function HideBackButton()
+	local win=GetWindow("balk_backbutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_backbuttontext")
+
+	if win then win:HideWindow() end
+end
+
+function ShowBackButton()
+	local win=GetWindow("balk_backbutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_backbuttontext")
+
+	if win then win:ShowWindow() end
+end
+
+
+
+function HideExtraButton()
+	local win=GetWindow("balk_extrabutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_extrabuttontext")
+
+	if win then win:HideWindow() end
+end
+
+function ShowExtraButton()
+	local win=GetWindow("balk_extrabutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_extrabuttontext")
+
+	if win then win:ShowWindow() end
+end
+
+
+
+function HideBalkButtons()
+	local win=GetWindow("balk_forwardbutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_forwardbuttontext")
+
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_extrabutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_extrabuttontext")
+
+	if win then win:HideWindow() end
+
+
+	win=GetWindow("balk_backbutton")
+	if win then win:HideWindow() end
+
+	win=GetWindow("balk_backbuttontext")
+
+	if win then win:HideWindow() end
+end
+
+function ShowBalkButtons()
+	local win=GetWindow("balk_forwardbutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_forwardbuttontext")
+
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_extrabutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_extrabuttontext")
+
+	if win then win:ShowWindow() end
+
+
+	win=GetWindow("balk_backbutton")
+	if win then win:ShowWindow() end
+
+	win=GetWindow("balk_backbuttontext")
+
+	if win then win:ShowWindow() end
+end
+
+
+
+
+
+local XBoxLiveLowerBalkImage=noimage()
+if getplatform() == "XBOX" then
+	XBoxLiveLowerBalkImage=image("lower_balk.tga")
+end
+
+local XBoxLiveLowerBalkLayout=
+{
+	ButtonWidth=20,
+
+	TextRelativePos=POS(20, 0),
+	TopButtonTop=8,
+	TopButtonLeft=65,
+	BottomButtonLeft=50,
+	BottomButtonTop=29,
+	ButtonSpacingX=200,
+	
+	RowTop={1, 18, 35},
+	RowLeft={30, 15, 0},
+	ColoumnSpacing=30,
+}
+
+local XBLowerBalkVars=
+{
+	RowNr=1,
+	ButtonNr=1,
+	ColoumNr=1,
+	MaxColoumnWidth={0, 0},
+	VisibleButtons={
+	a=false,
+	b=false,
+	x=false,
+	y=false,
+	wht=false,
+	blk=false,
+	},
+}
+
+
+local function NextXBLowerBalkButton()
+	if XBLowerBalkVars.ButtonNr==3 then
+		XBLowerBalkVars.RowNr=0
+		XBLowerBalkVars.ColoumnNr=2
+	end
+	XBLowerBalkVars.ButtonNr=XBLowerBalkVars.ButtonNr+1
+	XBLowerBalkVars.RowNr=XBLowerBalkVars.RowNr+1
+end
+
+local function GetButtonColoumnWidth(Text)
+	local width=wm.GetTextWidth(Text, fontsmall())
+	width=width+XBoxLiveLowerBalkLayout.ButtonWidth
+	if XBLowerBalkVars.ColoumnNr == 1 then
+		width=width+XBoxLiveLowerBalkLayout.RowLeft[XBLowerBalkVars.RowNr]
+	end
+	if width > XBLowerBalkVars.MaxColoumnWidth[XBLowerBalkVars.ColoumnNr] then
+		XBLowerBalkVars.MaxColoumnWidth[XBLowerBalkVars.ColoumnNr]=width
+	end
+end
+
+local function XBLowerBalkGetButPos()
+	local coloumnNr=XBLowerBalkVars.ColoumnNr
+	local rowNr=XBLowerBalkVars.RowNr
+	local maxColoumnWidth=XBLowerBalkVars.MaxColoumnWidth[coloumnNr]
+	local rowTop=XBoxLiveLowerBalkLayout.RowTop[rowNr]
+	local rowLeft=XBoxLiveLowerBalkLayout.RowLeft[rowNr]
+	local left=(544+TITLESAFE_X-maxColoumnWidth)+rowLeft
+	if coloumnNr==2 then
+		left=left-XBLowerBalkVars.MaxColoumnWidth[1]-XBoxLiveLowerBalkLayout.ColoumnSpacing
+	end
+	return POS(left, rowTop)	
+end
+
+local function XBLowerBalkSetLayout()
+	XBLowerBalkVars.RowNr=1
+	XBLowerBalkVars.ButtonNr=1
+	XBLowerBalkVars.ColoumnNr=1
+	XBLowerBalkVars.MaxColoumnWidth={0, 0}
+
+	if XBLowerBalkVars.VisibleButtons["a"] then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_a"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+	if XBLowerBalkVars.VisibleButtons["b"]then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_b"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+	if XBLowerBalkVars.VisibleButtons["x"] then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_x"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+	if XBLowerBalkVars.VisibleButtons["y"] then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_y"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+	if XBLowerBalkVars.VisibleButtons["blk"] then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_blk"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+	if XBLowerBalkVars.VisibleButtons["wht"] then
+		GetButtonColoumnWidth(wm.GetWindow("lowerbalk_wht"):GetTitle())
+		NextXBLowerBalkButton()
+	end
+
+
+	XBLowerBalkVars.RowNr=1
+	XBLowerBalkVars.ButtonNr=1
+	XBLowerBalkVars.ColoumnNr=1
+	
+	
+	if XBLowerBalkVars.VisibleButtons["a"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_a"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_a"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+
+	if XBLowerBalkVars.VisibleButtons["b"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_b"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_b"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+
+	if XBLowerBalkVars.VisibleButtons["x"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_x"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_x"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+
+	if XBLowerBalkVars.VisibleButtons["y"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_y"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_y"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+
+	if XBLowerBalkVars.VisibleButtons["blk"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_blk"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_blk"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+
+	if XBLowerBalkVars.VisibleButtons["wht"] then
+		local pos=XBLowerBalkGetButPos()
+		wm.GetWindow("lowerbalk_button_wht"):SetPosition(pos[1], pos[2])
+		pos[1]=pos[1]+XBoxLiveLowerBalkLayout.ButtonWidth
+		wm.GetWindow("lowerbalk_wht"):SetPosition(pos[1], pos[2])
+		NextXBLowerBalkButton()
+	end
+	
+end
+
+function XBLiveLowerBalkSetButton(ButtonName, Text, Visible, DisableLayout)
+	local label=wm.GetWindow(string.format("lowerbalk_%s", ButtonName))
+	local button=wm.GetWindow(string.format("lowerbalk_button_%s", ButtonName))
+	if Text then
+		label:SetTitle(Text)
+	end
+	if Visible and label:GetTitle()~=ConvertToWString("") then
+		XBLowerBalkVars.VisibleButtons[ButtonName]=true
+		label:ShowWindow()
+		button:ShowWindow()
+	else
+		XBLowerBalkVars.VisibleButtons[ButtonName]=false
+		label:HideWindow()
+		button:HideWindow()
+	end
+	
+	if DisableLayout==nil or DisableLayout==false then
+		XBLowerBalkSetLayout()
+	end
+end
+
+function XBoxLiveLowerBalk(LabelA, LabelB, LabelX, LabelY, LabelBlk, LabelWht)
+	local TextRelativePos=POS(20, 0)
+	local TopButtonTop=8
+	local TopButtonLeft=65
+	local BottomButtonLeft=50
+	local BottomButtonTop=29
+	local ButtonSpacingX=200
+	
+	local RowTop={1, 18, 35}
+
+
+	local ppos=POS(0,392)
+
+
+	local w=GetResourceSize(XBoxLiveLowerBalkImage)
+	local p=addparent(Frame{ Position=ppos, Size=SIZE(640, w[2]), ShowBorders=FALSE, Layer=0 } )
+	p:AttachResource(XBoxLiveLowerBalkImage)
+
+	local buttonTemplate={
+		Size=GetResourceSize(menucommon.xbox_a),
+		ShowBorders=FALSE,
+		Parent=p,
+	}
+	
+	local textTemplate={
+		Name="",
+		Title=ConvertToWString(""),
+		Size=SIZE(100, 16),
+		ShowBorders=FALSE,
+		Font=fontsmall(),
+		TitleCentering=TITLE_CENTER_NONE,
+		Parent=p,
+	}	
+	
+	--local APos=POS(BottomButtonLeft+2*ButtonSpacingX, BottomButtonTop)
+	--local BPos=POS(TopButtonLeft+2*ButtonSpacingX, TopButtonTop)
+	
+	--local XPos=POS(BottomButtonLeft+ButtonSpacingX, BottomButtonTop)
+	--local YPos=POS(TopButtonLeft+ButtonSpacingX, TopButtonTop)
+	
+	--local BlkPos=POS(TopButtonLeft, TopButtonTop)
+	--local WhtPos=POS(BottomButtonLeft, BottomButtonTop)
+	
+
+	
+	buttonTemplate.Position=POS(0,0)
+	textTemplate.Position=POS(0,0)
+	textTemplate.Title=ConvertToWString("")
+	
+	buttonTemplate.Name="lowerbalk_button_a"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_a)
+	textTemplate.Name="lowerbalk_a"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("a", LabelA, true, true)
+
+	buttonTemplate.Name="lowerbalk_button_b"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_b)
+	textTemplate.Name="lowerbalk_b"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("b", LabelB, true, true)
+
+	buttonTemplate.Name="lowerbalk_button_x"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_x)
+	textTemplate.Name="lowerbalk_x"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("x", LabelX, true, true)
+
+	buttonTemplate.Name="lowerbalk_button_y"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_y)
+	textTemplate.Name="lowerbalk_y"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("y", LabelY, true, true)
+
+	buttonTemplate.Name="lowerbalk_button_wht"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_white)
+	textTemplate.Name="lowerbalk_wht"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("wht", LabelWht, true, true)
+
+	buttonTemplate.Name="lowerbalk_button_blk"
+	local win=addchild(Frame(buttonTemplate))
+	win:AttachResource(menucommon.xbox_black)
+	textTemplate.Name="lowerbalk_blk"
+	win=addchild(StaticText(textTemplate)) 
+	XBLiveLowerBalkSetButton("blk", LabelBlk, true, true)
+	
+	
+	XBLowerBalkSetLayout()
+
+end
+
+
+function SetLowerBalkText(text)
+	local w=GetWindow("lowebalk_text")
+	if w then
+		w:SetTitle(text)
+		w:ShowWindow()
+    end
+end
+
+function HideLeftBalkArrow()
+	local w=GetWindow("balk_arrow_left")
+	if w then
+		w:HideWindow()
+    end
+end
+
+function ShowLeftBalkArrow()
+	local w=GetWindow("balk_arrow_left")
+	if w then
+		w:ShowWindow()
+    end
+end
+
+function HideRightBalkArrow()
+	local w=GetWindow("balk_arrow_right")
+	if w then
+		w:HideWindow()
+    end
+end
+
+function ShowRightBalkArrow()
+	local w=GetWindow("balk_arrow_right")
+	if w then
+		w:ShowWindow()
+    end
+end
+
+
+function ShowYesNoBox()
+	local pos
+
+	if getplatform() == "PC" then
+		pos=POS(640-128,480-100)
+	else
+		pos=POS(640-(108+48),480-(70+36))
+	end
+
+	local parent=addparent(Frame{Name="yesnobox",Position=pos,Size=SIZE(128,128),ShowBorders=FALSE})
+	parent:AttachResource(menucommon.controller_box)
+
+	addchild(Button{Position=POS(18, 12),Size=GetResourceSize(menucommon.okbutton), Parent=parent}):AttachResource(menucommon.okbutton)
+	addchild(Button{Position=POS(14, 43),Size=GetResourceSize(menucommon.backbutton), Parent=parent}):AttachResource(menucommon.backbutton)
+
+	addchild(StaticText{Title=MENU_YES, Position=POS(38,12),Size=SIZE(16,16),Parent=parent,Font=fontsmall(),})
+	addchild(StaticText{Title=MENU_NO, Position=POS(36,44),Size=SIZE(16,16),Parent=parent,Font=fontsmall(),})
+
+	wm.ActivateWindow(parent)
+end
+
+function HideYesNoBox()
+	local w=GetWindow("yesnobox")
+	if w then
+		wm.DeactivateWindow(w)
+	end
+end
+
+MessageBoxImages={
+	Background=image("ui-box.tga")
+}
+
+MessageBoxWindows={}
+
+local PrevMsgBoxFocus=nil
+
+function AddMsgBoxWin(win)
+	table.insert(MessageBoxWindows, win)
+	return win
+end
+
+function ShowMessageBox(Pos, TitleMsg, Message, LabelA, FunctionA, LabelB, FunctionB, LabelX, FunctionX, LabelY, FunctionY)
+	HideMessageBox()
+
+	GUI:AllowOnlineOptionsMenu(false)
+
+	PrevMsgBoxFocus=wm.GetFocus()
+	
+	YPos = Pos[2]
+	
+	local backTop=97
+	if getplatform()=="PC" then
+		backTop=62
+	end
+	
+	local boxleft = 135
+	
+	win=AddMsgBoxWin(Frame { Name="msgboxback", Position=POS(0, 0), Size=SIZE(640, 480), Layer=5 } )
+	win:AttachResource(wm.GetResource("black_transparent_50"))
+	wm.ActivateWindow(win)
+	win=AddMsgBoxWin(Frame { Name="messagebox", Position=POS(0,0), Size=SIZE(0,0), ShowBorders=TRUE, Layer=5, Parent=win } )
+	
+	local texty = 30
+	local titleheight = 0
+	if TitleMsg ~= nil then
+		local titlewin=AddMsgBoxWin(StaticText {
+			Name="msgboxtitlewin",
+			Title=TitleMsg,
+			Position=POS(30, 30),
+			Size=SIZE(310, 19),
+			Font=fontmedium(),
+			ShowBorders=FALSE,
+			TitleCentering=TITLE_CENTER_X,
+			Parent=win,
+			Color=GetPaletteColor(33),
+			Layer=5,
+			})
+		titlewin:WordWrap()
+		local _,titleheight = wm.GetTextExtents(titlewin:GetTitle(), fontmedium())
+		texty = texty + titleheight + 26
+	end
+	
+	local textwin=AddMsgBoxWin(StaticText{
+		Name="msgboxtextwin", 
+		Title=Message, 
+		Position=POS(30, texty),
+		Size=SIZE(310, 137), 
+		Font=fontmedium(), 
+		ShowBorders=FALSE, 
+		TitleCentering=TITLE_CENTER_X,
+		Parent=win,
+		Color=GetPaletteColor(34),
+		Layer=5,
+		})
+	textwin:WordWrap()
+	
+	local _,textheight = wm.GetTextExtents(textwin:GetTitle(), fontmedium())
+	local buttonsheight = 22
+	
+	local aw=0
+	local bw=0
+	local xw=0
+	local yw=0
+	if LabelA then
+		aw,_ = wm.GetTextExtents(LabelA, fontmedium())
+	end
+	if LabelB then
+		bw,_ = wm.GetTextExtents(LabelB, fontmedium())
+	end
+	if LabelX then
+		xw,_ = wm.GetTextExtents(LabelX, fontmedium())
+	end
+	if LabelY then
+		yw,_ = wm.GetTextExtents(LabelY, fontmedium())
+	end
+	local tw=aw
+	
+	if bw > tw then
+		tw = bw
+	end
+	if xw > tw then
+		tw = xw
+	end
+	if yw > tw then
+		tw = yw
+	end
+
+	local bx
+	if tw > 125 then
+		bx = 30 + 280 - tw
+	else
+		bx = 150
+	end
+	
+	local layout={
+		PosA=POS(bx, texty+textheight+26),
+		PosB=nil,
+		PosX=nil,
+		PosY=nil
+	}
+	
+	if LabelB~=nil then
+		layout.PosB=POS(bx, texty+textheight+48)
+		buttonsheight = buttonsheight + 22
+	end
+	
+	if LabelX~=nil then
+		layout.PosX=POS(bx, texty+textheight+70)
+		buttonsheight = buttonsheight + 22
+	end
+	
+	if LabelY~=nil then
+		layout.PosY=POS(bx, texty+textheight+92)
+		buttonsheight = buttonsheight + 22
+	end
+	
+	local winheight = texty + textheight + 26 + buttonsheight + 30 
+	win:SetPosition(boxleft, 240 - winheight / 2)
+	win:SetSize(370, winheight)
+	
+	
+	
+	
+	local posA=layout.PosA
+	local posB=layout.PosB
+	local posX=layout.PosX
+	local posY=layout.PosY
+
+	local labelPos=POS(20, 0)
+	local labelSize=SIZE(200, 16)
+	
+	local buttonLabel={
+		Size=labelSize, 
+		Font=fontmedium(), 
+		ShowBorders=FALSE, 
+		Layer=5,
+		Parent=win
+	}
+	
+	local button1, button2, button3, button4
+	if XBOX then
+		button1 = "xbox_a"
+		button2 = "xbox_b"
+		button3 = "xbox_x"
+		button4 = "xbox_y"
+	elseif PS2 then
+		button1 = "ps2_cross"
+		button2 = "ps2_triangle"
+		button3 = "ps2_square"
+		button4 = "ps2_circle"
+	else
+		button1 = "enter_btn"
+		button2 = "esc_btn"
+		button3 = "delete_btn"
+		button4 = "ps2_circle"
+	end
+
+	local function CreateButton(pos, buttonres, label)
+		local button, buttontitle, icon
+		buttonLabel.Title = label
+		buttonLabel.Position = AddPos(pos, labelPos)
+		buttonLabel.Color = GetPaletteColor(34)
+		buttontitle = StaticText(buttonLabel)
+		
+		local _,h = wm.GetTextExtents(buttontitle:GetTitle(), fontmedium())
+		icon = wm.GetResource(buttonres)
+		local bsize = GetResourceSize(icon)
+		local bpos = POS(pos[1] - bsize[1] / 2, pos[2] + h / 2 - bsize[2] / 2)
+		button = Frame { Position=bpos, Size=bsize, Layer=5, Parent=win }
+		button:AttachResource(icon)
+		
+		AddMsgBoxWin(button)
+		AddMsgBoxWin(buttontitle)
+	end
+	
+	if LabelA~=nil then
+		CreateButton(posA, button1, LabelA)
+	end	
+	if LabelB~=nil then
+		CreateButton(posB, button2, LabelB)
+	end	
+	if LabelX~=nil then
+		CreateButton(posX, button3, LabelX)
+	end	
+	if LabelY~=nil then
+		CreateButton(posY, button4, LabelY)
+	end	
+	
+	local handler=AddMsgBoxWin(InputHandler{Parent=win})
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey==KeyCodes["BUTTON_START"] then
+			if FunctionA ~= nil then
+				HideMessageBox()
+				FunctionA()
+				playmenusound_action()
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+			if FunctionB ~= nil then
+				HideMessageBox()
+				FunctionB()
+				playmenusound_back()
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_X"] then
+			if FunctionX ~= nil then
+				HideMessageBox()
+				FunctionX()
+				playmenusound_move()
+			end
+		elseif VirtualKey==KeyCodes["BUTTON_Y"] then
+			if FunctionY ~= nil then
+				HideMessageBox()
+				FunctionY()
+				playmenusound_move()
+			end
+		end
+	end
+	handler:SetFocus()	
+	
+	wm.ActivateWindow(win)
+end
+
+function HideMessageBox()
+	local win=wm.GetWindow("msgboxback")
+	if win then
+		wm.DeactivateWindow(win)
+		wm.RemoveWindow(win)
+	end
+	MessageBoxWindows={}
+	if PrevMsgBoxFocus then
+		wm.SetFocus(PrevMsgBoxFocus)
+	end
+	PrevMsgBoxFocus=nil
+	
+	GUI:AllowOnlineOptionsMenu(true)
+end
+
+
+
+function AddConfirmationWin(win)
+	table.insert(ConfirmationBoxWindows,win)
+	return win
+end
+
+
+function ConfirmationBox(text,b1label,b1action,b2label,b2action)
+	HideConfirmationBox()
+	HideBalkButtons()
+
+	local position=POS(0,61+36)
+	local size=SIZE(640,297)
+
+	local parent=AddConfirmationWin(Frame{Name="confirmationbox", Position=position, Size=size, ShowBorders=FALSE,Layer=6})
+	parent:AttachResource(menucommon.black_transparent)
+
+	
+	AddConfirmationWin(StaticText{Font=font12(),Title=text,TitleCentering=TITLE_CENTER_XY,Parent=parent,Position=POS(48,0),Size=SIZE(640-48*2,200)})
+
+	local buttonpos
+	local totalsize=0
+	local b1size=GetResourceSize(menucommon.okbutton)
+	local b2size=GetResourceSize(menucommon.backbutton)
+
+	if not b2label then
+		buttonpos=POS(640/2-b1size[1],235-b1size[2])
+	else
+		buttonpos=POS(240,235-b1size[2])
+	end
+
+	if b1label then
+		local but1=AddConfirmationWin(Button{Position=buttonpos,Size=b1size,Parent=parent})
+		but1:AttachResource(menucommon.okbutton)
+		
+		buttonpos[1] = buttonpos[1] + b1size[1] + 4
+		totalsize = totalsize + b1size[1] + 4
+
+		local text1=AddConfirmationWin(StaticText{Title=b1label,Font=font12(),Position=buttonpos,Size=SIZE(16,16),Parent=parent})
+
+		buttonpos[1] = buttonpos[1] + text1:GetTitleWidth() + 16
+		totalsize = totalsize + text1:GetTitleWidth() + 16
+	end
+
+	local text2
+	local but2
+	if b2label then
+		but2=AddConfirmationWin(Button{Position=buttonpos,Size=b2size,Parent=parent})
+		but2:AttachResource(menucommon.backbutton)
+	
+		buttonpos[1] = buttonpos[1] + b2size[1] + 4
+		
+		text2=AddConfirmationWin(StaticText{Title=b2label,Font=font12(),Position=buttonpos,Size=SIZE(16,16),Parent=parent})
+		totalsize = totalsize + text2:GetTitleWidth()
+	end
+
+
+	local handler=AddConfirmationWin(InputHandler{Parent=parent})
+
+	handler.onKeyPressed=function(self, character, virtualkey, scancode)
+		if virtualkey==KeyCodes.BUTTON_START then
+			if b1action ~=nil then
+				HideConfirmationBox()
+				b1action()
+			end
+		elseif virtualkey==KeyCodes.BUTTON_SELECT then
+			if b2action ~=nil then
+				HideConfirmationBox()
+				b2action()
+			end
+		end
+	end
+
+	handler:SetFocus()
+
+	wm.ActivateWindow(parent)
+
+end
+
+function HideConfirmationBox()
+	local win=wm.GetWindow("confirmationbox")
+	if win then
+		wm.DeactivateWindow(win)
+	end
+	ConfirmationBoxWindows={}
+
+end
+
+
+
+PurchaseConfirmationWindows={}
+
+function AddPurchaseConfirmationWin(win)
+	table.insert(PurchaseConfirmationWindows,win)
+	return win
+end
+
+function HidePurchaseConfirmation()
+	local win=GetWindow("purchaseconfirmation")
+	if win then
+		wm.DeactivateWindow(win)
+	end
+	PurchaseConfirmationWindows={}
+end
+
+
+function PurchaseConfirmation(text,item,price,sure,b1label,b1action,b2label,b2action)
+	HidePurchaseConfirmation()
+	--//HideBalkButtons()
+
+	local position=POS(0,0)
+	local size=SIZE(640,480)
+
+	local parent=AddPurchaseConfirmationWin(Frame{Name="purchaseconfirmation", Position=position, Size=size, ShowBorders=FALSE,Layer=5})
+	parent:AttachResource(menucommon.black_transparent)
+
+
+	 local textw=wm.GetTextWidth(text,fontsmall())
+	
+	AddPurchaseConfirmationWin(StaticText{Font=fontsmall(),Title=text,Parent=parent,Position=RELATIVEPOS(SPOS(536-textw,121),position),Size=SIZE(640-48*2,200)})
+
+	textw=wm.GetTextWidth(item,fontmedium())
+	AddPurchaseConfirmationWin(StaticText{Font=fontmedium(),Title=item,Parent=parent,Position=RELATIVEPOS(SPOS(536-textw,143),position),Size=SIZE(640-48*2,200),Color=GetPaletteColor(18)})
+
+	textw=wm.GetTextWidth(CARDEALER_PRICE,fontsmall())
+	AddPurchaseConfirmationWin(StaticText{Font=fontsmall(),Title=CARDEALER_PRICE,Parent=parent,Position=RELATIVEPOS(SPOS(536-textw,195),position),Size=SIZE(640-48*2,200)})
+
+
+	local pricetext=ConvertToWString(string.format("$%d",price))
+	textw=wm.GetTextWidth(pricetext,fontmedium())
+	AddPurchaseConfirmationWin(StaticText{Font=fontmedium(),Title=pricetext,Parent=parent,Position=RELATIVEPOS(SPOS(536-textw,215),position),Size=SIZE(640-48*2,200),Color=GetPaletteColor(18)})
+
+
+
+	if sure then
+		textw=wm.GetTextWidth(PURCHASE_CONFIRMATION,fontsmall())
+		AddPurchaseConfirmationWin(StaticText{Font=fontsmall(),Title=PURCHASE_CONFIRMATION,Parent=parent,Position=RELATIVEPOS(SPOS(536-textw,273),position),Size=SIZE(640-48*2,200)})
+	end
+		
+	HideBalkButtons()
+	if b1action then
+		ShowForwardButton()
+	end
+
+	if b2action then
+		ShowBackButton()
+	end
+
+	SetBalkButtonsText(b1label,b2label)
+
+
+
+	local handler=AddPurchaseConfirmationWin(InputHandler{Parent=parent})
+
+	handler.onKeyPressed=function(self, character, virtualkey, scancode)
+		if virtualkey==KeyCodes.BUTTON_START then
+			if b1action ~=nil then
+				HidePurchaseConfirmation()
+				b1action()
+			end
+		elseif virtualkey==KeyCodes.BUTTON_SELECT then
+			if b2action ~=nil then
+				HidePurchaseConfirmation()
+				b2action()
+			end
+		end
+	end
+
+	handler:SetFocus()
+
+	wm.ActivateWindow(parent)
+end
+
+
+

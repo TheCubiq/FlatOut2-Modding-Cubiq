@@ -1,0 +1,98 @@
+selection_elements_size = { 512,512 }
+selection_elements = {
+	
+	class_sign_1 = {  0, 1, 238, 66 },    --class "D"
+	class_sign_2 = {  1, 69, 238, 66 },   --class "C"
+	class_sign_3 = {  0, 138, 238, 66 },  --class "B"
+	class_sign_4 = {  3, 207, 238, 66 },  --class "A"
+	class_sign_5 = {  3, 207, 238, 66 },  --extra class
+	
+	class_signs_locked = {  272, 401, 238, 65 },    --used on each of the classes if the player doesn't have the required car
+
+	class_sign_1_locked = {  158, 3, 148, 72 },    --class "D"
+	class_sign_2_locked = {  158, 82, 148, 72 },   --class "C"
+	class_sign_3_locked = {  158, 162, 148, 72 },  --class "B"
+	class_sign_4_locked = {  158, 242, 148, 72 },  --class "A"
+	class_sign_5_locked = {  158, 242, 148, 72 },  --extra class
+	
+	cup_sign_number_1 = {  159, 178, 38, 46 },
+	cup_sign_number_2 = {  200, 178, 38, 46 },
+	cup_sign_number_3 = {  241, 178, 38, 46 },
+	cup_sign_number_4 = {  282, 178, 38, 46 },
+	cup_sign_number_5 = {  323, 178, 38, 46 },
+	cup_sign_number_6 = {  364, 178, 38, 46 },
+	cup_sign_number_7 = {  405, 178, 38, 46 },
+	cup_sign_number_8 = {  446, 178, 38, 46 },
+	
+	race_symbol_forest = {  228, 417, 44, 44 },
+	race_symbol_fields = {  275, 417, 44, 44 },
+	race_symbol_desert = {  322, 417, 44, 44 },
+	race_symbol_canals = {  369, 417, 44, 44 },
+	race_symbol_racing = {  416, 417, 44, 44 },
+	race_symbol_city = {  463, 417, 44, 44 },
+	
+	stunt_symbol_shadow = {  3, 424, 42, 44 },
+	cup_symbol_shadow = {  219, 446, 55, 58 },
+	class_symbol_shadow = {  277, 434, 153, 76 },
+	race_symbol_shadow = {  434, 241, 50, 53 },
+	
+	race_symbol_forest_locked = {  228, 464, 44, 44 },
+	race_symbol_fields_locked = {  275, 464, 44, 44 },
+	race_symbol_desert_locked = {  322, 464, 44, 44 },
+	race_symbol_canals_locked = {  369, 464, 44, 44 },
+	race_symbol_racing_locked = {  416, 464, 44, 44 },
+	race_symbol_city_locked = {  463, 464, 44, 44 },
+	
+	empty_class_slot = {  285, 241, 146, 70 },
+	
+	tournament_text = {  285, 314, 44, 18 },
+	
+	black_bar_left_wide_65 = {  3, 335, 340, 25 },
+	black_bar_left_narrow_65 = {  3, 363, 340, 19 },
+	black_bar_right_narrow_65 = {  339, 335, 170, 19 },
+	
+	empty_box = {  3, 385, 19, 19 },
+	star_box = {  24, 385, 19, 19 },
+	flag_box = {  45, 385, 19, 19 },
+	
+	clock = {  467, 168, 18, 18 },
+	lap = {  486, 168, 18, 18 },
+	
+	class_selection = {  1, 290, 253, 81 },
+	finals_selection = {  239, 244, 95, 70 },
+	grand_finals_selection = {  4, 313, 303, 70 },
+	cup_selection = {  241, 1, 132, 76 },
+	stunt_dirt_selection = {  311, 314, 97, 73 },
+	race_selection = {  312, 330, 75, 76 },
+	
+	result_trophy_1 = {  0, 375, 124, 68 },
+	result_trophy_2 = {  125, 375, 124, 68 },
+	result_trophy_3 = {  0, 444, 124, 68 },
+
+	stunt_result_trophy_1 = {  248, 150, 124, 68 },
+	stunt_result_trophy_2 = {  269, 219, 124, 68 },
+	stunt_result_trophy_3 = {  269, 288, 124, 68 },
+
+	event_result_trophy_1 = {  387, 1, 124, 68 },
+	event_result_trophy_2 = {  387, 70, 124, 68 },
+	event_result_trophy_3 = {  248, 81, 124, 68 },
+
+	result_ribbon_1 = {  161, 466, 40, 19 },
+	result_ribbon_2 = {  156, 489, 40, 19 },
+	result_ribbon_3 = {  214, 489, 40, 19 },
+	result_ribbon_4 = {  267, 489, 40, 19 },
+	result_ribbon_5 = {  312, 489, 40, 19 },
+	result_ribbon_6 = {  355, 489, 40, 19 },
+	result_ribbon_7 = {  400, 489, 40, 19 },
+	result_ribbon_8 = {  442, 489, 40, 19 },
+
+	class_info_box_tip = {  413, 193, 74, 137 },
+	class_info_box_strech = {  487, 193, 25, 137 },
+
+	derby_finals_icon = {  226, 1, 85, 60 },
+	race_finals_icon = {  226, 62, 85, 60 },
+	street_finals_icon = {  226, 123, 85, 60 },
+	grand_finals_icon = {  1, 184, 293, 60 },
+
+
+}

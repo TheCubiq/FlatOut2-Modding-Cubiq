@@ -1,0 +1,27 @@
+track_images_big1_size = { 512,512 }
+track_images_big1 = {
+	
+	track_images_racing1_big = {  0, 0, 197, 51 },
+	track_images_racing2_big = {  199, 0, 197, 51 },
+	track_images_racing3_big = {  0, 52, 197, 51 },
+	track_images_racing4_big = {  199, 52, 197, 51 },
+	track_images_racing5_big = {  0, 104, 197, 51 },
+	track_images_racing6_big = {  199, 104, 197, 51 },
+
+	track_images_fields1_big = {  0, 157, 197, 51 },
+	track_images_fields2_big = {  199, 157, 197, 51 },
+	track_images_fields3_big = {  0, 209, 197, 51 },
+	track_images_fields4_big = {  199, 209, 197, 51 },
+	track_images_fields5_big = {  0, 261, 197, 51 },
+	track_images_fields6_big = {  199, 261, 197, 51 },
+
+	track_images_forest1_big = {  0, 315, 197, 51 },
+	track_images_forest2_big = {  199, 315, 197, 51 },
+	track_images_forest3_big = {  0, 367, 197, 51 },
+	track_images_forest4_big = {  199, 367, 197, 51 },
+	track_images_forest5_big = {  0, 419, 197, 51 },
+	track_images_forest6_big = {  199, 419, 197, 51 },
+
+	trophy_backdrop = { 398, 0, 52, 47 },
+
+}

@@ -1,0 +1,1343 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CareerRewardMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 5.9.2005 14:29:38
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+dofile("data/menu/celebration.bed")
+dofile("data/menu/medals.bed")
+dofile("data/menu/garage_elements1.bed")
+dofile("data/menu/backdrops2.bed")
+
+local subclasses = {
+	[1] = { name=TRANSLATOR(TITLE_BEGINNER), subclass=1 },
+	[2] = { name=TRANSLATOR(TITLE_AMATEUR), subclass=2 },
+	[3] = { name=TRANSLATOR(TITLE_PROFESSIONAL), subclass=3 },
+	[4] = { name=TRANSLATOR(TITLE_FINALS), subclass=4 },
+}
+
+local points_by_position = {
+	[1] = 10,
+	[2] = 8,
+	[3] = 6,
+	[4] = 5,
+	[5] = 4,
+	[6] = 3,
+	[7] = 2,
+	[8] = 1,
+}
+
+local pos_text = {
+	"st",		--//TRANSLATOR(HEADER_1ST),
+	"nd",		--//TRANSLATOR(HEADER_2ND),
+	"rd",		--//TRANSLATOR(HEADER_3RD),
+	"th",		--//TRANSLATOR(HEADER_TH),
+}
+
+
+local reward_queue={}
+
+function NextRewardMenu()
+	reward_queue.current = reward_queue.current + 1
+
+	if reward_queue.current <= table.getn(reward_queue.queue) then
+		reward_queue.queue[reward_queue.current]()
+	end
+end
+
+
+function PrepareRewardMenuQueue(lastfunction,aborted)
+
+	local awards = db.GameFlow.Awards
+	local prerace=db.GameFlow.PreRace
+	local career=false
+	local stunt=false
+	local derby=false
+
+	reward_queue={ current=0, queue={} }
+
+	reward_queue.total_money=PlayerProfile:GetMoney()
+
+	if prerace.Mode == GM_CAREER then
+		career=true
+	end
+
+	if prerace.Rules == GR_DEFAULT then
+		local level=Levels[prerace.Level]
+		if level.Rules then
+			if level.Rules == GR_DERBY then
+				derby=true
+			elseif level.Rules == GR_STUNT then
+				stunt=true
+			end
+		end
+	elseif prerace.Rules == GR_STUNT then
+		stunt=true
+	elseif prerace.Rules == GR_DERBY then
+		derby=true
+	end
+
+	if not aborted then
+		reward_queue.total_money=PlayerProfile:GetMoney()
+		reward_queue.initial_money=reward_queue.total_money-db.GameFlow.Awards.TotalCashAwarded
+		PlayerProfile:SetMoney(reward_queue.initial_money)
+
+		--//cup race
+		if derby then
+			table.insert(reward_queue.queue,entermenu("menu_derby_racerewards"))
+		end
+
+		if career then
+			if stunt then
+				table.insert(reward_queue.queue,entermenu("menu_stunt_racerewards"))
+			elseif not derby then
+				--//add usual reward menu
+				table.insert(reward_queue.queue,entermenu("menu_career_cup_racerewards"))
+			end
+		end
+
+		if career or prerace.Mode == GM_SINGLE_RACE or prerace.Mode == GM_INSTANT_ACTION then 
+			if not derby and not stunt then
+				table.insert(reward_queue.queue,entermenu("menu_career_cup_topdrivers"))
+			end
+		end
+
+		if career then
+			if db.GameFlow.PreRace.Cup ~= 0 then
+				if GameFlow.IsCupFinished() then
+					table.insert(reward_queue.queue,entermenu("menu_career_cup_scorecard"))
+					table.insert(reward_queue.queue,entermenu("menu_career_cup_results"))
+				end
+
+				if awards.UnlockEvent > 0 then
+					table.insert(reward_queue.queue,entermenu("menu_career_event_unlock"))
+				end
+			end
+		end
+	end
+
+	if not stunt and not derby and awards.NumUnlockCar > 0 then
+		table.insert(reward_queue.queue,entermenu("menu_career_car_unlock"))
+	end
+
+	if not aborted then
+		if career then
+			if (db.GameFlow.Awards.FinalCompleted > 0 and db.GameFlow.Awards.FinalCompleted <= 4) or db.GameFlow.Awards.OMGGameCompletedGratzDING then
+				local f=function()
+					local classvideos = {
+						"conga",
+						"congb",
+						"congc",
+						"congd",
+					}
+
+					local p=db.GameFlow.Awards.FinalCompleted
+
+					if db.GameFlow.Awards.OMGGameCompletedGratzDING then
+						p=4
+					end
+
+					local video=classvideos[p]
+
+					wm.SetGlobalAlpha(0)
+					GUI:PlayVideo("data/video/"..video)
+					Event:SendEvent(event(EVENT_GAMEFLOW_RESET_TIMER_AFTER_ATTRACT))
+					NextRewardMenu()
+				end
+				table.insert(reward_queue.queue,f) --//entermenu("menu_career_final_video"))
+			elseif db.GameFlow.Awards.UnlockFinals > 0 and db.GameFlow.Awards.UnlockFinals < 4 then
+				table.insert(reward_queue.queue,entermenu("menu_career_final_unlock"))
+			elseif awards.UnlockSubClass > 0 then
+				table.insert(reward_queue.queue,entermenu("menu_career_subclass_unlock"))
+			end
+		end
+	end
+
+
+	if not aborted then
+		local f=function()
+			if PlayerProfile:GetMoney() ~= reward_queue.total_money then 
+				if DEV then
+					print(string.format("invalid cash balance at the end of reward menus (%d vs %d). normal in triloop. fixing.",PlayerProfile:GetMoney(),reward_queue.total_money or 0))
+				end
+				PlayerProfile:SetMoney(reward_queue.total_money)
+			end
+			NextRewardMenu()
+		end
+		table.insert(reward_queue.queue,f)
+	end
+	table.insert(reward_queue.queue,lastfunction or entermenu("menu_career"))
+
+end
+
+
+
+function nextrewardmenu()
+	return function() NextRewardMenu() end
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// stunt rewards
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_stunt_racerewards = CreateMenuFromTemplate("template_basic")
+menu_stunt_racerewards.options.title=TRANSLATOR(TITLE_RACERESULTS)
+
+function menu_stunt_racerewards.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images_small.tga",character_images_small,character_images_small_size)
+	self:addResource("medals.tga",medals,medals_size)
+
+	self:loadResources()
+
+end
+
+
+function menu_stunt_racerewards.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,168),Size=SIZE(370,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(370,168),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+	Frame{Position=POS(0,192),Size=SIZE(379,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(379,192),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+	Frame{Position=POS(239,220),Size=SIZE(40,32)}:AttachResource(self:getResource("thick_black_bar_tip"))
+	Frame{Position=POS(279,220),Size=SIZE(361,32)}:AttachResource(self:getResource("thick_black_bar_main"))
+
+
+	local player_pos=db.GameFlow.PostRace:GetProperty("PlayerPosition",0)
+	local player_points=0
+	local stunttype=Levels[db.GameFlow.PreRace.Level].StuntType
+
+	local text
+
+	if stunttype == STUNT_FIELDGOAL then
+		player_points=db.GameFlow.PostRace:GetProperty("StuntFinalScore",0)
+		text=ConvertToWString(TimeToString(player_points or 0))
+	else
+		player_points=db.GameFlow.PostRace:GetProperty("StuntFinalScore",0)
+		text=WStringConcat(ConvertToWString(string.format("%d ",player_points or 0)),GameFlow.GetStuntScoreType(stunttype))
+	end
+
+	local p=player_pos
+	if p > 3 then
+		p=4
+	end
+	
+	
+
+	StaticText{Title=TRANSLATOR(INGAME_SCORE_POSITION_TITLE),Position=POS(183,170),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(EVENT_FINAL_RESULT),Position=POS(183,194),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(TITLE_REWARD),Position=POS(400,226),Font=fontlarge(),Align=FONTF_RIGHT,Color=GetPaletteColor(33)}
+	StaticText{Title=ConvertToWString(string.format("%d%s",player_pos,pos_text[p])),Position=POS(314,170),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Title=text,Position=POS(379,194),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Title=MONEY(db.GameFlow.Awards.TotalCashAwarded),Position=POS(417,226),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+	local handler=InputHandler{Name="inputhandler"}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+--//			EnterMenu("menu_career_cup_topdrivers")
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+
+	PlayerProfile:AddMoney(db.GameFlow.Awards.TotalCashAwarded)
+
+end
+
+function menu_stunt_racerewards.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// derby racerewards
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_derby_racerewards = CreateMenuFromTemplate("template_basic")
+menu_derby_racerewards.options.title=TRANSLATOR(TITLE_RACERESULTS)
+
+function menu_derby_racerewards.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images_small.tga",character_images_small,character_images_small_size)
+	self:addResource("medals.tga",medals,medals_size)
+
+	self:loadResources()
+
+end
+
+
+function menu_derby_racerewards.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,80),Size=SIZE(382,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(382,80),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+	Frame{Position=POS(0,104),Size=SIZE(391,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(391,104),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+
+
+	StaticText{Title=TRANSLATOR(TITLE_RACEPOSITION),Position=POS(89,82),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(EVENT_DERBY_POINTS),Position=POS(96,106),Font=fontsmall(),Color=GetPaletteColor(34)}
+
+
+
+	local awards=db.GameFlow.Awards
+	local player_pos=db.GameFlow.PostRace:GetProperty("PlayerPosition",0)
+	local player_time=db.GameFlow.PostRace:GetProperty("FastestLapTime",0)
+	local player_crashbonus=awards.CrashWinnings
+	local player_id=GameFlow.GetPlayerIdByPosition(player_pos)
+	
+	local cuprace=CupManager:GetCurrentRaceIndex()
+
+
+	local num_whammo=awards.NumWhammo
+	local num_powerhit=awards.NumPowerHit
+	local num_superflip=awards.NumSuperFlip
+	local num_blastout=awards.NumBlastOut
+	local num_ragdolled=awards.NumRagdolled
+	local num_wrecked=awards.NumWrecked
+
+
+	local time_string=TimeToString(player_time)
+
+	if player_pos > 4 then
+		p=4
+	else
+		p=player_pos
+	end
+
+	local star=self:getResource("yellow_star")
+	local starsize=GetResourceSize(star)
+
+	StaticText{Position=POS(334,82),Title=ConvertToWString(string.format("%d%s",player_pos,pos_text[p])),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+	local pts=db.GameFlow.PostRace:GetProperty("DerbyDamagePoints",0)
+	pts = pts + db.GameFlow.PostRace:GetProperty("DerbyWreckPoints",0)
+	pts = pts + db.GameFlow.PostRace:GetProperty("DerbyRankPoints",0)
+
+	local derbypoints=ConvertToWString(string.format("%d",pts))
+
+	StaticText{Position=POS(334,106),Title=derbypoints,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//StaticText{Title=TRANSLATOR(TITLE_RACEREWARDS),Position=POS(249,160),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+
+	--//whammo
+	Frame{Position=POS(217,177+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(217+31,177+10),Size=SIZE(392,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(228,177+10),Size=starsize}:AttachResource(star) --//"oh my god, it's full of stars!"
+	StaticText{Position=POS(256,178+10),Title=TRANSLATOR(INGAME_CRASHBONUS_WHAMMO),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,178+10),Title=ConvertToWString(string.format("x%d",num_whammo)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,178+10),Title=MONEY(awards.Whammo*num_whammo),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//powerhit
+	Frame{Position=POS(226,201+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(226+31,201+10),Size=SIZE(383,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(237,201+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(265,202+10),Title=TRANSLATOR(INGAME_CRASHBONUS_POWERHIT),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,202+10),Title=ConvertToWString(string.format("x%d",num_powerhit)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,202+10),Title=MONEY(awards.PowerHit*num_powerhit),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//superflip
+	Frame{Position=POS(235,225+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(235+31,225+10),Size=SIZE(374,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(246,225+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(274,226+10),Title=TRANSLATOR(INGAME_CRASHBONUS_SUPERFLIP),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,226+10),Title=ConvertToWString(string.format("x%d",num_superflip)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,226+10),Title=MONEY(awards.SuperFlip*num_superflip),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+	
+
+	--//blastout
+	Frame{Position=POS(244,249+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(244+31,249+10),Size=SIZE(365,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(255,249+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(283,250+10),Title=TRANSLATOR(INGAME_CRASHBONUS_BLASTOUT),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,250+10),Title=ConvertToWString(string.format("x%d",num_blastout)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,250+10),Title=MONEY(awards.BlastOut*num_blastout),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//ragdolled
+	Frame{Position=POS(253,273+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(253+31,273+10),Size=SIZE(356,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(264,273+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(292,274+10),Title=TRANSLATOR(INGAME_CRASHBONUS_RAGDOLLED),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,274+10),Title=ConvertToWString(string.format("x%d",num_ragdolled)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,274+10),Title=MONEY(awards.Ragdolled*num_ragdolled),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//wrecked
+	Frame{Position=POS(262,297+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(262+31,297+10),Size=SIZE(347,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(273,297+10),Size=starsize}:AttachResource(star) 	
+	StaticText{Position=POS(301,298+10),Title=TRANSLATOR(INGAME_CRASHBONUS_WRECKED),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,298+10),Title=ConvertToWString(string.format("x%d",num_wrecked)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	--//StaticText{Position=POS(580,298+10),Title=MONEY(awards.Wrecked*num_wrecked),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+	--//total
+	if db.GameFlow.PreRace.Mode == GM_CAREER then
+		Frame{Position=POS(280,351+10),Size=SIZE(40,32)}:AttachResource(self:getResource("thick_black_bar_tip"))
+		Frame{Position=POS(280+40,351+10),Size=SIZE(320,32)}:AttachResource(self:getResource("thick_black_bar_main"))
+		StaticText{Position=POS(320,352+10),Title=TRANSLATOR(TITLE_TOTAL),Font=fontlarge(),Color=GetPaletteColor(34)}
+		StaticText{Position=POS(580,352+10),Title=MONEY(db.GameFlow.Awards.TotalCashAwarded),Font=fontlarge(),Align=FONTF_RIGHT,Color=GetPaletteColor(33)}
+	end
+
+	local handler=InputHandler{Name="inputhandler"}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+--//			EnterMenu("menu_career_cup_topdrivers")
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+
+	PlayerProfile:AddMoney(db.GameFlow.Awards.TotalCashAwarded)
+
+end
+
+function menu_derby_racerewards.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// cup racerewards
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_career_cup_racerewards = CreateMenuFromTemplate("template_career")
+menu_career_cup_racerewards.options.title=TRANSLATOR(TITLE_RACERESULTS)
+
+function menu_career_cup_racerewards.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images_small.tga",character_images_small,character_images_small_size)
+	self:addResource("medals.tga",medals,medals_size)
+
+	self:loadResources()
+
+end
+
+
+function menu_career_cup_racerewards.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,80),Size=SIZE(382,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(382,80),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+	Frame{Position=POS(0,104),Size=SIZE(391,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(391,104),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+	Frame{Position=POS(0,128),Size=SIZE(400,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(400,128),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+
+
+	StaticText{Title=TRANSLATOR(TITLE_RACEPOSITION),Position=POS(89,82),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(TITLE_CUPPOINTS),Position=POS(96,106),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(TITLE_BESTLAPTIME),Position=POS(105,130),Font=fontsmall(),Color=GetPaletteColor(34)}
+
+	local money_awarded=0
+
+	local awards=db.GameFlow.Awards
+	local player_pos=db.GameFlow.PostRace:GetProperty("PlayerPosition",0)
+	local player_time=db.GameFlow.PostRace:GetProperty("FastestLapTime",0)
+	local player_crashbonus=awards.CrashWinnings
+	local player_id=GameFlow.GetPlayerIdByPosition(player_pos)
+	
+	local cuprace=CupManager:GetCurrentRaceIndex()
+
+
+	local player_cuppoints=points_by_position[GameFlow.GetPlayerCupRacePosition(1,cuprace)]
+	
+	local num_whammo=awards.NumWhammo
+	local num_powerhit=awards.NumPowerHit
+	local num_superflip=awards.NumSuperFlip
+	local num_blastout=awards.NumBlastOut
+	local num_ragdolled=awards.NumRagdolled
+	local num_wrecked=awards.NumWrecked
+
+
+	local time_string=TimeToString(player_time)
+
+	if player_pos > 4 then
+		p=4
+	else
+		p=player_pos
+	end
+
+	local star=self:getResource("yellow_star")
+	local starsize=GetResourceSize(star)
+
+	StaticText{Position=POS(334,82),Title=ConvertToWString(string.format("%d%s",player_pos,pos_text[p])),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(334,106),Title=ConvertToWString(string.format("%d",player_cuppoints)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(334,130),Title=ConvertToWString(time_string),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	StaticText{Title=TRANSLATOR(TITLE_RACEREWARDS),Position=POS(249,160),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+
+	--//whammo
+	Frame{Position=POS(217,177+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(217+31,177+10),Size=SIZE(392,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(228,177+10),Size=starsize}:AttachResource(star) --//"oh my god, it's full of stars!"
+	StaticText{Position=POS(256,178+10),Title=TRANSLATOR(INGAME_CRASHBONUS_WHAMMO),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,178+10),Title=ConvertToWString(string.format("x%d",num_whammo)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,178+10),Title=MONEY(awards.Whammo*num_whammo),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//powerhit
+	Frame{Position=POS(226,201+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(226+31,201+10),Size=SIZE(383,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(237,201+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(265,202+10),Title=TRANSLATOR(INGAME_CRASHBONUS_POWERHIT),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,202+10),Title=ConvertToWString(string.format("x%d",num_powerhit)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,202+10),Title=MONEY(awards.PowerHit*num_powerhit),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//superflip
+	Frame{Position=POS(235,225+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(235+31,225+10),Size=SIZE(374,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(246,225+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(274,226+10),Title=TRANSLATOR(INGAME_CRASHBONUS_SUPERFLIP),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,226+10),Title=ConvertToWString(string.format("x%d",num_superflip)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,226+10),Title=MONEY(awards.SuperFlip*num_superflip),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+	
+
+	--//blastout
+	Frame{Position=POS(244,249+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(244+31,249+10),Size=SIZE(365,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(255,249+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(283,250+10),Title=TRANSLATOR(INGAME_CRASHBONUS_BLASTOUT),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,250+10),Title=ConvertToWString(string.format("x%d",num_blastout)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,250+10),Title=MONEY(awards.BlastOut*num_blastout),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//ragdolled
+	Frame{Position=POS(253,273+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(253+31,273+10),Size=SIZE(356,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(264,273+10),Size=starsize}:AttachResource(star)
+	StaticText{Position=POS(292,274+10),Title=TRANSLATOR(INGAME_CRASHBONUS_RAGDOLLED),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,274+10),Title=ConvertToWString(string.format("x%d",num_ragdolled)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,274+10),Title=MONEY(awards.Ragdolled*num_ragdolled),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+	--//wrecked
+	Frame{Position=POS(262,297+10),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(262+31,297+10),Size=SIZE(347,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	Frame{Position=POS(273,297+10),Size=starsize}:AttachResource(star) 	
+	StaticText{Position=POS(301,298+10),Title=TRANSLATOR(INGAME_CRASHBONUS_WRECKED),Font=fontsmall(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(434,298+10),Title=ConvertToWString(string.format("x%d",num_wrecked)),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Position=POS(580,298+10),Title=MONEY(awards.Wrecked*num_wrecked),Align=FONTF_RIGHT,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+	--//total
+	Frame{Position=POS(280,351+10),Size=SIZE(40,32)}:AttachResource(self:getResource("thick_black_bar_tip"))
+	Frame{Position=POS(280+40,351+10),Size=SIZE(320,32)}:AttachResource(self:getResource("thick_black_bar_main"))
+	StaticText{Position=POS(320,352+10),Title=TRANSLATOR(TITLE_TOTAL),Font=fontlarge(),Color=GetPaletteColor(34)}
+	StaticText{Position=POS(580,352+10),Title=MONEY(player_crashbonus),Font=fontlarge(),Align=FONTF_RIGHT,Color=GetPaletteColor(33)}
+
+
+	PlayerProfile:AddMoney(player_crashbonus)
+
+
+	local medals = {
+		"gold_medal",
+		"silver_medal",
+		"bronze_medal",
+	}
+
+
+	if player_pos < 4 then
+		w=Frame{Position=POS(66,191),Size=SIZE(122,167)}:AttachResource(self:getResource(medals[player_pos]))
+	end
+
+	local handler=InputHandler{Name="inputhandler"}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+--//			EnterMenu("menu_career_cup_topdrivers")
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+
+end
+
+function menu_career_cup_racerewards.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+dofile("data/menu/character_images_small.bed")
+
+
+
+menu_career_cup_topdrivers = CreateMenuFromTemplate("template_career")
+
+menu_career_cup_topdrivers.options.title=TRANSLATOR(TITLE_TOPDRIVERS)
+
+
+
+function menu_career_cup_topdrivers.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images_small.tga",character_images_small,character_images_small_size)
+	
+
+
+	self:loadResources()
+end
+
+function menu_career_cup_topdrivers.init(self)
+	self.parent:init(self)
+
+	local emptypic=self:getResource("portrait_empty")
+	local emptysize=GetResourceSize(emptypic)
+	local end_round=self:getResource("end_round")
+	local portraitsize=SIZE(94,58)
+
+	local playerpic=self:getResource("player_portrait_male")
+
+	if PlayerProfile:GetGender() == 1 then --//female
+		playerpic=self:getResource("player_portrait_female")
+	end
+
+	local postrace=db.GameFlow.PostRace
+	local awards = db.GameFlow.Awards
+
+	local career
+	local playerinfo
+	local player_id
+	local playername
+	local res
+	local prize
+	
+	if db.GameFlow.PreRace.Mode == GM_CAREER then
+		career=true
+	else
+		HideMenuBarMoney()
+		HideMenuBarCar()
+	end
+	
+
+
+	local money_awarded=0
+
+	--//best wrecker
+    res=emptypic
+	playername=TRANSLATOR(TITLE_PLAYERNAME_NONE)
+	prize=0
+
+	player_id=postrace.BestWreckerId
+	if player_id > 0 then
+		playerinfo=db.GameFlow[string.format("PlayerInfo[%d]",player_id-1)]
+		if playerinfo.Type == PLAYERTYPE_LOCAL then
+			res=playerpic
+			money_awarded = money_awarded + awards.BestWrecker
+		else
+			res=self:getResource(string.format("ai_portrait_%d_small",player_id-1))
+		end
+
+		prize=awards.BestWrecker
+		playername=playerinfo.Name
+		
+		if career then
+			StaticText{Title=MONEY(prize),Position=POS(526,105),Layer=5,Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		end
+	end
+
+	Frame{Position=POS(79,107),Size=portraitsize}:AttachResource(res)
+	Frame{Position=POS(156,107),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(156+31,107),Size=SIZE(484-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	
+	
+	StaticText{Title=TRANSLATOR(TITLE_TOPDRIVERS_BESTWRECKER),Position=POS(162,89),Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Title=playername,Position=POS(170,107),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+
+	--//blast master
+    res=emptypic
+	playername=TRANSLATOR(TITLE_PLAYERNAME_NONE)
+	prize=0
+
+	player_id=postrace.BlastMasterId
+	if player_id > 0 then
+		playerinfo=db.GameFlow[string.format("PlayerInfo[%d]",player_id-1)]
+		if playerinfo.Type == PLAYERTYPE_LOCAL then
+			res=playerpic
+			money_awarded = money_awarded + awards.BlastMaster
+		else
+			res=self:getResource(string.format("ai_portrait_%d_small",player_id-1))
+		end
+
+		playername=playerinfo.Name
+		prize=awards.BlastMaster
+
+		if career then
+			StaticText{Title=MONEY(prize),Position=POS(526,177),Layer=5,Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		end
+	end
+
+	Frame{Position=POS(103,179),Size=portraitsize}:AttachResource(res)
+	Frame{Position=POS(181,179),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(181+31,179),Size=SIZE(459-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+	
+	
+	StaticText{Title=TRANSLATOR(TITLE_TOPDRIVERS_BLASTMASTER),Position=POS(187,161),Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Title=playername,Position=POS(195,178),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+	--//fastest lap
+    res=emptypic
+	playername=TRANSLATOR(TITLE_PLAYERNAME_NONE)
+	prize=0
+
+	player_id=postrace.FastestLapId
+	if player_id > 0 then
+		playerinfo=db.GameFlow[string.format("PlayerInfo[%d]",player_id-1)]
+		if playerinfo.Type == PLAYERTYPE_LOCAL then
+			res=playerpic
+			money_awarded = money_awarded + awards.FastestLap
+		else
+			res=self:getResource(string.format("ai_portrait_%d_small",player_id-1))
+		end
+
+		prize=awards.FastestLap
+		playername=playerinfo.Name
+		if career then
+			StaticText{Title=MONEY(prize),Position=POS(526,249),Layer=5,Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		end
+	end
+
+	Frame{Position=POS(127,251),Size=portraitsize}:AttachResource(res)
+	Frame{Position=POS(205,251),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(205+31,251),Size=SIZE(435-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+
+	
+	StaticText{Title=TRANSLATOR(TITLE_TOPDRIVERS_FASTESTLAP),Position=POS(211,233),Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Title=playername,Position=POS(219,250),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+	--//daredevil
+
+    res=emptypic
+	playername=TRANSLATOR(TITLE_PLAYERNAME_NONE)
+	prize=0
+
+	player_id=postrace.DareDevilId
+	if player_id > 0 then
+		playerinfo=db.GameFlow[string.format("PlayerInfo[%d]",player_id-1)]
+		if playerinfo.Type == PLAYERTYPE_LOCAL then
+			res=playerpic
+			money_awarded = money_awarded + awards.DareDevil
+		else
+			res=self:getResource(string.format("ai_portrait_%d_small",player_id-1))
+		end
+
+		prize=awards.DareDevil
+		playername=playerinfo.Name
+		if career then
+			StaticText{Title=MONEY(prize),Position=POS(526,320),Layer=5,Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		end
+	end
+	
+	Frame{Position=POS(152,323),Size=portraitsize}:AttachResource(res)
+	Frame{Position=POS(230,323),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+	Frame{Position=POS(230+31,323),Size=SIZE(410-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+
+
+	StaticText{Title=TRANSLATOR(TITLE_TOPDRIVERS_DAREDEVIL),Position=POS(236,305),Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Title=playername,Position=POS(244,322),Font=fontlarge(),Color=GetPaletteColor(34)}
+	
+
+	PlayerProfile:AddMoney(money_awarded)
+
+	local input=InputHandler{}
+
+
+	function input.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+		end
+	end
+
+	input:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+end
+
+function menu_career_cup_topdrivers.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_career_cup_scorecard = CreateMenuFromTemplate("template_career")
+
+menu_career_cup_scorecard.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+
+--[[--/*
+
+{
+	players = {
+		[1] = {	 --in finishing order
+				id=playerid
+				points = { [1] ...[numcupraces]  position }
+				totalpoints
+		}
+	}
+
+
+--]]--*/
+
+
+local function BuildCupResultTable()
+	local t={}
+
+	local cupdata=Classes[db.GameFlow.PreRace.Class].Cups[db.GameFlow.PreRace.Cup]
+    
+	t.num_races=table.getn(cupdata.Races)
+	t.players={}
+
+	for i=1,GameFlow.GetNumResults() do
+		local id=GameFlow.GetPlayerIdByPosition(i) or i-1
+		t.players[i]={}
+		t.players[i].id=id
+		t.players[i].totalpoints=GameFlow.GetPlayerCupPoints(id) or 0
+		t.players[i].points={}
+		for cuprace=1,t.num_races do
+			t.players[i].points[cuprace]=points_by_position[GameFlow.GetPlayerCupRacePosition(id,cuprace) or 8]
+		end
+	end
+
+	return t
+end
+
+
+function menu_career_cup_scorecard.create(self)
+	self.parent:create(self)
+
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+
+	self:loadResources()
+
+
+end
+
+function menu_career_cup_scorecard.init(self)
+	self.parent:init(self)
+
+
+	--//local w=Button{Position=POS(0,82),Size=SIZE(640,25),Alpha=0.4}:AttachResource(self:getResource("black_transparent"))
+
+	
+	Frame{Position=POS(326,87),Size=SIZE(13,31)}:AttachResource(self:getResource("cup_title_bot_ang"))
+	Frame{Position=POS(326+13,87),Size=SIZE(302,31)}:AttachResource(self:getResource("cup_title_bot"))
+
+	local cup_name=ConvertToWString(Classes[db.GameFlow.PreRace.Class].Cups[db.GameFlow.PreRace.Cup].Name)
+	StaticText{Title=cup_name,Position=POS(342,90),Font=fontlarge(),Color=GetPaletteColor(33)}
+
+
+
+	local results=BuildCupResultTable()
+
+
+	
+
+	StaticText{Title=TRANSLATOR(TITLE_CROSSHATCH),Position=POS(45,126),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(TITLE_NAME),Position=POS(75,126),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(TITLE_POINTS),Position=POS(550,126),Align=FONTF_CENTER,Font=fontsmall(),Color=GetPaletteColor(33)}
+
+	local pos=POS(353,126)
+	for i=1,results.num_races do
+		StaticText{Title=ConvertToWString(string.format("%d",i)),Position=pos,Font=fontsmall(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		pos[1] = pos[1] + 29
+	end
+
+
+	local name_start_delay=0.0
+	local points_start_delay=0.0
+
+	local barpos=POS(0,144)
+	local x_adj=0
+
+	for player=1,table.getn(results.players) do
+		local player_results=results.players[player]
+		
+		local w
+
+		local p=player
+		if p > 3 then
+			p=4
+		end
+
+		--//bar
+		local bar=Frame{Position=barpos,Size=SIZE(640,21),Name=string.format("player_%d",player),DrawBackgroundColor=TRUE,Alpha=0.4} --//:AttachResource(self:getResource("black_transparent"))
+		if player_results.id == 1 then
+			bar:SetColor(0.75,0.60,0.25,0.0,true)
+		else
+			bar:SetColor(0.0,0.0,0.0,0.0,true)
+		end
+
+		AnimateWindowAlpha(bar,0.0,0.5,0.1,name_start_delay)
+
+		--//position
+		--//if CupManager:IsCupPositionVisible(player) then
+			w=StaticText{Title=ConvertToWString(string.format("%d%s",player,pos_text[p])),Position=POS(barpos[1]+48+x_adj,2),Parent=bar,Font=fontsmall(),Color=GetPaletteColor(1)}
+			AnimateWindowAlpha(w,0.0,1.0,0.1,name_start_delay+0.1)
+		--//end
+
+		--//player name
+		w=StaticText{Title=GameFlow.GetPlayerName(player_results.id),Position=POS(barpos[1]+82+x_adj,2),Parent=bar,Font=fontsmall(),Color=GetPaletteColor(34)}
+		AnimateWindowAlpha(w,0.0,1.0,0.3,name_start_delay+0.3)
+
+		
+		local point_pos=POS(353,2)
+		for race=1,results.num_races do
+			w=StaticText{Title=ConvertToWString(string.format("%d",player_results.points[race] or 0)),Position=point_pos,Align=FONTF_CENTER,Font=fontsmall(),Color=GetPaletteColor(34),Parent=bar}
+		
+			AnimateWindowAlpha(w,0.0,1.0,0.2,name_start_delay+0.6+points_start_delay)
+
+			point_pos[1]=point_pos[1] + 29
+		end
+
+		w=StaticText{Title=ConvertToWString(string.format("%d",player_results.totalpoints or 0)),Position=POS(563,2),Font=fontsmall(),Align=FONTF_CENTER,Color=GetPaletteColor(1),Parent=bar}
+		AnimateWindowAlpha(w,0.0,1.0,0.2,name_start_delay+0.6+points_start_delay)
+
+		barpos[2] = barpos[2] + 25
+		x_adj=x_adj + 7
+
+		name_start_delay=name_start_delay + 0.2
+	end
+
+
+	local handler=InputHandler{Name="inputhandler"}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+
+	GUI:SetBackgroundVideo("data/video/flag")
+
+end
+
+
+function menu_career_cup_scorecard.deinit(self)
+	self.parent:deinit(self)
+
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// subclass completed
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_career_subclass_unlock = CreateMenuFromTemplate("template_career")
+
+menu_career_subclass_unlock.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+function menu_career_subclass_unlock.create(self)
+	self.parent:create(self)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+	
+end
+
+function menu_career_subclass_unlock.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,97),Size=SIZE(640,221),Layer=0}:AttachResource(self:getResource("car_shop_confirmation_bg_bar"))
+	Frame{Position=POS(0,199),Size=SIZE(640,73),Layer=1,DrawBackgroundColor=TRUE,Alpha=0.5,Color=GetPaletteColor(0)}
+
+
+	StaticText{Title=TRANSLATOR(MESSAGE_QUALIFIED),Position=POS(320,140),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(34)}
+	StaticText{Title=TRANSLATOR(MESSAGE_QUALIFIED2),Position=POS(320,166),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(34)}
+	StaticText{Title=subclasses[db.GameFlow.Awards.UnlockSubClass].name,Position=POS(320,208),Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(TITLE_REWARD),Position=POS(318,242),Font=fontmedium(),Align=FONTF_RIGHT,Color=GetPaletteColor(33)}
+	StaticText{Title=MONEY(db.GameFlow.Awards.SubClassWinnings),Position=POS(322,242),Font=fontmedium(),Align=FONTF_LEFT,Color=GetPaletteColor(34)}
+
+	local input=InputHandler{Name="inputhandler"}
+
+	input.onKeyPressed = function(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+		end
+	end
+	input:SetFocus()
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+	--//GUI:SetBackground("data/menu/canvas_bg.tga")
+	
+	PlayerProfile:AddMoney(db.GameFlow.Awards.SubClassWinnings)
+end
+
+function menu_career_subclass_unlock.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// FINAL UNLOCK
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_career_final_video = CreateMenuFromTemplate("template_career")
+menu_career_final_video.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+function menu_career_final_video.create(self)
+	self.parent:create(self)
+
+	self.going=false
+	self:loadResources()
+
+
+end
+
+function menu_career_final_video.init(self)
+	self.parent:init(self)
+
+	local classvideos = {
+		"conga",
+		"congb",
+		"congc",
+		"congd",
+	}
+
+	local p=db.GameFlow.Awards.FinalCompleted
+
+	if db.GameFlow.Awards.OMGGameCompletedGratzDING then
+		p=4
+	end
+
+	local video=classvideos[p]
+
+	GUI:PlayVideo("data/video/"..video)
+--//	GUI:SetBackgroundVideo("data/video/bg_main")
+
+
+end
+
+function menu_career_final_video.deinit(self)
+	self.parent:init(self)
+end
+
+function menu_career_final_video.update(self)
+	if not self.going then
+		NextRewardMenu()
+		self.going=true
+	end
+end
+
+
+menu_career_final_unlock = CreateMenuFromTemplate("template_career")
+
+menu_career_final_unlock.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+function menu_career_final_unlock.create(self)
+	self.parent:create(self)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+	
+end
+
+function menu_career_final_unlock.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,97),Size=SIZE(640,221),Layer=0}:AttachResource(self:getResource("car_shop_confirmation_bg_bar"))
+	Frame{Position=POS(0,199),Size=SIZE(640,73),Layer=1,DrawBackgroundColor=TRUE,Alpha=0.5,Color=GetPaletteColor(0)}
+
+
+	local classnames={
+		TRANSLATOR(MULTIPLAYER_CARTYPE_DERBY),
+		TRANSLATOR(MULTIPLAYER_CARTYPE_RACING),
+		TRANSLATOR(MULTIPLAYER_CARTYPE_STREET),
+	}
+
+	local clsname=classnames[db.GameFlow.Awards.UnlockFinals]
+	local text=WStringConcat(clsname,L" ")
+	text=WStringConcat(text,TRANSLATOR(CLASS_COMPLETED))
+
+	StaticText{Title=text,Position=POS(320,166),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(TITLE_REWARD),Position=POS(318,210),Font=fontmedium(),Align=FONTF_RIGHT,Color=GetPaletteColor(33)}
+	StaticText{Title=MONEY(db.GameFlow.Awards.SubClassWinnings),Position=POS(322,210),Font=fontmedium(),Align=FONTF_LEFT,Color=GetPaletteColor(34)}
+
+	text=WStringConcat(clsname,L" ")
+	text=WStringConcat(text,TRANSLATOR(FINAL_UNLOCKED))
+
+	StaticText{Title=text,Position=POS(320,244),Font=fontmedium(),Align=FONTF_CENTER,Color=GetPaletteColor(34)}
+
+	local input=InputHandler{Name="inputhandler"}
+
+	input.onKeyPressed = function(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A) then
+			self.pressed=true
+			NextRewardMenu()
+		end
+	end
+	input:SetFocus()
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+	--//GUI:SetBackground("data/menu/canvas_bg.tga")
+
+	PlayerProfile:AddMoney(db.GameFlow.Awards.SubClassWinnings)
+
+end
+
+function menu_career_final_unlock.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// CAR UNLOCK
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_career_car_unlock = CreateMenuFromTemplate("template_career")
+
+local function LoadNextAwardCar()
+
+	local state=menu_career_car_unlock.state
+	local cur=state.cur_car+1
+
+	if cur > table.getn(state.cars) then 
+		return false
+	end
+
+	GUI:LoadCar(GetCarDataIndex(state.cars[cur]),1)
+	GUI:AllowCarRotate(TRUE)
+	GUI:SetCarRotate(TRUE)
+	GUI:SetCarPose(POSE_AWARD)
+
+	state.cur_car=cur
+	local car_data=db.FlatOut2.Cars:GetProperty("Car",state.cars[cur])
+
+	local w=W("car_logo")
+	if w then
+		w:SetTitle(ConvertToWString(string.upper(car_data.Name)))
+		w:ShowWindow()
+	end
+
+	return true
+end
+
+
+
+
+menu_career_car_unlock.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+function menu_career_car_unlock.create(self)
+	self.parent:create(self)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+	
+	self.state={}
+	self.state.cars={}
+	
+
+	local awards=db.GameFlow.Awards
+	
+
+	for i=1,awards.NumUnlockCar do
+		table.insert(self.state.cars,awards:GetProperty("UnlockCar",i-1))
+	end	
+
+	self.state.cur_car=0
+
+
+end
+
+function menu_career_car_unlock.init(self)
+	self.parent:init(self)
+
+	Frame{Position=POS(0,97),Size=SIZE(640,221),Layer=0}:AttachResource(self:getResource("car_shop_confirmation_bg_bar"))
+
+	Frame{Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+
+	StaticText{Title=TRANSLATOR(MESSAGE_CONGRATULATIONS),Position=POS(320,347),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(MESSAGE_CARUNLOCKED),Position=POS(320,368),Align=FONTF_CENTER,Font=fontmedium(),Color=GetPaletteColor(34)}
+
+	StaticText{Name="car_logo",Position=POS(580,257),Align=FONTF_RIGHT,Font=fonthuge()}
+
+
+	local input=InputHandler{Name="inputhandler"}
+
+	input.onKeyPressed = function(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A then
+			if not menu_career_car_unlock.state.leaving then
+				if not LoadNextAwardCar() then
+					menu_career_car_unlock.state.leaving=true; 
+					NextRewardMenu()
+				end
+			end
+		end
+	end
+	input:SetFocus()
+
+	LoadNextAwardCar()
+
+	GUI:SetBackground("data/menu/upg_shop_bg.tga")
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+
+end
+
+function menu_career_car_unlock.deinit(self)
+	self.parent:deinit(self)
+
+
+
+end
+
+function menu_career_car_unlock.starthide(self)
+	self.parent:starthide(self)
+
+	GUI:HideCar()
+end
+
+function menu_career_car_unlock.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// EVENT UNLOCK
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_career_event_unlock = CreateMenuFromTemplate("template_career")
+
+menu_career_event_unlock.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+
+function menu_career_event_unlock.create(self)
+	self.parent:create(self)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+	self:addResource("track_unlocked.tga",track_unlocked,track_unlocked_size)
+	self:addResource("backdrops2.tga",backdrops2,backdrops2_size)
+
+	self:loadResources()
+	
+end
+
+function menu_career_event_unlock.init(self)
+	self.parent:init(self)
+
+
+
+	Frame{Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+
+	StaticText{Title=TRANSLATOR(MESSAGE_CONGRATULATIONS),Position=POS(320,347),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(MESSAGE_NEWEVENT),Position=POS(320,368),Align=FONTF_CENTER,Font=fontmedium(),Color=GetPaletteColor(34)}
+
+	local pos=POS(386,67)
+
+	local p=Frame{Position=pos,Size=SIZE(60+204,63)}
+	Frame{Position=POS(0,0),Size=SIZE(60,63),Parent=p}:AttachResource(self:getResource("unlock_event_tip"))
+	Frame{Position=POS(60,0),Size=SIZE(204,63),Parent=p}:AttachResource(self:getResource("unlock_event_str"))
+
+	StaticText{Title=TRANSLATOR(HEADER_EVENT),Position=RELATIVEPOS(POS(410,81),pos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+
+	local eventdata=Classes[PlayerProfile:GetActiveClass()].Events[db.GameFlow.Awards.UnlockEvent]
+	local name=ConvertToWString(eventdata.Name or "ERROR")
+
+	StaticText{Title=name,Position=RELATIVEPOS(POS(413,105),pos),Font=fontlarge(),Color=GetPaletteColor(34),Parent=p}
+
+
+	GUI:SetBackground("data/menu/"..eventdata.Background)
+
+	local handler=InputHandler{}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if not self.pressed and (virtualkey == KeyCodes.BUTTON_A or virtualkey == KeyCodes.BUTTON_START) then
+			self.pressed=true
+			NextRewardMenu()
+		end
+	end
+
+	handler:SetFocus()
+
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+	--//GUI:SetBackground("data/menu/canvas_bg.tga")
+
+end
+
+function menu_career_event_unlock.deinit(self)
+	self.parent:deinit(self)
+
+end
+

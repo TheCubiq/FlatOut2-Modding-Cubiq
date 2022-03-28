@@ -1,0 +1,11 @@
+carshop_selection_icons_size = { 512, 256 }
+carshop_selection_icons = {
+
+
+	
+	derby_shop_icon = 	{ 1, 1, 239, 66 },
+	race_shop_icon = 	{ 1, 69, 239, 66 }, 
+	street_shop_icon =	{ 0, 138, 239, 66 },  	
+	shop_slc_glow =		{ 251, 69, 256, 84 },
+	
+}		

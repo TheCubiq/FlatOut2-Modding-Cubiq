@@ -1,0 +1,12 @@
+---@diagnostic disable: duplicate-index
+car_logos_5_size = { 512,256 }
+car_logos_5 = {
+	
+	bonus_car_0_logo = {  0, 0, 256, 85 },      -- car name
+	bonus_car_1_logo = {  256, 0, 256, 85 },    -- car name
+	bonus_car_2_logo = {  0, 85, 256, 85 },     -- car name
+	bonus_car_4_logo = {  256, 85, 256, 85 },   -- car name
+	bonus_car_4_logo = {  0, 170, 256, 85 },    -- car name
+	bonus_car_5_logo = {  256, 170, 256, 85 },  -- car name
+
+}

@@ -1,0 +1,6 @@
+sell_car_elements_size = { 512,256 }
+sell_car_elements = {
+	
+	sell_Car_backdrop = {  0, 0, 274, 140 },
+
+}

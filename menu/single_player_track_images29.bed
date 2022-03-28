@@ -1,0 +1,7 @@
+single_player_track_images29_size = { 512,512 }
+single_player_track_images29 = {
+	
+	track_images_stunt9_sp = {  0, 0, 332, 219 },
+	track_images_stunt10_sp = {  0, 219, 332, 219 },
+
+}

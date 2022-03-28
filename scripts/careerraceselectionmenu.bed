@@ -1,0 +1,343 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CareerRaceSelectionMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 23.8.2005 16:23:43
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/selection_elements.bed")
+
+
+TYPE_STUNT = 1
+TYPE_CUP = 2
+TYPE_EVENT = 3
+
+local mapcoords = {
+	{ 1,1 },
+	{ 2,1 },
+}
+
+local function getmap(id)
+	return mapcoords[id]
+end
+
+local state
+
+local race_items = {
+	{ map=getmap(1), position=POS(231,234), },
+	{ map=getmap(1), position=POS(324,240), },
+	{ map=getmap(1), position=POS(421,238), },
+	{ map=getmap(2), position=POS(1,235), },
+	{ map=getmap(2), position=POS(103,239), },
+	{ map=getmap(2), position=POS(196,244), },
+	{ map=getmap(2), position=POS(293,247), },
+	{ map=getmap(2), position=POS(385,244), },
+}
+
+
+
+function EnterRaceSelection(selection)
+	state=selection
+	
+	EnterMenu("menu_career_race_selection")
+end
+
+function EnterRace(data,is_career_stunt)
+	
+	data = data or state
+
+	GameFlow.ClearRace()
+	if data.event_type == TYPE_CUP then
+		db.GameFlow.PreRace.Mode=GM_CAREER
+		db.GameFlow.PreRace.Rules=GR_DEFAULT
+		db.GameFlow.PreRace.Cup=data.event_id
+		db.GameFlow.PreRace.Event=0
+		db.GameFlow.PreRace.Class=data.class_id
+		LOG("EnterRace cup=%d class=%d, subclass=%d",data.event_id,data.class_id,data.subclass or -1)
+		Event:PostEvent(event(EVENT_RACE_BEGIN))
+	else
+		db.GameFlow.PreRace.Mode=GM_CAREER
+		db.GameFlow.PreRace.Cup=0
+		db.GameFlow.PreRace.Event=data.event_id
+		db.GameFlow.PreRace.Class=data.class_id
+		LOG("EnterRace event=%d class=%d, subclass=%d",data.event_id,data.class_id,data.subclass or -1)
+
+		db.GameFlow.PreRace.Car=data.car or 0
+
+
+		Event:PostEvent(event(EVENT_RACE_BEGIN))
+	end
+end
+
+
+menu_career_race_selection = CreateMenuFromTemplate("template_career")
+
+
+local function UpdateData()
+	local classdata=_G[state.classname]
+
+	local data=classdata.Cups[state.event_id]
+
+	local race=data.Races[state.racewindows[state.selected_race].id]
+	local level=Levels[race.Level or 0]
+
+	if level and race then
+		W("category_title"):SetTitle(ConvertToWString(level.Name or L"NO NAME"))
+		W("lap_data"):SetTitle(ConvertToWString(string.format("%d LAPS",race.Laps)))
+	else
+		W("category_title"):SetTitle(ConvertToWString("NO DATA IN CLASSES.BED"))
+		W("lap_data"):SetTitle(ConvertToWString("0 LAPS"))
+	end
+
+	MenuMap:SetSelectedWindow(state.racewindows[state.selected_race].window)
+
+
+	W("trophy_1_text"):SetTitle(MONEY(data.RaceWinnings[1]))
+	W("trophy_2_text"):SetTitle(MONEY(data.RaceWinnings[2]))
+	W("trophy_3_text"):SetTitle(MONEY(data.RaceWinnings[3]))
+
+
+	if state.selected_race < 4 then
+		MenuMap:SetMapPosition(0,0)
+	elseif state.selected_race > 4 then
+		MenuMap:SetMapPosition(380,0)
+	end
+end
+
+
+
+local function OnKeyPressed(self,character,virtualkey,scancode)
+	if virtualkey == KeyCodes.BUTTON_LEFT then
+		local c=state.selected_race
+		if c > 1 then
+			c = c - 1
+		end
+
+		state.selected_race = c
+		UpdateData()
+	elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+		local c=state.selected_race
+		if c < table.getn(state.racewindows) then
+			c = c + 1
+		end
+		state.selected_race = c
+		UpdateData()
+	elseif virtualkey == KeyCodes.BUTTON_START then
+		if state.cupmode then
+			EnterRace()
+		elseif Garage:GetCarClass(PlayerProfile:GetActiveCar()) ~= state.class_id then
+			playmenusound_error()
+		else
+			EnterRace()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_SELECT then
+		if state.cupmode then
+			EnterMenu("menu_career")
+		else
+			EnterMenu("menu_career_racemap")
+		end
+	elseif virtualkey == KeyCodes.BUTTON_INFO then
+		local races=Classes[state.class_id].Cups[state.event_id].Races		
+		local level=Levels[races[state.selected_race].Level]
+
+		local selection={level=races[state.selected_race].Level,logo=level.TrackLogo,image=level.TrackImage}
+		ShowTrackInfo(selection,entermenu("menu_career_race_selection"))
+	end
+end
+
+
+
+
+
+
+menu_career_race_selection.items={}
+
+function menu_career_race_selection.create(self)
+	self.parent:create(self)
+
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("cup_overview_map_1",image("cup_overview_map_1.tga"))
+	self:addResource("cup_overview_map_2",image("cup_overview_map_2.tga"))
+
+	self:loadResources()
+
+
+end
+
+function menu_career_race_selection.init(self)
+	self.parent:init(self)
+
+
+	local uv={ 0.0,0.0,1.0,1.0 }
+	local size=SIZE(512,512)
+
+	local ppos=POS(471,83)
+	local cpos=RELATIVEPOS(POS(538,84),ppos)
+
+	MenuMap:Reset()
+	MenuMap:SetMenu(self)
+	MenuMap:AddBackground(1,1,size,self:getResource("cup_overview_map_1"),uv)
+	MenuMap:AddBackground(2,1,size,self:getResource("cup_overview_map_2"),uv)
+	MenuMap:SetMapPosition(0,0,false)
+	MenuMap:SetMapZoom(1.0)
+
+	local icons = {
+		[TRACKTYPE_FOREST] = "race_symbol_forest",
+		[TRACKTYPE_FIELDS] = "race_symbol_fields",
+		[TRACKTYPE_DESERT] = "race_symbol_desert",
+		[TRACKTYPE_CANAL] = "race_symbol_canals",
+		[TRACKTYPE_CITY] = "race_symbol_city",
+		[TRACKTYPE_RACING] = "race_symbol_racing",
+	}
+
+
+	state.racewindows={}
+
+	local races=Classes[state.class_id].Cups[state.event_id].Races
+
+	local next_race=1
+
+	local k,v
+	local w
+	for k,v in ipairs(races) do
+		local tracktype=Levels[v.Level].TrackType or TRACKTYPE_FOREST
+		
+		
+		local cup_active=true
+		
+		if PlayerProfile:GetActiveCup() == 0 then
+			cup_active=false
+		end
+
+		local iconname=icons[tracktype];
+		local locked=true
+
+		locked=GameFlow.IsCupRaceLocked(k)
+
+		local medal=nil
+
+		if locked then
+			iconname=iconname.."_locked"
+		else
+			next_race=k
+
+			local pos=CupManager:GetRacePosition(0,k)
+			if pos > 0 and pos <= 8 then
+				medal=self:getResource(string.format("result_ribbon_%d",pos))
+			end
+		end
+
+
+        
+		local resource=self:getResource(iconname)
+
+		
+		local id=MenuMap:AddWindow(race_items[k].position,GetResourceSize(resource),resource,1,unpack(race_items[k].map))
+
+		local medal_id
+		if medal then
+			local pos=CopyTable(race_items[k].position)
+			local size=GetResourceSize(medal)
+			local parentsize=GetResourceSize(resource)
+			pos[1]=pos[1] + parentsize[1] - size[1]
+			pos[2]=pos[2] + parentsize[2] - size[2]/2
+			medal_id=MenuMap:AddWindow(pos,size,medal,1,id,unpack(race_items[k].map))
+		else
+			medal_id=nil
+		end
+
+
+		table.insert(state.racewindows,{window=id, id=k,locked=locked,tracktype=tracktype,medal=medal_id})	
+	end
+
+
+	ppos=POS(471,83)
+	local cpos=RELATIVEPOS(POS(538,84),ppos)
+
+	w=Frame{Name="bar_right_1",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_right_narrow_65"))}
+	w:AttachResource(self:getResource("black_bar_right_narrow_65"))
+	--//w:HideWindow()
+
+	local trophysize=GetResourceSize(self:getResource("minute_trophy_gold"))
+	Button{Name="trophy_1",Position=cpos,Size=trophysize,Parent=w}:AttachResource(self:getResource("minute_trophy_gold"))
+	StaticText{Name="trophy_1_text",Font=fontsmall(),Position=POS(cpos[1]+trophysize[1],cpos[2]),Parent=w}
+
+
+	ppos[2] = ppos[2] + 22
+	cpos=RELATIVEPOS(POS(538,84+22),ppos)
+
+	w=Frame{Name="bar_right_2",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_right_narrow_65"))}
+	w:AttachResource(self:getResource("black_bar_right_narrow_65"))
+	--//w:HideWindow()
+
+	Button{Name="trophy_2",Position=cpos,Size=trophysize,Parent=w}:AttachResource(self:getResource("minute_trophy_silver"))
+	StaticText{Name="trophy_2_text",Font=fontsmall(),Position=POS(cpos[1]+trophysize[1],cpos[2]),Parent=w}
+
+
+	ppos[2] = ppos[2] + 22
+	cpos=RELATIVEPOS(POS(538,84+22+22),ppos)
+
+	w=Frame{Name="bar_right_3",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_right_narrow_65"))}
+	w:AttachResource(self:getResource("black_bar_right_narrow_65"))
+	--//w:HideWindow()
+
+	Button{Name="trophy_3",Position=cpos,Size=trophysize,Parent=w}:AttachResource(self:getResource("minute_trophy_bronze"))
+	StaticText{Name="trophy_3_text",Font=fontsmall(),Position=POS(cpos[1]+trophysize[1],cpos[2]),Parent=w}
+
+
+	ppos=POS(0,82)
+
+	w=Frame{Name="bar_left_1",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_wide_65"))}
+	w:AttachResource(self:getResource("black_bar_left_wide_65"))
+
+	StaticText{Name="category_title",Position=RELATIVEPOS(POS(50,85),ppos),Font=fontlarge(),Color=GetPaletteColor(3),Parent=w}
+
+
+
+	ppos=POS(0,110)
+	w=Frame{Name="bar_left_2",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_narrow_65"))}
+	w:AttachResource(self:getResource("black_bar_left_narrow_65"))
+
+	Button{Name="clock",Position=RELATIVEPOS(POS(50,112),ppos),Size=GetResourceSize(self:getResource("clock")),Parent=w}:AttachResource(self:getResource("clock"))
+	StaticText{Name="clock_data",Title=L"0'00'00  MUTSIS",Position=RELATIVEPOS(POS(70,113),ppos),Font=fontsmall(),Parent=w}
+
+
+	ppos=POS(0,131)
+	w=Frame{Name="bar_left_3",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_narrow_65"))}
+	w:AttachResource(self:getResource("black_bar_left_narrow_65"))
+
+	Button{Name="lap",Position=RELATIVEPOS(POS(50,133),ppos),Size=GetResourceSize(self:getResource("lap")),Parent=w}:AttachResource(self:getResource("lap"))
+	StaticText{Name="lap_data",Title=L"3 LAPS",Position=RELATIVEPOS(POS(70,134),ppos),Font=fontsmall(),Parent=w}
+
+--//	w=Frame{Name="selector_race",Size=GetResourceSize(self:getResource("race_selection"))}:AttachResource(self:getResource("race_selection"))
+--//	MenuMap:AddWindow(w,1,1)
+	MenuMap:FadeWindowGroup(1,0.0,1.0,0.2,0.1)
+
+	state.selected_race=next_race
+
+	UpdateData()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TRACKINFO),TRUE)
+
+
+	local input=InputHandler{}
+
+	input.onKeyPressed=OnKeyPressed
+	input:SetFocus()
+
+	MenuMap:Enable()
+
+--//	GUI:SetBackground("")
+end
+
+function menu_career_race_selection.deinit(self)
+	self.parent:deinit(self)
+
+	MenuMap:Disable()
+	MenuMap:Reset()
+end
+

@@ -1,0 +1,41 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CrashtestDummyMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 15.4.2005 11:55:46
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+menu_singleplayer_crashtestdummy = CreateMenuFromTemplate("template_basic")
+
+
+local menu=menu_singleplayer_crashtestdummy
+
+menu.options.title=L"CRASHTEST DUMMY"
+menu.back=backmenu()
+
+
+function menu.create(self)
+	self.parent:create(self)
+
+end
+
+function menu.init(self)
+	self.parent:init(self)
+end
+
+function menu.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu.update(self,time)
+	self.parent:update(self,time)
+end
+
+

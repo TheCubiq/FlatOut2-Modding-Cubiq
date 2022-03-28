@@ -1,0 +1,6 @@
+single_player_images3_size = { 512,256 }
+single_player_images3 = {
+	
+	singleplayer_image_event = {  0, 0, 332, 219 },
+
+}

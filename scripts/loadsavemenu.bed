@@ -1,0 +1,110 @@
+--///////////////////////////////////////////////////////////////////////////
+--// LoadSaveMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 16.8.2005 18:06:17
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+local functions = {}
+local backfunction 
+local saveslot
+local timerhandle
+local load
+
+function ProfileSave(slot,ok,back)
+	functions[Save.SAVEFLOW_OK]=ok
+	functions[Save.SAVEFLOW_ERROR]=back
+	functions[Save.SAVEFLOW_USER_BACK]=back
+
+	saveslot=slot
+	load=false
+
+	LOG("saving profile to slot %d",saveslot)
+	Save.SavePlayerProfile(saveslot)
+	EnterMenu("menu_save_wait")
+end
+
+function ProfileLoad(slot,ok,back)
+	functions[Save.SAVEFLOW_OK]=ok
+	functions[Save.SAVEFLOW_ERROR]=back
+	functions[Save.SAVEFLOW_USER_BACK]=back
+
+	load=true
+
+	saveslot=slot
+
+	LOG("loading profile from slot %d",saveslot)
+	Save.LoadPlayerProfile(saveslot)
+	EnterMenu("menu_save_wait")
+end
+
+function ProfileDelete(slot)
+	functions[Save.SAVEFLOW_OK]=entermenu("menu_profiles")
+	functions[Save.SAVEFLOW_ERROR]=entermenu("menu_profiles")
+	functions[Save.SAVEFLOW_USER_BACK]=entermenu("menu_profiles")
+
+	saveslot=slot
+
+	LOG("DELETING slot %d",saveslot)
+	Save.DeleteSave(saveslot)
+	EnterMenu("menu_save_wait")
+end
+
+
+local function saveflow_wait(event)
+	
+	if event.id == EVENT_TIMER then
+		local savestate=Save.GetSaveFlowState()
+		local result=Save.GetSaveFlowResult()
+		if savestate == Save.SAVEFLOW_NONE then
+			LOG("Operation completed. result=%d",result)
+			Event:RemoveTimer(timerhandle)
+			if load then
+				db.GameFlow.PreRace.Class=PlayerProfile:GetActiveClass()
+				db.GameFlow.PreRace.Cup=PlayerProfile:GetActiveCup()
+			end
+
+			local f=functions[result]
+			if f then
+				f()
+			else
+				LOG("Invalid function in save_wait")
+			end
+		end
+	end
+end
+
+
+
+
+
+menu_save_wait = CreateMenuFromTemplate("template_basic")
+
+
+menu_save_wait.items={}
+menu_save_wait.options.title=L""
+
+function menu_save_wait.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+end
+
+function menu_save_wait.init(self)
+	self.parent:init(self)
+
+	GUI:SetHelpButtons()
+	timerhandle=Event:AddTimer(saveflow_wait,500)
+end
+
+function menu_save_wait.deinit(self)
+	self.parent:deinit(self)
+end
+
+
+

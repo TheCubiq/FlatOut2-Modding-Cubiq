@@ -1,0 +1,18 @@
+profile_elements_size = { 512,512 }
+profile_elements = {
+	
+	profile_picture_bg = 		{  0, 0, 246, 286 },
+	profile_text_bg = 		{  102, 334, 410, 178 },
+	profile_text_bg_str =		{  410, 334, 60, 178 },
+	
+	profile_icons_bg = 		{  315, 1, 196, 50 },
+
+	options_bar_center = 		{  123, 368, 360, 24 },
+	options_bar = 			{  141, 337, 340, 24 },
+
+	party_mode_split_bar = 		{  127, 368, 385, 24 },
+	party_mode_split_bar_strech = 	{  127, 368, 149, 24 },
+
+	party_mode_title_bar = 		{  83, 307, 428, 24 },
+
+}

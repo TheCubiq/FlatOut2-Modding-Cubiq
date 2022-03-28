@@ -1,0 +1,26 @@
+
+ingame_menuitems_size = { 256,256 }
+ingame_menuitems = {
+
+	ingame_window = {  0, 1, 255, 161 },
+	sound_frame = { 1, 161, 176, 18 },
+	sound_bar = { 5, 180, 170, 12 },
+
+	rewind_off = {  3, 193, 21, 21 },
+	rewind_on = {  25, 193, 21, 21 },
+	stop_off = {  47, 193, 21, 21 },
+	stop_on = {  69, 193, 21, 21 },
+	play_off = {  3, 215, 21, 21 },
+	play_on = {  25, 215, 21, 21 },
+	ffwd_off = {  47, 215, 21, 21 },
+	ffwd_on = {  69, 215, 21, 21 },
+	slowmo_off = {  114, 193, 21, 21 },
+	slowmo_on = {  136, 193, 21, 21 },
+	pause_off = {  158, 193, 21, 21 },
+	pause_on = {  180, 193, 21, 21 },
+	eject_off = {  92, 193, 21, 21 },
+	eject_on = {  92, 215, 21, 21 },
+
+	balk = {  127, 228, 128, 26 },
+
+}

@@ -1,0 +1,19 @@
+upgrade_body_1_size = { 512,512 }
+upgrade_body_1 = {
+
+	body_body_upgrade_stock =       { 3, 1, 197, 113 },
+	body_body_upgrade_racing = 	{ 211, 1, 197, 113 },
+	body_body_upgrade_pro =		{ 2, 119, 197, 118 },
+
+
+	body_chassis_upgrade_stock = 	{ 354, 286, 157, 139 },
+	body_chassis_upgrade_racing =	{ 5, 241, 157, 139 },
+	body_chassis_upgrade_pro = 	{209, 119, 157, 139 },
+	
+	body_lightweight_stock =       {  0, 394, 194, 139 },
+
+	body_rollcage_upgrade_racing = 	{ 191, 262, 135, 141 },
+	body_rollcage_upgrade_pro = 	{ 379, 126, 134, 141 },
+	
+	gearbox_clutch_stock	= 	{ 201, 405, 155, 107 },
+}	

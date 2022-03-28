@@ -1,0 +1,16 @@
+car_logos_size = { 512,512 }
+car_logos = {
+	
+	car_0_logo = {  0, 0, 256, 85 },      -- car name
+	car_1_logo = {  256, 0, 256, 85 },    -- car name
+	car_2_logo = {  0, 85, 256, 85 },     -- car name
+	car_3_logo = {  256, 85, 256, 85 },   -- car name
+	car_4_logo = {  0, 170, 256, 85 },    -- car name
+	car_5_logo = {  256, 170, 256, 85 },  -- car name
+	car_6_logo = {  0, 255, 256, 85 },    -- car name
+	car_7_logo = {  256, 255, 256, 85 },  -- car name
+	car_8_logo = {  0, 340, 256, 85 },    -- car name
+	car_9_logo = {  256, 340, 256, 85 },  -- car name
+	car_10_logo = {  0, 425, 256, 85 },   -- car name
+	car_11_logo = {  256, 425, 256, 85 }, -- car name
+}

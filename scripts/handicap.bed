@@ -1,0 +1,1658 @@
+
+-- Racing: normal racing situation
+-- OffTrack: player off track or stopped
+-- Airborne: player's ragdoll ejected
+
+--	ThrottleMax: min,max   		maximum throttle values for AI
+--	ThrottleRange: min, max		handicap range for throttle reduction
+--	ThrottleReduction: 		maximum throttle reduction
+--	TurnRange:			handicap range for turn evaluation
+--	TurnScale: >= 1.0		scale valued for turns. 2 = double tight
+--	TurboRangeAhead:		handicap range for turbo reduction
+--	TurboAdjustAhead:		turbo reduction value
+--	TurboRangeBehind:		handicap range for extra turbo
+--	TurboAdjustBehind:		turbo adjust value (ie. engine.TurboAcceleration + turboAdjustBehind)
+--	LoPosLimit = 5;						
+--	HiPosLimit = 2;
+--	AIExtraTurboPosLimit = 6;
+--	AIExtraTurboMul = 2.f;
+--	CatchUpProfileRange = 10.f
+--	HandicapProfileRange = 25.f
+--	HandicapProfileSpeedLimit = 100.f
+--	SlideFrictionScale = 1.f
+--	BrakeFrictionScale = 1.f
+
+function CopyTable(tbl)
+	local t={}
+
+	local k,v
+	for k,v in pairs(tbl) do
+		if type(v) == "table" then
+			t[k]=CopyTable(v)
+		else
+			t[k]=v
+		end
+	end
+
+	return t
+end
+
+function MergeTable(tbl1,tbl2)
+	if type(tbl1) ~= "table" or type(tbl2) ~= "table" then return end
+
+	local t=CopyTable(tbl1)
+
+	local k,v
+	for k,v in pairs(tbl2) do
+		if type(v) == "table" then
+			if type(t[k]) ~= "table" then
+				t[k]=CopyTable(v)
+			else
+				t[k]=MergeTable(tbl1[k],v)
+			end
+		else
+			t[k]=v
+		end
+	end
+	return t
+end
+
+-- Table adder helper function
+function addtable(table, addition)
+	local newtable = {}
+	for k, v in pairs( table ) do
+		newtable[k] = v + addition
+	end
+	return newtable
+end
+
+
+-- Table multiplier helper function
+function multable(table, multiplier)
+	local newtable = {}
+	for k, v in pairs( table ) do
+		newtable[k] = v * multiplier
+	end
+	return newtable
+end
+
+-- Scales table, except the first index (which is usually 1.0 to get continuity)
+function scaleHandicap(table, multiplier)
+	local newtable = {}
+	for k, v in pairs( table ) do
+		if k == 1 then
+			newtable[k] = v
+		else
+			newtable[k] = v * multiplier
+		end
+	end
+	return newtable
+end
+
+
+DefaultRacing = 
+	{
+	ThrottleMax		= {1.0, 0.7, 0.5},
+--	ThrottleMax		= {1.0, 0.999, 0.998},
+	ThrottleRange		= {10.0, 80.0, 220.0},
+	ThrottleReduction	= 0.0,
+	TurnRange		= {300000000.0, 3000000000.0},
+	TurnScale		= 4.0,
+	TurboRangeAhead		= {300000.0, 100000.0},
+	TurboAdjustAhead	= -0.25,
+--	TurboRangeBehind	= {300000.0, 2000000.0},
+	TurboRangeBehind	= {0.0, 110.0},
+--	TurboRangeBehind	= {-30000.0, -30.0},
+	TurboAdjustBehind	= 1.0,
+}
+
+DefaultOffTrackScale = 0.85
+
+function generateOffTrack(defaultRacingTable, offTrackScale)
+	local newtable = CopyTable(defaultRacingTable)
+	newtable.ThrottleMax = multable(defaultRacingTable.ThrottleMax, offTrackScale)
+	return newtable
+end
+	
+DefaultExtra = 
+	{
+	SpeedLimit = 0,
+	LoPosLimit = 9,						
+	HiPosLimit = 0,
+	AIExtraTurboPosLimit = 0,
+	AIExtraTurboRange = {120.0, 240.0},
+	AIExtraTurbo = {1.0, 5.0},
+--	CatchUpProfileRange = 600000,
+	CatchUpProfileRange = 120,
+--	CatchUpProfileRange = -60000,
+--	HandicapProfileRange = 25000000000,
+	HandicapProfileSpeedLimit = 100,
+	SlideFrictionScale = 1.0,
+	BrakeFrictionScale = 1.0,
+}
+
+Levels = {}
+for i = 1,42 do Levels[i] = {} end
+
+--- Derby Subclass 1 ---
+-- For Race 1 of Cup 1 in Derby Class
+Levels[1] = {  
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = {1.0, 0.75, 0.60},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.50,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 33.0,  -- m/s
+						   -- Remove AI catchup
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.0),
+						   AIExtraTurboRange = addtable(DefaultExtra.AIExtraTurboRange, 100000),
+						   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange + 100000.0
+					   }),
+	OffTrackScale = 0.70
+}
+
+-- For Race 2 of Cup 1 in Derby Class
+Levels[2] = MergeTable(Levels[1], 
+					   {
+						   Racing = {
+							   -- Increase ThrottleReduction to reduce AI max speed
+							   ThrottleReduction = DefaultRacing.ThrottleReduction + 0.50,
+						   },
+						   Extra = {
+							   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange + 100.0
+						   },
+					   })
+
+-- For Cup 2 in Derby Class (except race 2, which is Levels[46])
+Levels[3] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = {1.0, 0.70, 0.60},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.45,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 36.0, -- m/s
+						   -- Remove AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.0),
+						   -- Increase the catchup range
+						   AIExtraTurboRange = addtable(DefaultExtra.AIExtraTurboRange, 50),
+						   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange + 50.0
+					   }),
+}
+
+-- For Derby class cup 2, race 2 (made a bit easier than the rest of the cup)
+Levels[46] = MergeTable(Levels[3], 
+					   {
+						   Racing = {
+							   -- Increase ThrottleReduction to reduce AI max speed
+							   ThrottleReduction = DefaultRacing.ThrottleReduction + 0.50,
+						   },
+						   Extra = {
+							   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange + 100.0
+						   },
+					   })
+
+
+--- Derby Subclass 2 ---
+-- For Cup 3 in Derby Class
+Levels[4] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.40,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 47.0, -- m/s
+						   -- Remove AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.0),
+					   }),
+}
+
+-- For Cup 4 in Derby Class
+Levels[5] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.80),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.25,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 49.0, -- m/s
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.2),
+					   }),
+}
+
+
+-- For Derby class cup 4, race 5  (made a bit harder than the rest of the cup)
+Levels[47] = MergeTable(Levels[3], 
+					   {
+						   Racing = {
+							   -- Increase ThrottleReduction to reduce AI max speed
+							   ThrottleReduction = DefaultRacing.ThrottleReduction + 0.20,
+							   -- Add some AI catchup
+							   TurboAdjustBehind = 0.2,
+						   },
+						   Extra = {
+							   -- Increase AI speed limit, but ensure it is still under max upgraded lvl2 Derby car
+							   SpeedLimit = 53.0,
+							   -- Decrease catchup range
+							   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange - 10.0
+						   },
+					   })
+
+
+-- For Cup 5 in Derby Class (Canals Special Cup)
+Levels[6] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.90),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							-- Reduce the AI catchup by reducing the extra turbo
+							TurboAdjustBehind = 0.20,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 53.0, -- m/s
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.4),
+						   AIExtraTurboRange = {DefaultExtra.AIExtraTurboRange[1]+50, DefaultExtra.AIExtraTurboRange[2]+200},
+					   }),
+}
+
+--- Derby Subclass 3 ---
+-- For Cup 6 in Derby Class
+Levels[7] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.18,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.3,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 57.0, -- m/s
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.6),
+					   }),
+}
+
+-- For Cup 7 in Derby Class
+Levels[8] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.6,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 67.0, -- m/s
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For Cup 8 in Derby Class (Forest Special Cup)
+Levels[9] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Limit the AI speed
+						   SpeedLimit = 70.0, -- m/s (slightly over player max speed)
+						   -- Normal AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Cup 9 in Derby Class (FINALS)
+Levels[10] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							-- Normal AI catchup
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- No speed limits in Finals
+						   SpeedLimit = 0.0,
+						   -- Normal AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+
+------ RACE CLASS -----
+
+-- For Cup 1 in Race Class
+Levels[11] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.18,
+							TurboAdjustBehind = 0.1,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.5),
+					   }),
+}
+
+-- For Dirt 1 in Race Class
+Levels[12] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.2,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.5),
+					   }),
+}
+
+
+
+-- For Cup 2 in Race Class
+Levels[13] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.75),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							TurboAdjustBehind = 0.25,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.55),
+					   }),
+}
+
+-- For Cup 3 in Race Class
+Levels[14] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.80),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							TurboAdjustBehind = 0.4,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.6),
+					   }),
+}
+
+-- For Dirt 2 in Race Class
+Levels[15] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.80),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 0.6,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+
+-- For Cup 4 in Race Class
+Levels[16] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.85),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.7),
+					   }),
+}
+
+-- For Dirt 3 in Race Class
+Levels[17] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.90),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.9),
+					   }),
+}
+
+-- For Cup 5 in Race Class (Desert Special Cup)
+Levels[18] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.85),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.6,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.75),
+					   }),
+}
+
+-- For Cup 6 in Race Class
+Levels[19] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For Dirt 4 in Race Class
+Levels[20] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Cup 7 in Race Class
+Levels[21] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.75,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.85),
+					   }),
+}
+
+-- For Dirt 5 in Race Class
+Levels[22] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {-200.0, 0.0},
+							TurboAdjustBehind = 1.0,
+							SlideFrictionScale = 0.9,
+							BrakeFrictionScale = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Cup 8 in Race Class
+Levels[23] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.8,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.9),
+					   }),
+}
+
+-- For Cup 9 in Race Class (Fields Special Cup)
+Levels[24] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Set normal max throttle handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Do not reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							-- Adjust catchup turbo a bit down
+							TurboAdjustBehind = 0.9,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.95),
+					   }),
+}
+
+-- For Dirt 6 in Race Class
+Levels[25] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {-200.0, 0.0},
+							TurboAdjustBehind = 1.0,
+							SlideFrictionScale = 0.9,
+							BrakeFrictionScale = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.0),
+						   CatchUpProfileRange = 100000.0,
+					   }),
+}
+
+-- For Cup 10 in Race Class (FINALS)
+Levels[26] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by increasing max throttles in handicap
+							ThrottleMax		= {1.0, 0.8, 0.6},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {0.0, 90.0},
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+						   CatchUpProfileRange = 100,
+					   }),
+}
+
+
+------ STREET CLASS -----
+
+-- For Cup 1 in Street Class
+Levels[27] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.80),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.4,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.7),
+					   }),
+}
+
+-- For Cup 2 in Street Class
+Levels[28] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.90),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 0.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.75),
+					   }),
+}
+
+-- For Cup 3 in Street Class
+Levels[29] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.90),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.8,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.85),
+					   }),
+}
+
+-- For Oval 1 in Street Class
+Levels[30] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {-200.0, 0.0},
+							TurboAdjustBehind = 1.0,
+							SlideFrictionScale = 0.9,
+							BrakeFrictionScale = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {0.0, 240.0},
+						   AIExtraTurbo = {2.0, 4.0},
+						   CatchUpProfileRange = 240.0,
+					   }),
+}
+
+-- For Cup 4 in Street Class
+Levels[31] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.90),
+					   }),
+}
+
+-- For Cup 5 in Street Class
+Levels[32] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Cup 6 in Street Class
+Levels[33] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Oval 2 in Street Class
+Levels[34] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {-200.0, 0.0},
+							TurboAdjustBehind = 1.0,
+							SlideFrictionScale = 0.9,
+							BrakeFrictionScale = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {0.0, 240.0},
+						   AIExtraTurbo = {2.0, 4.0},
+						   CatchUpProfileRange = 240.0,
+					   }),
+}
+
+-- For Cup 7 in Street Class
+Levels[35] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Cup 8 in Street Class
+Levels[36] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by increasing max throttles in handicap
+							ThrottleMax		= {1.0, 0.8, 0.6},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 0.9,
+}
+
+-- For Cup 9 in Street Class
+Levels[37] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by increasing max throttles in handicap
+							ThrottleMax		= {1.0, 0.9, 0.7},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 0.95, 
+}
+
+-- For Cup 10 in Street Class
+Levels[38] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 1.0, 0.75},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 1.0,
+}
+
+-- For Oval 3 in Street Class
+Levels[39] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind = {-50.0, 50.0},
+							TurboAdjustBehind = 2.0,
+							SlideFrictionScale = 0.9,
+							BrakeFrictionScale = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {0.0, 240.0},
+						   AIExtraTurbo = {2.0, 5.0},
+					   }),
+	OffTrackScale = 1.0,
+}
+
+-- For Street Finals
+Levels[40] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind	= {-50.0, 50.0},
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {50.0, 200.0},
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+						   CatchUpProfileRange = 100.0,
+					   }),
+	OffTrackScale = 1.0,
+}
+
+
+------ GRAND FINALS -----
+
+-- For Grand Finals, Race 2 (Dirt 2)
+Levels[41] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind	= {-1000.0, -900.0},
+							TurboAdjustBehind = 2.2,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+--						   AIExtraTurboRange = {100000.0, 1000001.0},
+						   AIExtraTurboRange = {10.0, 160.0},
+						   AIExtraTurbo = {2.0, 6.0},
+						   CatchUpProfileRange = 100.0,
+						   -- Limit the AI speed
+						   SpeedLimit = 200.0,  -- m/s
+						   SlideFrictionScale = 1.0,
+						   BrakeFrictionScale = 1.0,
+					   }),
+	OffTrackScale = 1.0,
+}
+
+---- For Testing
+Levels[42] = { --- AI TUNING & TESTING PROFILE
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = CopyTable(DefaultRacing),
+	Extra = DefaultExtra
+}
+
+-- For Grand Finals, Race 3 (Oval 1)
+Levels[43] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleRange		= {800.0, 900.0, 1000.0},
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind	= {-900, -800.0},
+							TurboAdjustBehind = 1.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {50.0, 100.0},
+						   AIExtraTurbo = {5.0, 12.0},
+						   CatchUpProfileRange = 100.0,
+						   -- Limit the AI speed
+						   SpeedLimit = 200.0,  -- m/s
+						   SlideFrictionScale = 1.0,
+						   BrakeFrictionScale = 0.9,
+					   }),
+	OffTrackScale = 1.0,
+}
+
+-- For Grand Finals, Race 5 (Oval 2)
+Levels[44] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleRange		= {800.0, 900.0, 1000.0},
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind	= {-1000.0, -900.0},
+							TurboAdjustBehind = 1.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurboRange = {50.0, 100.0},
+						   AIExtraTurbo = {5.0, 12.0},
+						   CatchUpProfileRange = 50.0,
+						   -- Limit the AI speed
+						   SpeedLimit = 200.0,  -- m/s
+						   SlideFrictionScale = 1.0,
+						   BrakeFrictionScale = 100.0,
+					   }),
+	OffTrackScale = 1.0,
+}
+
+-- For Grand Finals, Race 6 (Dirt 3)
+Levels[45] = { --- AI TUNING & TESTING PROFILE
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.999, 0.998},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboRangeBehind	= {-1000.0, -900.0},
+							TurboAdjustBehind = 2.2,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+--						   AIExtraTurboRange = {100000.0, 1000001.0},
+						   AIExtraTurboRange = {10.0, 160.0},
+						   AIExtraTurbo = {2.0, 6.0},
+						   CatchUpProfileRange = 100.0,
+						   -- Limit the AI speed
+						   SpeedLimit = 200.0,  -- m/s
+						   SlideFrictionScale = 0.9,
+						   BrakeFrictionScale = 1.1,
+					   }),
+	OffTrackScale = 1.0,
+}
+
+
+------ SINGLE RACES -----
+
+--- For Forest 1A
+Levels[48] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.40,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.5),
+					   }),
+}
+
+-- For Forest 1B
+Levels[49] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.18,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.3,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.6),
+					   }),
+}
+
+-- For Forest 1C
+Levels[50] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.85),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.7),
+					   }),
+}
+
+-- For Forest 2A
+Levels[51] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.9,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Normal AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Forest 2B
+Levels[52] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.75,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.85),
+					   }),
+}
+
+-- For Forest 2C
+Levels[53] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.9, 0.7},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 0.95, 
+}
+
+-- For City 1A
+Levels[54] = MergeTable(Levels[3], 
+					   {
+						   Racing = {
+							   -- Increase ThrottleReduction to reduce AI max speed
+							   ThrottleReduction = DefaultRacing.ThrottleReduction + 0.20,
+							   -- Add some AI catchup
+							   TurboAdjustBehind = 0.2,
+						   },
+						   Extra = {
+							   -- Decrease catchup range
+							   CatchUpProfileRange = DefaultExtra.CatchUpProfileRange - 10.0
+						   },
+					   })
+
+-- For City 1B
+Levels[55] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.6,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For City 1C
+Levels[56] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For City 2A
+Levels[57] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 0.8,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.9),
+					   }),
+}
+
+-- For City 2B
+Levels[58] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For City 2C
+Levels[59] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 1.0, 0.75},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 1.0,
+}
+
+-- For Canals A
+Levels[60] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.90),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							-- Reduce the AI catchup by reducing the extra turbo
+							TurboAdjustBehind = 0.20,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.4),
+					   }),
+}
+
+-- For Canals B
+Levels[61] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.8,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.9),
+					   }),
+}
+
+-- For Canals C
+Levels[62] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Desert A
+Levels[63] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.15,
+							TurboAdjustBehind = 0.1,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.5),
+					   }),
+}
+
+-- For Desert B
+Levels[64] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.85),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.6,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.75),
+					   }),
+}
+
+-- For Desert C
+Levels[65] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Fields 1A
+Levels[66] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.70),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.40,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Remove AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.5),
+					   }),
+}
+
+-- For Fields 1B
+Levels[67] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.18,
+							-- Reduce the AI catchup by removing the extra turbo
+							TurboAdjustBehind = 0.3,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   -- Reduce AI catchup extra turbo
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.6),
+					   }),
+}
+
+-- For Fields 1C
+Levels[68] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.85),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.5,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.7),
+					   }),
+}
+
+-- For Fields 2A
+Levels[69] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Fields 2B
+Levels[70] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Set normal max throttle handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Do not reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							-- Adjust catchup turbo a bit down
+							TurboAdjustBehind = 0.9,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.95),
+					   }),
+}
+
+-- For Fields 2C
+Levels[71] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.9, 0.7},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 0.95, 
+}
+
+-- For Racing 1A
+Levels[72] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.75),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.10,
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For Racing 1B
+Levels[73] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction + 0.05,
+							TurboAdjustBehind = 0.7,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.8),
+					   }),
+}
+
+-- For Racing 1C
+Levels[74] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 0.95),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 0.8,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 0.9),
+					   }),
+}
+
+-- For Racing 2A
+Levels[75] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax = scaleHandicap(DefaultRacing.ThrottleMax, 1.0),
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+}
+
+-- For Racing 2B
+Levels[76] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 0.8, 0.6},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 0.9,
+}
+
+-- For Racing 2C
+Levels[77] = {
+	AirborneDelayMs		= 6000,
+	Distance 			= 1500,
+	Racing = MergeTable(DefaultRacing, 
+						{ 
+							-- Increase the handicap by reducing max throttles in handicap
+							ThrottleMax		= {1.0, 1.0, 0.8},
+							-- Increase ThrottleReduction to reduce AI max speed
+							ThrottleReduction = DefaultRacing.ThrottleReduction,
+							TurboAdjustBehind = 1.0,
+						}),
+	Extra = MergeTable(DefaultExtra,
+					   {
+						   AIExtraTurbo = multable(DefaultExtra.AIExtraTurbo, 1.0),
+					   }),
+	OffTrackScale = 1.0,
+}
+
+
+
+
+for k, v in ipairs( Levels ) do
+	--v.Racing = v.Racing or DefaultRacing
+	if v.Racing then
+		v.OffTrack = v.OffTrack or generateOffTrack(v.Racing, v.OffTrackScale or DefaultOffTrackScale)
+		-- Rescale ThrottleMax so that the ThrottleMax 1.0 always refers to maximum racing throttle
+		for tk, tv in ipairs(v.Racing.ThrottleMax) do
+			v.Racing.ThrottleMax[tk] = tv + (1 - tv) * v.Racing.ThrottleReduction
+		end
+		for tk, tv in ipairs(v.OffTrack.ThrottleMax) do
+			v.OffTrack.ThrottleMax[tk] = tv + (1 - tv) * v.OffTrack.ThrottleReduction
+		end
+		v.Airborne = v.Airborne or v.Racing
+		-- Epic Cheat to disable handicap
+		--v.Racing.ThrottleMax = {1.0, 0.999, 0.998}
+		--v.OffTrack.ThrottleMax = {1.0, 0.999, 0.998}
+	end
+end
+
+--[[
+dofile( "data/scripts/DEBUG.bed" )
+DEBUGLOG("*** Handicap Script Debug ***")
+TABLEDUMP(Levels[1])
+--]]
+

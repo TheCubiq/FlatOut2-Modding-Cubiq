@@ -1,0 +1,109 @@
+Templates=
+{
+	[1]=
+	{
+		Name="Outside Car Camera",
+		Camera=
+		{
+			AnimationType=1,
+			PositionType=2,
+			TargetType=2,
+			ZoomType=1,
+			PositionFrames=
+			{
+				[1]=
+				{
+					Offset={0.0, 2.0, -5.0},
+				},
+			},
+			TargetFrames=
+			{
+				[1]=
+				{
+					Offset={0.0, 0.000000, 0.0},
+				},
+			},
+			ZoomFrames=
+			{
+				[1]=
+				{
+					FOV=79.999870,
+				},
+			},
+		},
+	},
+	[2]=
+	{
+		Name="Fixed Track Camera",
+		ConvertTo=
+		{
+			PositionType=1,
+		},
+		Camera=
+		{
+			AnimationType=1,
+			PositionType=2,
+			TargetType=2,
+			ZoomType=1,
+			PositionFrames=
+			{
+				[1]=
+				{
+					Offset={15.0, 10.0, 0.0},
+				},
+			},
+			TargetFrames=
+			{
+				[1]=
+				{
+					Offset={0.0, 0.000000, 0.0},
+				},
+			},
+			ZoomFrames=
+			{
+				[1]=
+				{
+					FOV=79.999870,
+				},
+			},
+		},
+	},
+	[3]=
+	{
+		Name="Fixed Track, fixed point Camera",
+		ConvertTo=
+		{
+			PositionType=1,
+			TargetType=1,
+		},
+		Camera=
+		{
+			AnimationType=1,
+			PositionType=2,
+			TargetType=2,
+			ZoomType=1,
+			PositionFrames=
+			{
+				[1]=
+				{
+					Offset={15.0, 10.0, 0.0},
+				},
+			},
+			TargetFrames=
+			{
+				[1]=
+				{
+					Offset={0.0, 0.0, 0.0},
+				},
+			},
+			ZoomFrames=
+			{
+				[1]=
+				{
+					FOV=79.999870,
+				},
+			},
+		},
+	},
+
+}

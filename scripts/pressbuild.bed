@@ -1,0 +1,157 @@
+--///////////////////////////////////////////////////////////////////////////
+--// PressBuild.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 15.12.2005 15:54:16
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+PRESSBUILD = TRUE
+
+local state={}
+
+
+local function PressEnterRace()
+	GameFlow.ClearRace()
+	db.GameFlow.PreRace.Mode=GM_SINGLE_RACE
+
+	if state.level == 75 or state.level == 83 then
+		db.GameFlow.PreRace.Car=36
+	end
+
+	db.GameFlow.PreRace.Car=state.car
+	PlayerProfile:SetActiveCar(db.GameFlow.PreRace.Car)
+
+	db.GameFlow.PreRace.Level=state.level
+	db.GameFlow.PreRace.Laps=3
+	Event:PostEvent(event(EVENT_RACE_BEGIN))
+end
+
+
+local press_cars = { 12,19,26 }
+local press_car_ids = { 25,12,18 }
+
+
+local press_levels = { 11, 17, 6, 75, 83 }
+
+
+pressmenu_cars = CreateMenuFromTemplate("template_basic")
+
+pressmenu_cars.options.title=L"SELECT CAR"
+
+pressmenu_cars.back=entermenu("pressmenu_tracks")
+
+
+local function press_selectcar(car)
+
+	local f=function()
+		state.car=press_car_ids[car]
+		PressEnterRace()
+	end
+
+	return f
+end
+
+function pressmenu_cars.create(self)
+	self.parent:create(self)
+
+	
+	self:loadResources()
+
+	self.items = {
+		MENUITEM(L"CAR 1",press_selectcar(1),ICON(self,"icon_extras")),
+		MENUITEM(L"CAR 2",press_selectcar(2),ICON(self,"icon_extras")),
+		MENUITEM(L"CAR 3",press_selectcar(3),ICON(self,"icon_extras")),
+	}
+
+end
+
+
+function pressmenu_cars.init(self)
+	self.parent:init(self)
+
+
+	GUI:SetBackground("data/menu/bg_black.tga")
+end
+
+function pressmenu_cars.buttonChange(self,oldcar,newcar)
+
+		GUI:LoadCar(press_cars[newcar],1)
+		GUI:AllowCarRotate(TRUE)
+		GUI:SetCarRotate(TRUE)
+		GUI:SetCarPose(POSE_CARSHOP)
+
+end
+
+function pressmenu_cars.deinit(self)
+	self.parent:deinit(self)
+
+	GUI:HideCar()
+
+end
+
+function pressmenu_cars.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+
+
+
+pressmenu_tracks = CreateMenuFromTemplate("template_basic")
+
+pressmenu_tracks.options.title=L"SELECT CAR"
+
+pressmenu_tracks.back=entermenu("menu_mainmenu")
+
+local function press_selecttrack(track)
+
+	local f=function()
+		state.level=track
+
+		if track == 75 or track == 83 then
+			PressEnterRace()
+		else
+			EnterMenu("pressmenu_cars")
+		end
+	end
+
+	return f
+end
+
+
+function pressmenu_tracks.create(self)
+	self.parent:create(self)
+
+
+	self:loadResources()
+
+	self.items = {
+		MENUITEM(L"TRACK 1",press_selecttrack(11),ICON(self,"icon_extras")),
+		MENUITEM(L"TRACK 2",press_selecttrack(17),ICON(self,"icon_extras")),
+		MENUITEM(L"TRACK 3",press_selecttrack(6),ICON(self,"icon_extras")),
+		MENUITEM(L"STUNTTRACK 1",press_selecttrack(75),ICON(self,"icon_extras")),
+		MENUITEM(L"STUNTTRACK 2",press_selecttrack(83),ICON(self,"icon_extras")),
+	}
+
+end
+
+
+function pressmenu_tracks.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+
+end
+
+
+function pressmenu_tracks.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+

@@ -1,0 +1,7 @@
+multiplayer_track_images1_size = { 512,512 }
+multiplayer_track_images1 = {
+	
+	tracktype_racing = {  0, 0, 332, 219 },
+	tracktype_desert = {  0, 219, 332, 219 },
+
+}

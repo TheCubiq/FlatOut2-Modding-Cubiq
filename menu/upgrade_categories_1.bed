@@ -1,0 +1,19 @@
+upgrade_categories_1_size = { 512,512}
+upgrade_categories_1 = {
+
+	upgrade_category_suspension  =        	{  0, 0, 256, 170 },
+	upgrade_category_tires_brakes	 = 	{  256, 0, 256, 170 },
+
+	upgrade_category_exhaust =		{  0, 171, 256, 170 },
+	upgrade_category_gearbox = 		{  256, 171, 256, 170 },
+		
+	
+	upgrade_category_engine =		{ 0, 342, 256, 170   },
+	upgrade_category_body = 	 	{ 256, 342, 256, 170 },
+}
+
+
+
+	
+		
+	

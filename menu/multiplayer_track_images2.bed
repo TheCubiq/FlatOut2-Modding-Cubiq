@@ -1,0 +1,7 @@
+multiplayer_track_images2_size = { 512,512 }
+multiplayer_track_images2 = {
+	
+	tracktype_canal = {  0, 0, 332, 219 },
+	tracktype_forest = {  0, 219, 332, 219 },
+
+}

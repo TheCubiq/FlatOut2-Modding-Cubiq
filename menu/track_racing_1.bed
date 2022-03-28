@@ -1,0 +1,7 @@
+track_racing_1_size = { 512,512 }
+track_racing_1 = {
+
+	male_gender_selection = {  6, 1, 137, 311 },     -- track name
+	female_gender_selection = {  161, 4, 118, 224 },   -- track name
+
+}

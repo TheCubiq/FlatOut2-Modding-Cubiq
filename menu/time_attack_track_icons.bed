@@ -1,0 +1,35 @@
+time_attack_track_icons_size = { 512,512 }
+time_attack_track_icons = {
+	
+	time_attack_track_icon_1 = {  3, 3, 110, 70 },     -- track name
+	time_attack_track_icon_2 = {  116, 3, 110, 70 },   -- track name
+	time_attack_track_icon_3 = {  229, 3, 110, 70 },   -- track name
+	time_attack_track_icon_4 = {  342, 3, 110, 70 },   -- track name
+	time_attack_track_icon_5 = {  3, 76, 110, 70 },    -- track name
+	time_attack_track_icon_6 = {  116, 76, 110, 70 },  -- track name
+
+	time_attack_track_icon_7 = {  229, 76, 110, 70 },   -- track name
+	time_attack_track_icon_8 = {  342, 76, 110, 70 },   -- track name
+	time_attack_track_icon_9 = {  3, 149, 110, 70 },    -- track name
+
+	time_attack_track_icon_10 = {  116, 149, 110, 70 }, -- track name
+	time_attack_track_icon_11 = {  229, 149, 110, 70 }, -- track name
+	time_attack_track_icon_12 = {  342, 149, 110, 70 }, -- track name
+	time_attack_track_icon_13 = {  3, 222, 110, 70 },   -- track name
+	time_attack_track_icon_14 = {  116, 222, 110, 70 }, -- track name
+	time_attack_track_icon_15 = {  229, 222, 110, 70 }, -- track name
+
+	time_attack_track_icon_16 = {  342, 222, 110, 70 }, -- track name
+	time_attack_track_icon_17 = {  3, 295, 110, 70 },   -- track name
+	
+	time_attack_track_icon_18 = {  116, 295, 110, 70 }, -- track name
+	time_attack_track_icon_19 = {  229, 295, 110, 70 }, -- track name
+
+--	time_attack_track_icon_20 = {  342, 295, 110, 70 }, -- track name
+--	time_attack_track_icon_21 = {  3, 368, 110, 70 },   -- track name
+--	time_attack_track_icon_22 = {  116, 368, 110, 70 }, -- track name
+--	time_attack_track_icon_23 = {  229, 368, 110, 70 }, -- track name
+--	time_attack_track_icon_24 = {  342, 368, 110, 70 }, -- track name
+
+
+}

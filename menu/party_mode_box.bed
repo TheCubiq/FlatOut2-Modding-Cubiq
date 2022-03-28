@@ -1,0 +1,7 @@
+party_mode_box_size = { 256,256 }
+party_mode_box = {
+
+	player_box = {  0, 0, 256, 128 },
+	player_box_selection = {  0, 128, 256, 128 },
+
+}

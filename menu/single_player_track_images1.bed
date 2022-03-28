@@ -1,0 +1,7 @@
+single_player_track_images1_size = { 512,512 }
+single_player_track_images1 = {
+	
+	track_images_racing1_sp = {  0, 0, 332, 219 },
+	track_images_racing2_sp = {  0, 219, 332, 219 },
+
+}

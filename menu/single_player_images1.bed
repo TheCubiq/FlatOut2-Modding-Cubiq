@@ -1,0 +1,7 @@
+single_player_images1_size = { 512,512 }
+single_player_images1 = {
+	
+	singleplayer_image_career = {  0, 0, 332, 219 },
+	singleplayer_image_race = {  0, 219, 332, 219 },
+
+}

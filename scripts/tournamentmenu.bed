@@ -1,0 +1,503 @@
+--///////////////////////////////////////////////////////////////////////////
+--// TournamentMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 5.10.2005 10:58:25
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+dofile("data/menu/event_type_icons.bed")
+
+local points_by_position = {
+	[1] = 10,
+	[2] = 8,
+	[3] = 6,
+	[4] = 5,
+	[5] = 4,
+	[6] = 3,
+	[7] = 2,
+	[8] = 1,
+}
+
+
+
+local tracktypes = {
+	[TRACKTYPE_FOREST] = { icon="race_type_1", bg="bg_forest.tga" },
+	[TRACKTYPE_FIELDS] = { icon="race_type_2", bg="bg_field.tga" },
+	[TRACKTYPE_DESERT] = { icon="race_type_3", bg="bg_desert.tga" },
+	[TRACKTYPE_CANAL] = { icon="race_type_4", bg="bg_canals.tga" },
+	[TRACKTYPE_CITY] = { icon="race_type_5", bg="bg_city.tga" },
+	[TRACKTYPE_RACING] = { icon="race_type_6", bg="bg_racing.tga" },
+}
+
+local state
+
+local function SetBackground(id)
+	GUI:SetBackground("data/menu/"..tracktypes[id].bg)
+end
+
+local function RaceTournament()
+	db.GameFlow.PreRace.Mode=GM_TOURNAMENT
+	Event:PostEvent(event("EVENT_RACE_BEGIN"))
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+function UpdateData()
+	local data=Tournaments[state.selected_tournament]
+
+	W("name"):SetTitle(ConvertToWString(data.Name))
+	W("num_races"):SetTitle(ConvertToWString(string.format("%d RACES",table.getn(data.Races))))
+
+	local w=W("description")
+	w:SetTitle(ConvertToWString(data.Description))
+	w:WordWrap()
+
+	SetBackground(state.selected_tournament)
+
+end
+
+
+
+menu_tournament_selection = CreateMenuFromTemplate("template_basic")
+menu_tournament_selection.options.title=L"TOURNAMENTS"
+
+
+function menu_tournament_selection.create(self)
+	self.parent:create(self)
+
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("event_type_icons.tga",event_type_icons,event_type_icons_size)
+
+	self:loadResources()
+end
+
+function menu_tournament_selection.init(self)
+	self.parent:init(self)
+
+	state=state or {}
+
+
+	Frame{Position=POS(0,0),Size=SIZE(340,480)}:AttachResource(self:getResource("black_bar_left_wide_65"))
+	StaticText{Name="name",Position=POS(50,85),Font=fontlarge()}
+	StaticText{Name="num_races",Position=POS(50,125),Font=fontsmall()}
+	StaticText{Name="description",Position=POS(50,157),Size=SIZE(200,480),Font=fontsmall()}
+
+
+	local bar=ButtonBar{Slots=7,Name="races",Position=POS(-60,336),Padding=10,SelectedSlotSize=SIZE(110,70),SlotSize=SIZE(100,60),Size=SIZE(640+50,60)}
+
+	function bar.onBack(self)
+		EnterMenu("menu_singleplayer")
+	end
+
+	function bar.onButtonChange(self,id)
+		state.selected_tournament=id
+		UpdateData()
+	end
+
+	function bar.onChildAction(self,id)
+		db.GameFlow.PreRace.Cup=id
+		db.GameFlow.PreRace.Mode=GM_TOURNAMENT
+		CupManager:PrepareFromScript(Tournaments[state.selected_tournament])
+		EnterMenu("menu_tournament_racemap")		
+	end
+
+
+
+	for k,v in pairs(Tournaments) do
+		local iconname=tracktypes[v.Icon].icon
+
+		bar:AddButton(self:getResource(iconname))
+	end
+
+	bar:SetFocus()
+
+	state.selected_tournament = state.selected_tournament or 1
+
+	bar:SetSelectedButton(state.selected_tournament-1)
+	bar:onButtonChange(state.selected_tournament)
+
+
+	GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_OK,TRANSLATOR(UI_SELECT)) --//L"BACK",BUTTON_OK,L"SELECT")
+
+end
+
+
+function menu_tournament_selection.deinit(self)
+	self.parent:deinit(self)
+
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+local function UpdateMapData()
+
+	local tournament_data=Tournaments[state.selected_tournament]
+	local data=tournament_data.Races[state.selected_race]
+
+	W("title"):SetTitle(ConvertToWString(Levels[data.Level].Name))
+	W("lapcount"):SetTitle(ConvertToWString(string.format("%d LAPS",data.Laps)))
+
+	W("racenum"):SetTitle(ConvertToWString(string.format("RACE %d/%d",state.selected_tournament,table.getn(tournament_data.Races))))
+end
+
+
+local function OnKeyPressed(self,character,virtualkey,scancode)
+	if virtualkey == KeyCodes.BUTTON_LEFT then
+		if state.selected_race > 0 then
+			state.selected_race = state.selected_race - 1
+			RaceMapSetSelected(state.selected_race)
+		end
+		UpdateMapData()
+	elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+		if state.selected_race < table.getn(Tournaments[state.selected_tournament].Races) then
+			state.selected_race = state.selected_race + 1
+			RaceMapSetSelected(state.selected_race)
+		end
+		UpdateMapData()
+	elseif virtualkey == KeyCodes.BUTTON_START then
+		state=nil
+		RaceTournament()
+
+	elseif virtualkey == KeyCodes.BUTTON_SELECT then
+		CupManager:Clear()		
+		EnterMenu("menu_tournament_selection")
+	end
+end
+
+
+menu_tournament_racemap = CreateMenuFromTemplate("template_basic")
+menu_tournament_racemap.back=entermenu("menu_tournament_selection")
+
+function menu_tournament_racemap.create(self)
+	self.parent:create(self)
+
+	self.options.title=ConvertToWString(Tournaments[db.GameFlow.PreRace.Cup].Name)
+
+	
+	RaceMapCreate(self)
+
+	self:loadResources()
+
+end
+
+function menu_tournament_racemap.init(self)
+	self.parent:init(self)
+
+	state=state or {}
+	state.selected_race=1
+	state.selected_tournament = state.selected_tournament or db.GameFlow.PreRace.Cup
+
+	local data=Tournaments[state.selected_tournament]
+
+	RaceMapInit(self,data)
+
+
+	for i=1,table.getn(data.Races) do
+		if not CupManager:IsRaceLocked(i) then
+			state.selected_race=i
+		end
+	end
+
+	local ppos=POS(0,82)
+	local w=Frame{Name="bar_left_1",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_wide_65"))}
+	w:AttachResource(self:getResource("black_bar_left_wide_65"))
+	StaticText{Name="title",Position=RELATIVEPOS(POS(50,82),ppos),Font=fontlarge(),Color=GetPaletteColor(3),Parent=w}
+	
+	ppos=POS(0,110)
+	w=Frame{Name="bar_left_2",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_wide_65"))}
+	w:AttachResource(self:getResource("black_bar_left_wide_65"))
+
+	
+	local clock_size=GetResourceSize(self:getResource("clock"))
+	
+	Frame{Position=RELATIVEPOS(POS(50,114),ppos),Size=clock_size,Parent=w}:AttachResource(self:getResource("clock"))
+	StaticText{Name="highscore",Title=L"0'00'00  MUTSIS",Font=fontsmall(),Position=RELATIVEPOS(POS(50+clock_size[1]+4,110),ppos),Parent=w}
+
+	ppos=POS(0,134)
+	w=Frame{Name="bar_left_3",Position=ppos,Size=GetResourceSize(self:getResource("black_bar_left_wide_65"))}
+	w:AttachResource(self:getResource("black_bar_left_wide_65"))
+
+	local lap_size=GetResourceSize(self:getResource("lap"))
+
+	Frame{Position=RELATIVEPOS(POS(50,138),ppos),Size=lap_size,Parent=w}:AttachResource(self:getResource("lap"))
+	StaticText{Name="lapcount",Title=L"3 LAPS",Font=fontsmall(),Position=RELATIVEPOS(POS(50+lap_size[1]+4,134),ppos),Parent=w}
+
+
+	local size=GetResourceSize(self:getResource("black_bar_right_narrow_65"))
+	w=Frame{Name="bar_right_1",Position=POS(640-size[1],84),Size=size}:AttachResource(self:getResource("black_bar_right_narrow_65"))
+
+	StaticText{Name="racenum",Position=POS(0,0),Parent=w,Font=fontlarge(),}
+
+
+
+
+
+	local input=InputHandler{}
+	input.onKeyPressed=OnKeyPressed
+	input:SetFocus()
+
+	RaceMapSetSelected(state.selected_race)
+	UpdateMapData()
+
+end
+
+function menu_tournament_racemap.deinit(self)
+	self.parent:deinit(self)
+
+	RaceMapDeinit(self)
+
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+local function resign_tournament_confirmation()
+	local function confirmation_end(value)
+		if value==TRUE then
+			CupManager:Clear()
+			EnterMenu("menu_singleplayer");
+		else
+			GUI:ShowMenuButtons()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT)) --//L"SELECT")
+		end
+	end
+	GUI:HideMenuButtons()
+	GUI:SetHelpButtons()
+	MessageBox(L"ARE YOU SURE YOU WANT TO\nRESIGN FROM THE TOURNAMENT?\n\nYOUR PROGRESS WILL BE LOST.",MESSAGEBOX_YESNO,confirmation_end)
+end
+
+
+
+menu_tournament = CreateMenuFromTemplate("template_basic")
+menu_tournament.options.title=L"TOURNAMENT MENU"
+
+function menu_tournament.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images.tga",character_images,character_images_size)
+	self:addResource("character_images_2.tga",character_images_2,character_images_2_size)
+	self:addResource("character_images_3.tga",character_images_3,character_images_3_size)
+	self:addResource("character_images_4.tga",character_images_4,character_images_4_size)
+	self:addResource("cup_menu_bars.tga",cup_menu_bars,cup_menu_bars_size)
+	self:addResource("cup_menu_bg.tga",cup_menu_bg,cup_menu_bg_size)
+	self:addResource("cup_menu_cars.tga",cup_menu_cars,cup_menu_cars_size)
+
+	self:loadResources()
+
+	self.items={
+		MENUITEM(L"GO RACE",entermenu("menu_tournament_racemap"),ICON(self,"icon_sp_single_race")),
+		MENUITEM(L"QUIT TOURNAMENT",resign_tournament_confirmation,ICON(self,"icon_exit_career_mode")),
+	}
+end
+
+
+function menu_tournament.init(self)
+	self.parent:init(self)
+
+	local portrait = string.format("ai_portrait_%d",1+math.random(6))
+		
+
+	Frame{Name="cup_bg",Position=POS(0,57),Size=SIZE(640,350)}:AttachResource(self:getResource("cup_menu_bg"))
+	Frame{Name="cup_car",Position=POS(-70,136),Size=SIZE(360,240)}:AttachResource(self:getResource("cup_menu_car_1"))
+	Frame{Name="cup_bars",Position=POS(134,107),Size=SIZE(506,221)}:AttachResource(self:getResource("cup_menu_bars"))
+	Frame{Name="cup_character",Position=POS(61,61),Size=SIZE(256,345)}:AttachResource(self:getResource(portrait))
+
+
+	StaticText{Title=L"#",Align=FONTF_CENTER,Position=POS(336,88),Font=fontmedium()}
+	StaticText{Title=L"NAME",Align=FONTF_LEFT,Position=POS(353,88),Font=fontmedium()}
+	StaticText{Title=L"POINTS",Align=FONTF_CENTER,Position=POS(558,88),Font=fontmedium()}
+
+
+	local y=111
+	local i
+	for i=1,GameFlow.GetNumResults() do
+
+		local id=GameFlow.GetPlayerIdByPosition(i)
+
+		if CupManager:IsCupPositionVisible(i) then
+			StaticText{Title=ConvertToWString(string.format("%d.",i)),Position=POS(336,y+5),Align=FONTF_CENTER,Font=fontmedium()}
+		end
+		StaticText{Title=GameFlow.GetPlayerName(id),Position=POS(353,y),Align=FONTF_LEFT,Font=fontlarge()}
+		StaticText{Title=ConvertToWString(GameFlow.GetPlayerCupPoints(id)),Position=POS(558,y),Align=FONTF_CENTER,Font=fontlarge()}
+
+		y=y+28
+	end
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+end
+
+function menu_tournament.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+menu_tournament_scorecard = CreateMenuFromTemplate("template_basic")
+
+menu_tournament_scorecard.options.title=L"FINAL RESULTS"
+
+--[[--/*
+
+{
+	players = {
+		[1] = {	 --in finishing order
+				id=playerid
+				points = { [1] ...[numcupraces]  position }
+				totalpoints
+		}
+	}
+
+
+--]]--*/
+
+
+local function BuildTournamentResultTable()
+	local t={}
+
+	local cupdata=Tournaments[db.GameFlow.PreRace.Cup]
+    
+	t.num_races=table.getn(cupdata.Races)
+	t.players={}
+
+	for i=1,GameFlow.GetNumResults() do
+		local id=GameFlow.GetPlayerIdByPosition(i) or i-1
+		t.players[i]={}
+		t.players[i].id=id
+		t.players[i].totalpoints=GameFlow.GetPlayerCupPoints(id) or 0
+		t.players[i].points={}
+		for cuprace=1,t.num_races do
+			t.players[i].points[cuprace]=points_by_position[GameFlow.GetPlayerCupRacePosition(id,cuprace) or 8]
+		end
+	end
+
+	return t
+end
+
+
+function menu_tournament_scorecard.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+end
+
+function menu_tournament_scorecard.init(self)
+	self.parent:init(self)
+
+
+	local w=Button{Position=POS(0,82),Size=SIZE(640,25),Alpha=0.5}:AttachResource(self:getResource("black_transparent"))
+
+	
+	local cup_name=ConvertToWString(Tournaments[db.GameFlow.PreRace.Cup].Name)
+	StaticText{Title=cup_name,Position=POS(65,2),Font=fontlarge(),Parent=w}
+
+	local results=BuildTournamentResultTable()
+	
+
+	StaticText{Title=L"#",Position=POS(70,128),Align=FONTF_CENTER,Font=fontsmall()}
+	StaticText{Title=L"NAME",Position=POS(87,128),Font=fontsmall()}
+	StaticText{Title=L"POINTS",Position=POS(563,128),Align=FONTF_CENTER,Font=fontsmall()}
+
+	local pos=POS(278,128)
+	for i=1,results.num_races do
+		StaticText{Title=ConvertToWString(string.format("%d",i)),Position=pos,Font=fontsmall(),Align=FONTF_CENTER}
+		pos[1] = pos[1] + 30
+	end
+
+
+	local name_start_delay=0.0
+
+	local barpos=POS(0,147)
+
+	self.result_grid={}
+
+	for player=1,table.getn(results.players) do
+		local player_results=results.players[player]
+
+		--//bar
+		local bar=Button{Position=barpos,Size=SIZE(640,25),Name=string.format("player_%d",player),Alpha=0.5}:AttachResource(self:getResource("black_transparent"))
+		AnimateWindowAlpha(bar,0.0,0.5,0.1,name_start_delay)
+
+		--//position
+		local w=StaticText{Title=ConvertToWString(string.format("%d.",player)),Position=POS(70,2),Parent=bar,Align=FONTF_CENTER,Font=fontsmall(),Color=GetPaletteColor(3)}
+		AnimateWindowAlpha(w,0.0,1.0,0.1,name_start_delay+0.1)
+
+		--//player name
+		w=StaticText{Title=GameFlow.GetPlayerName(player_results.id),Position=POS(87,1),Parent=bar,Font=fontlarge(),Color=GetPaletteColor(3)}
+		AnimateWindowAlpha(w,0.0,1.0,0.3,name_start_delay+0.3)
+
+		self.result_grid[player]={}
+
+		local points_start_delay=0.4
+		local point_pos=POS(278,2)
+		for race=1,results.num_races do
+			w=StaticText{Title=ConvertToWString(string.format("%d",player_results.points[race])),Position=point_pos,Align=FONTF_CENTER,Font=fontsmall(),Color=GetPaletteColor(3),Parent=bar}
+		
+			if race > 8 then
+				w:HideWindow()
+			else
+				point_pos[1]=point_pos[1] + 30			
+				points_start_delay=points_start_delay+0.1
+				AnimateWindowAlpha(w,0.0,1.0,0.2,name_start_delay+0.6+points_start_delay)
+			end
+
+			table.insert(self.result_grid[player],w)
+		end
+
+		w=StaticText{Title=ConvertToWString(string.format("%d",player_results.totalpoints)),Position=POS(563,1),Font=fontlarge(),Align=FONTF_CENTER,Color=GetPaletteColor(3),Parent=bar}
+		AnimateWindowAlpha(w,0.0,1.0,0.2,name_start_delay+0.6+points_start_delay)
+
+		barpos[2] = barpos[2] + 28
+
+		name_start_delay=name_start_delay + 0.2
+	end
+
+
+	local handler=InputHandler{Name="inputhandler"}
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_START then
+			EnterMenu("menu_tournament_selection")
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE)) --//L"CONTINUE")
+
+	GUI:SetBackground("data/menu/canvas_bg.tga")
+
+end
+
+
+function menu_tournament_scorecard.deinit(self)
+	self.parent:deinit(self)
+
+	self.result_grid=nil
+end
+
+

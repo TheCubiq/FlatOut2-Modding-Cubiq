@@ -1,0 +1,21 @@
+upgrade_engine_1_size = { 512,512 }
+upgrade_engine_1 = {
+
+
+	body_lightweight_racing = 	{  188, 0, 190, 130 },
+	body_lightweight_pro =		{  0, 0, 190, 127 },
+
+	engine_port_and_polish =        {  378, 1 , 135, 136 },
+	engine_engine_balancing =	{ 0, 129, 183, 138 },
+	engine_dis =			{ 190, 129, 177, 113 },
+	engine_chip = 			{ 367, 268, 106, 124 },
+	
+	engine_fuel_kit_stock =		{ 372, 137, 132, 130  },
+	engine_fuel_kit_racing = 	{ 0, 267, 130, 129 },
+	engine_fuel_kit_pro =		{  190, 250, 130, 130 },
+
+	
+	engine_filter_kit_stock =	{ 320, 391, 124, 121  },
+	engine_filter_kit_racing = 	{ 166, 380, 152, 132 },
+	engine_filter_kit_pro =		{ 0, 395, 164, 117 },
+}

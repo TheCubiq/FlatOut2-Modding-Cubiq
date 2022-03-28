@@ -1,0 +1,35 @@
+--///////////////////////////////////////////////////////////////////////////
+--// State.lua
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2003 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 27.8.2003 11:51:33
+--// 
+--// @Author: Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+State = {}
+
+
+function State.new()
+	local s={}
+	
+	setmetatable(s,{ __index=State, } )
+	
+	return s
+end
+
+
+
+function State:SetState(state)
+	self.State=state
+end
+
+
+function State:GetState()
+	return self.State
+end
+
+

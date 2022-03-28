@@ -1,0 +1,296 @@
+
+ITEMTYPE_TEXT = 0
+ITEMTYPE_PICTURE = 1
+ITEMTYPE_RECTANGLE = 2
+ITEMTYPE_TEXTWITHBUTTONS = 3
+
+ReplayFile = "ringoffire"
+
+BailOut = 32000 --time in ms when the tutorial is over and game will start
+LaunchAt = 11970 --time when the launch button is supposedly pressed
+
+PageCount = 3
+Pages = {
+	[1] = {
+		ShowTime = 1500,
+
+		ItemCount = 11,
+
+		Items = {
+
+			[1] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper top line
+				Position = { 0, 241 },
+				Width = 640,
+				Height = 1,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[2] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper stripe
+				Position = { 0, 242 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.9,
+			},
+			
+			[3] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper bottom line
+				Position = { 0, 244 },
+				Width = 640,
+				Height = 1,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+	
+			[4] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper bottom line
+				Position = { 0, 429 },
+				Width = 640,
+				Height = 1,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+			
+			[5] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower stripe
+				Position = { 0, 430 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.8,
+			},
+
+			[6] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower bottom line
+				Position = { 0, 432 },
+				Width = 640,
+				Height = 1,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[7] = {
+				ItemType = ITEMTYPE_RECTANGLE, --info container
+				Position = { 0, 244 },
+				Width = 640,
+				Height = 185,
+				ColorId = 0,
+				Alpha = 0.7,
+			},
+			
+			[8] = {
+				ItemType = ITEMTYPE_TEXT, --stunt title
+				Font = "FontLarge",
+				Identifier = STUNTEVENT_RINGOFFIRE,
+				Position = { 100, 260 },
+				Width = 100,
+				ColorId = 33,
+				Center = 1,
+			},
+
+			[9] = {
+				ItemType = ITEMTYPE_TEXT, --tutorial text
+				Font = "FontSmall",
+				Identifier = INTRO_STUNT_RING_1,
+				Position = { 80, 300 },
+				Width = 480,
+				ColorId = 34,
+			},
+
+			[10] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --continue
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_CONTINUE_BUTTON,
+				Position = { 460, 400 },
+				ColorId = 33,
+			},
+			[11] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --skip
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_SKIP_BUTTON,
+				Position = { 260, 400 },
+				ColorId = 33,
+			},
+		},
+	},
+
+	[2] = {
+		ShowTime = 11200,
+		
+		ItemCount = 9,
+
+		Items = {
+
+			[1] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper black
+				Position = { 0, 240 },
+				Width = 640,
+				Height = 2,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[2] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper stripe
+				Position = { 0, 242 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.9,
+			},
+			
+			[3] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower stripe
+				Position = { 0, 430 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.8,
+			},
+
+			[4] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower black
+				Position = { 0, 432 },
+				Width = 640,
+				Height = 2,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[5] = {
+				ItemType = ITEMTYPE_RECTANGLE, --info container
+				Position = { 0, 244 },
+				Width = 640,
+				Height = 186,
+				ColorId = 0,
+				Alpha = 0.6,
+			},
+			
+			[6] = {
+				ItemType = ITEMTYPE_TEXT, --stunt title
+				Font = "FontLarge",
+				Identifier = STUNTEVENT_RINGOFFIRE,
+				Position = { 100, 260 },
+				Width = 100,
+				ColorId = 33,
+				Center = 1,
+			},
+
+			[7] = {
+				ItemType = ITEMTYPE_TEXT, --tutorial text
+				Font = "FontSmall",
+				Identifier = INTRO_STUNT_RING_3,
+				Position = { 80, 300 },
+				Width = 480,
+				ColorId = 34,
+			},
+
+			[8] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --continue
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_CONTINUE_BUTTON,
+				Position = { 460, 400 },
+				ColorId = 33,
+			},
+			[9] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --skip
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_SKIP_BUTTON,
+				Position = { 260, 400 },
+				ColorId = 33,
+			},
+		},
+	},
+
+	[3] = {
+		ShowTime = 14000,
+		
+		ItemCount = 9,
+
+		Items = {
+
+			[1] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper black
+				Position = { 0, 240 },
+				Width = 640,
+				Height = 2,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[2] = {
+				ItemType = ITEMTYPE_RECTANGLE, --upper stripe
+				Position = { 0, 242 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.9,
+			},
+			
+			[3] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower stripe
+				Position = { 0, 430 },
+				Width = 640,
+				Height = 2,
+				ColorId = 33,
+				Alpha = 0.8,
+			},
+
+			[4] = {
+				ItemType = ITEMTYPE_RECTANGLE, --lower black
+				Position = { 0, 432 },
+				Width = 640,
+				Height = 2,
+				ColorId = 0,
+				Alpha = 0.9,
+			},
+
+			[5] = {
+				ItemType = ITEMTYPE_RECTANGLE, --info container
+				Position = { 0, 244 },
+				Width = 640,
+				Height = 186,
+				ColorId = 0,
+				Alpha = 0.6,
+			},
+			
+			[6] = {
+				ItemType = ITEMTYPE_TEXT, --stunt title
+				Font = "FontLarge",
+				Identifier = STUNTEVENT_RINGOFFIRE,
+				Position = { 100, 260 },
+				Width = 100,
+				ColorId = 33,
+				Center = 1,
+			},
+
+			[7] = {
+				ItemType = ITEMTYPE_TEXT, --tutorial text
+				Font = "FontSmall",
+				Identifier = INTRO_STUNT_RING_4,
+				Position = { 80, 300 },
+				Width = 480,
+				ColorId = 34,
+			},
+
+			[8] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --continue
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_CONTINUE_BUTTON,
+				Position = { 460, 400 },
+				ColorId = 33,
+			},
+			[9] = {
+				ItemType = ITEMTYPE_TEXTWITHBUTTONS, --skip
+				Font = "FontSmall",
+				Identifier = STUNT_TUTORIAL_SKIP_BUTTON,
+				Position = { 260, 400 },
+				ColorId = 33,
+			},
+		},
+	},
+	
+}

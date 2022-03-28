@@ -1,0 +1,1190 @@
+
+BaseLevelPath = "data/Tracks/"
+
+-- NOTE: !!! StagePath is used also for database mapping so it is case-sensitive !!!
+
+TRACKTYPE_FOREST = 1
+TRACKTYPE_FIELDS = 2
+TRACKTYPE_DESERT = 3
+TRACKTYPE_CANAL = 4
+TRACKTYPE_CITY = 5
+TRACKTYPE_RACING = 6
+TRACKTYPE_STUNT = 7
+TRACKTYPE_EVENT = 8
+TRACKTYPE_DERBY = 9
+
+
+
+Levels = {
+
+	[1] = {
+			Name = "Timberlands 1",
+			Description = TRACK_DESCRIPTION_FOREST_1A,
+
+			Laps = 4,
+			AIHandicapLevel = 48,
+			
+			TrackType = TRACKTYPE_FOREST,
+
+			TrackIcon  = "track_images_forest1",
+			TrackImage = "track_forest_1a",
+			TrackLogo  = "track_forest_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest1/",
+			StagePath	= BaseLevelPath.."Forest/Forest1/A/",
+	},
+	[2] = {
+			Name = "Timberlands 2",
+			Description = TRACK_DESCRIPTION_FOREST_1B,
+
+			Laps = 4,
+			AIHandicapLevel = 49,
+			
+			TrackType = TRACKTYPE_FOREST,			
+
+			TrackIcon  = "track_images_forest2",
+			TrackImage = "track_forest_1b",
+			TrackLogo  = "track_forest_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest1/",
+			StagePath	= BaseLevelPath.."Forest/Forest1/B/",
+	},
+	[3] = {
+			Name = "Timberlands 3",
+			Description = TRACK_DESCRIPTION_FOREST_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 50,
+
+			TrackType = TRACKTYPE_FOREST,			
+
+			TrackIcon  = "track_images_forest3",
+			TrackImage = "track_forest_1c",
+			TrackLogo  = "track_forest_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest1/",
+			StagePath	= BaseLevelPath.."Forest/Forest1/C/",
+	},
+	[4] = {
+			Name = "Pinegrove 1",
+			Description = TRACK_DESCRIPTION_FOREST_2A,
+
+			Laps = 4,
+			AIHandicapLevel = 51,
+			
+			TrackType = TRACKTYPE_FOREST,
+
+			TrackIcon  = "track_images_forest4",
+			TrackImage = "track_forest_2a",
+			TrackLogo  = "track_forest_2a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest2/",
+			StagePath	= BaseLevelPath.."Forest/Forest2/A/",
+	},
+	[5] = {
+			Name = "Pinegrove 2",
+			Description = TRACK_DESCRIPTION_FOREST_2B,
+
+			Laps = 4,
+			AIHandicapLevel = 52,
+			
+			TrackType = TRACKTYPE_FOREST,
+
+			TrackIcon  = "track_images_forest5",
+			TrackImage = "track_forest_2b",
+			TrackLogo  = "track_forest_2b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest2/",
+			StagePath	= BaseLevelPath.."Forest/Forest2/B/",
+	},
+	[6] = {
+			Name = "Pinegrove 3",
+			Description = TRACK_DESCRIPTION_FOREST_2C,
+			
+			Laps = 4,
+			AIHandicapLevel = 53,
+			
+			TrackType = TRACKTYPE_FOREST,
+
+			TrackIcon  = "track_images_forest6",
+			TrackImage = "track_forest_2c",
+			TrackLogo  = "track_forest_2c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Forest/",
+			TrackPath	= BaseLevelPath.."Forest/Forest2/",
+			StagePath	= BaseLevelPath.."Forest/Forest2/C/",
+	},
+	[7] = {
+			-- empty
+	},
+	[8] = {
+			-- empty
+	},
+	[9] = {
+			-- empty
+	},
+	[10] = {
+			Name = "City Central 1",
+			Description = TRACK_DESCRIPTION_CITY_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 54,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city1",
+			TrackImage = "track_city_1a",
+			TrackLogo  = "track_city_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City1/",
+			StagePath	= BaseLevelPath.."City/City1/A/",
+	},
+	[11] = {
+			Name = "City Central 2",
+			Description = TRACK_DESCRIPTION_CITY_1B,
+
+			Laps = 4,
+			AIHandicapLevel = 55,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city2",
+			TrackImage = "track_city_1b",
+			TrackLogo  = "track_city_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City1/",
+			StagePath	= BaseLevelPath.."City/City1/B/",
+	},
+	[12] = {
+			Name = "City Central 3",
+			Description = TRACK_DESCRIPTION_CITY_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 56,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city3",
+			TrackImage = "track_city_1c",
+			TrackLogo  = "track_city_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City1/",
+			StagePath	= BaseLevelPath.."City/City1/C/",
+	},
+	[13] = {
+			Name = "Downtown 1",
+			Description = TRACK_DESCRIPTION_CITY_2A,
+			
+			Laps = 4,
+			AIHandicapLevel = 57,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city4",
+			TrackImage = "track_city_2a",
+			TrackLogo  = "track_city_2a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City2/",
+			StagePath	= BaseLevelPath.."City/City2/A/",
+	},
+	[14] = {
+			Name = "Downtown 2",
+			Description = TRACK_DESCRIPTION_CITY_2B,
+			
+			Laps = 4,
+			AIHandicapLevel = 58,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city5",
+			TrackImage = "track_city_2b",
+			TrackLogo  = "track_city_2b_logo",
+
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City2/",
+			StagePath	= BaseLevelPath.."City/City2/B/",
+	},
+	[15] = {
+			Name = "Downtown 3",
+			Description = TRACK_DESCRIPTION_CITY_2C,
+			
+			Laps = 4,
+			AIHandicapLevel = 59,
+			
+			TrackType = TRACKTYPE_CITY,
+
+			TrackIcon  = "track_images_city6",
+			TrackImage = "track_city_2c",
+			TrackLogo  = "track_city_2c_logo",
+
+			GfxSetPath	= BaseLevelPath.."City/",
+			TrackPath	= BaseLevelPath.."City/City2/",
+			StagePath	= BaseLevelPath.."City/City2/C/",
+	},
+	[16] = {
+			Name = "Water Canal 1",
+			Description = TRACK_DESCRIPTION_CANAL_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 60,
+			
+			TrackType = TRACKTYPE_CANAL,
+
+			TrackIcon  = "track_images_canals1",
+			TrackImage = "track_canal_1a",
+			TrackLogo  = "track_canal_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Canal/",
+			TrackPath	= BaseLevelPath.."Canal/Canal1/",
+			StagePath	= BaseLevelPath.."Canal/Canal1/A/",
+	},
+	[17] = {
+			Name = "Water Canal 2",
+			Description = TRACK_DESCRIPTION_CANAL_1B,
+			
+			Laps = 4,
+			AIHandicapLevel = 61,
+			
+			TrackType = TRACKTYPE_CANAL,
+
+			TrackIcon  = "track_images_canals2",
+			TrackImage = "track_canal_1b",
+			TrackLogo  = "track_canal_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Canal/",
+			TrackPath	= BaseLevelPath.."Canal/Canal1/",
+			StagePath	= BaseLevelPath.."Canal/Canal1/B/",
+	},
+	[18] = {
+			Name = "Water Canal 3",
+			Description = TRACK_DESCRIPTION_CANAL_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 62,
+			
+			TrackType = TRACKTYPE_CANAL,
+
+			TrackIcon  = "track_images_canals3",
+			TrackImage = "track_canal_1c",
+			TrackLogo  = "track_canal_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Canal/",
+			TrackPath	= BaseLevelPath.."Canal/Canal1/",
+			StagePath	= BaseLevelPath.."Canal/Canal1/C/",
+	},
+	[19] = {
+			-- empty
+	},
+	[20] = {
+			-- empty
+	},
+	[21] = {
+			-- empty
+	},
+	[22] = {
+			Name = "Desert Oil Field",
+			Description = TRACK_DESCRIPTION_DESERT_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 63,
+			
+			TrackType = TRACKTYPE_DESERT,
+
+			TrackIcon  = "track_images_desert1",
+			TrackImage = "track_desert_1a",
+			TrackLogo  = "track_desert_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Desert/",
+			TrackPath	= BaseLevelPath.."Desert/Desert1/",
+			StagePath	= BaseLevelPath.."Desert/Desert1/A/",
+	},
+	[23] = {
+			Name = "Desert Scrap Yard",
+			Description = TRACK_DESCRIPTION_DESERT_1B,
+			
+			Laps = 4,
+			AIHandicapLevel = 64,
+			
+			TrackType = TRACKTYPE_DESERT,
+
+			TrackIcon  = "track_images_desert2",
+			TrackImage = "track_desert_1b",
+			TrackLogo  = "track_desert_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Desert/",
+			TrackPath	= BaseLevelPath.."Desert/Desert1/",
+			StagePath	= BaseLevelPath.."Desert/Desert1/B/",
+	},
+	[24] = {
+			Name = "Desert Town",
+			Description = TRACK_DESCRIPTION_DESERT_1C,
+			Laps = 4,
+			AIHandicapLevel = 65,
+			
+			TrackType = TRACKTYPE_DESERT,
+
+			TrackIcon  = "track_images_desert3",
+			TrackImage = "track_desert_1c",
+			TrackLogo  = "track_desert_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Desert/",
+			TrackPath	= BaseLevelPath.."Desert/Desert1/",
+			StagePath	= BaseLevelPath.."Desert/Desert1/C/",
+	},
+	[25] = {
+			-- empty
+	},
+	[26] = {
+			-- empty
+	},
+	[27] = {
+			-- empty
+	},	
+	[28] = {
+			Name = "Midwest Ranch 1",
+			Description = TRACK_DESCRIPTION_FIELDS_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 66,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields1",
+			TrackImage = "track_fields_1a",
+			TrackLogo  = "track_fields_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields1/",
+			StagePath	= BaseLevelPath.."Fields/Fields1/A/",
+	},
+	[29] = {
+			Name = "Midwest Ranch 2",
+			Description = TRACK_DESCRIPTION_FIELDS_1B,
+			
+			Laps = 4,
+			AIHandicapLevel = 67,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields2",
+			TrackImage = "track_fields_1b",
+			TrackLogo  = "track_fields_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields1/",
+			StagePath	= BaseLevelPath.."Fields/Fields1/B/",
+	},
+	[30] = {
+			Name = "Midwest Ranch 3",
+			Description = TRACK_DESCRIPTION_FIELDS_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 68,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields3",
+			TrackImage = "track_fields_1c",
+			TrackLogo  = "track_fields_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields1/",
+			StagePath	= BaseLevelPath.."Fields/Fields1/C/",
+	},
+	[31] = {
+			Name = "Farmlands 1",
+			Description = TRACK_DESCRIPTION_FIELDS_2A,
+			
+			Laps = 4,
+			AIHandicapLevel = 69,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields4",
+			TrackImage = "track_fields_2a",
+			TrackLogo  = "track_fields_2a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields2/",
+			StagePath	= BaseLevelPath.."Fields/Fields2/A/",
+	},
+	[32] = {
+			Name = "Farmlands 2",
+			Description = TRACK_DESCRIPTION_FIELDS_2B,
+			
+			Laps = 4,
+			AIHandicapLevel = 70,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields5",
+			TrackImage = "track_fields_2b",
+			TrackLogo  = "track_fields_2b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields2/",
+			StagePath	= BaseLevelPath.."Fields/Fields2/B/",
+	},
+	[33] = {
+			Name = "Farmlands 3",
+			Description = TRACK_DESCRIPTION_FIELDS_2C,
+			
+			Laps = 4,
+			AIHandicapLevel = 71,
+			
+			TrackType = TRACKTYPE_FIELDS,
+
+			TrackIcon  = "track_images_fields6",
+			TrackImage = "track_fields_2c",
+			TrackLogo  = "track_fields_2c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Fields/",
+			TrackPath	= BaseLevelPath.."Fields/Fields2/",
+			StagePath	= BaseLevelPath.."Fields/Fields2/C/",
+	},
+	[34] = {
+			-- empty
+	},
+	[35] = {
+			-- empty
+	},
+	[36] = {
+			-- empty
+	},
+	[37] = {
+			-- empty
+	},
+	[38] = {
+			-- empty
+	},
+	[39] = {
+			-- empty
+	},
+	[40] = {
+			Name = "Riverbay Circuit 1",
+			Description = TRACK_DESCRIPTION_RACING_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 72,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing1",
+			TrackImage = "track_racing_1a",
+			TrackLogo  = "track_racing_1a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing1/",
+			StagePath	= BaseLevelPath.."Racing/Racing1/A/",
+	},
+	[41] = {
+			Name = "Riverbay Circuit 2",
+			Description = TRACK_DESCRIPTION_RACING_1B,
+			
+			Laps = 4,
+			AIHandicapLevel = 73,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing2",
+			TrackImage = "track_racing_1b",
+			TrackLogo  = "track_racing_1b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing1/",
+			StagePath	= BaseLevelPath.."Racing/Racing1/B/",
+	},
+	[42] = {
+			Name = "Riverbay Circuit 3",
+			Description = TRACK_DESCRIPTION_RACING_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 74,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing3",
+			TrackImage = "track_racing_1c",
+			TrackLogo  = "track_racing_1c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing1/",
+			StagePath	= BaseLevelPath.."Racing/Racing1/C/",
+	},
+	[43] = {
+			Name = "Motor Raceway 1",
+			Description = TRACK_DESCRIPTION_RACING_2A,
+			
+			Laps = 4,
+			AIHandicapLevel = 75,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing4",
+			TrackImage = "track_racing_2a",
+			TrackLogo  = "track_racing_2a_logo",
+			
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing2/",
+			StagePath	= BaseLevelPath.."Racing/Racing2/A/",
+	},
+	[44] = {
+			Name = "Motor Raceway 2",
+			Description = TRACK_DESCRIPTION_RACING_2B,
+			
+			Laps = 4,
+			AIHandicapLevel = 76,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing5",
+			TrackImage = "track_racing_2b",
+			TrackLogo  = "track_racing_2b_logo",
+
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing2/",
+			StagePath	= BaseLevelPath.."Racing/Racing2/B/",
+	},
+	[45] = {
+			Name = "Motor Raceway 3",
+			Description = TRACK_DESCRIPTION_RACING_2C,
+			
+			Laps = 4,
+			AIHandicapLevel = 77,
+			
+			TrackType = TRACKTYPE_RACING,
+
+			TrackIcon  = "track_images_racing6",
+			TrackImage = "track_racing_2c",
+			TrackLogo  = "track_racing_2c_logo",
+
+			GfxSetPath	= BaseLevelPath.."Racing/",
+			TrackPath	= BaseLevelPath.."Racing/Racing2/",
+			StagePath	= BaseLevelPath.."Racing/Racing2/C/",
+	},
+	[46] = {
+			-- empty
+	},
+	[47] = {
+			-- empty
+	},
+	[48] = {
+			-- empty
+	},
+	[49] = {
+			-- empty
+	},
+	[50] = {
+			-- empty
+	},
+	[51] = {
+			-- empty
+	},
+	[52] = {
+			Name = "Gas Station Derby",
+			Description = TRACK_DESCRIPTION_DERBY_1,
+			
+			Rules = GR_DERBY,
+			
+			AIHandicapLevel = 42,
+			
+			TrackType = TRACKTYPE_DERBY,
+			
+			TrackIcon  = "track_images_derby1",
+			TrackImage = "track_derby_1",
+			TrackLogo  = "track_derby_1_logo",
+
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby1/",
+			StagePath	= BaseLevelPath.."Derby/Derby1/A/",
+	},
+	[53] = {
+			Name = "Parking Lot Derby",
+			Description = TRACK_DESCRIPTION_DERBY_2,
+			
+			Rules = GR_DERBY,
+			
+			AIHandicapLevel = 42,
+			
+			TrackIcon  = "track_images_derby2",
+			TrackImage = "track_derby_2",
+			TrackLogo  = "track_derby_2_logo",
+			
+			TrackType = TRACKTYPE_DERBY,
+			
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby2/",
+			StagePath	= BaseLevelPath.."Derby/Derby2/A/",
+	},
+	[54] = {
+			Name = "Skyscraper Derby",
+			Description = TRACK_DESCRIPTION_DERBY_3,
+			
+			Rules = GR_DERBY,
+			
+			AIHandicapLevel = 42,
+
+			TrackIcon  = "track_images_derby3",
+			TrackImage = "track_derby_3",
+			TrackLogo  = "track_derby_3_logo",
+			
+			TrackType = TRACKTYPE_DERBY,
+	
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby3/",
+			StagePath	= BaseLevelPath.."Derby/Derby3/A/",
+	},
+	[55] = {
+			Name = "Derby Bowl 1",
+			Description = TRACK_DESCRIPTION_DERBY_4,
+			
+			Rules = GR_DERBY,
+			
+			AIHandicapLevel = 42,
+
+			TrackIcon  = "track_images_derby4",
+			TrackImage = "track_derby_4",
+			TrackLogo  = "track_derby_4_logo",
+			
+			TrackType = TRACKTYPE_DERBY,
+
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby4/",
+			StagePath	= BaseLevelPath.."Derby/Derby4/A/",
+	},
+	[56] = {
+			Name = "Derby Bowl 2",
+			Description = TRACK_DESCRIPTION_DERBY_5,
+			
+			Rules = GR_DERBY,
+			
+			AIHandicapLevel = 42,
+
+			TrackIcon  = "track_images_derby5",
+			TrackImage = "track_derby_5",
+			TrackLogo  = "track_derby_5_logo",
+			
+			TrackType = TRACKTYPE_DERBY,
+
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby5/",
+			StagePath	= BaseLevelPath.."Derby/Derby5/A/",
+	},
+	[57] = {
+			Name = "Derby Bowl 3",
+			Description = TRACK_DESCRIPTION_DERBY_6,
+			
+			Rules = GR_DERBY,
+
+			TrackIcon  = "track_images_derby6",
+			TrackImage = "track_derby_6",
+			TrackLogo  = "track_derby_6_logo",
+			
+			TrackType = TRACKTYPE_DERBY,
+
+			AIHandicapLevel = 42,
+			
+			GfxSetPath	= BaseLevelPath.."Derby/",
+			TrackPath	= BaseLevelPath.."Derby/Derby6/",
+			StagePath	= BaseLevelPath.."Derby/Derby6/A/",
+	},
+	[58] = {
+			Name = "Test",
+
+			Laps = 4,
+			AIHandicapLevel = 42,
+				
+			GfxSetPath	= BaseLevelPath.."Test/",
+			TrackPath	= BaseLevelPath.."Test/Test1/",
+			StagePath	= BaseLevelPath.."Test/Test1/A/",
+	},
+	[59] = {
+		    Name = "Figure of Eight 1",
+		    Description = TRACK_DESCRIPTION_ARENA_1,
+			
+			Laps = 4,
+			AIHandicapLevel = 12,
+		    NitroRegen = true,
+
+			TrackIcon  = "track_images_dirt1",
+			TrackImage = "track_arena_1",
+			TrackLogo  = "track_arena_1_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+	
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena1/",
+			StagePath	= BaseLevelPath.."Arena/Arena1/A/",
+	},
+	[60] = {
+			Name = "Triloop Special",
+			Description = TRACK_DESCRIPTION_ARENA_2,
+			
+			Laps = 4,
+			AIHandicapLevel = 15,
+		    NitroRegen = true,
+			
+			TrackIcon  = "track_images_dirt2",
+			TrackImage = "track_arena_2",
+			TrackLogo  = "track_arena_2_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena2/",
+			StagePath	= BaseLevelPath.."Arena/Arena2/A/",
+	},
+	[61] = {
+			Name = "Speedbowl",
+			Description = TRACK_DESCRIPTION_ARENA_3,
+			
+			Laps = 4,
+			AIHandicapLevel = 17,
+		    NitroRegen = true,
+
+			TrackIcon  = "track_images_dirt3",
+			TrackImage = "track_arena_3",
+			TrackLogo  = "track_arena_3_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena3/",
+			StagePath	= BaseLevelPath.."Arena/Arena3/A/",
+	},
+	[62] = {
+			Name = "Sand Speedway",
+			Description = TRACK_DESCRIPTION_ARENA_4,
+			
+			Laps = 4,
+			AIHandicapLevel = 20,
+		    NitroRegen = true,
+			
+			TrackIcon  = "track_images_dirt4",
+			TrackImage = "track_arena_4",
+			TrackLogo  = "track_arena_4_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena4/",
+			StagePath	= BaseLevelPath.."Arena/Arena4/A/",
+	},
+	[63] = {
+			Name = "Figure of Eight 2",
+			Description = TRACK_DESCRIPTION_ARENA_5,
+			
+			Laps = 4,
+			AIHandicapLevel = 22,
+		    NitroRegen = true,
+			
+			TrackIcon  = "track_images_dirt5",
+			TrackImage = "track_arena_5",
+			TrackLogo  = "track_arena_5_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena5/",
+			StagePath	= BaseLevelPath.."Arena/Arena5/A/",
+	},
+	[64] = {
+			Name = "Crash Alley",
+			Description = TRACK_DESCRIPTION_ARENA_6,
+			
+			Laps = 4,
+			AIHandicapLevel = 25,
+		    NitroRegen = true,
+
+			TrackIcon  = "track_images_dirt6",
+			TrackImage = "track_arena_6",
+			TrackLogo  = "track_arena_6_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Arena/",
+			TrackPath	= BaseLevelPath.."Arena/Arena6/",
+			StagePath	= BaseLevelPath.."Arena/Arena6/A/",
+	},
+	[65] = {
+			Name = "Speedway Left",
+			Description = TRACK_DESCRIPTION_NASCAR_1A,
+			
+			Laps = 4,
+			AIHandicapLevel = 30,
+		    NitroRegen = true,
+			
+			TrackIcon  = "track_images_oval1",
+			TrackImage = "track_oval_1",
+			TrackLogo  = "track_oval_1_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Nascar/",
+			TrackPath	= BaseLevelPath.."Nascar/Nascar1/",
+			StagePath	= BaseLevelPath.."Nascar/Nascar1/A/",
+	},
+	[66] = {
+			Name = "Speedway Right",
+			Description = TRACK_DESCRIPTION_NASCAR_1B,
+			
+			Laps = 4,
+			AIHandicapLevel = 34,
+		    NitroRegen = true,
+			
+			TrackIcon  = "track_images_oval2",
+			TrackImage = "track_oval_2",
+			TrackLogo  = "track_oval_2_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+
+			GfxSetPath	= BaseLevelPath.."Nascar/",
+			TrackPath	= BaseLevelPath.."Nascar/Nascar1/",
+			StagePath	= BaseLevelPath.."Nascar/Nascar1/B/",
+	},
+	[67] = {
+			Name = "Speedway Special",
+			Description = TRACK_DESCRIPTION_NASCAR_1C,
+			
+			Laps = 4,
+			AIHandicapLevel = 39,
+		    NitroRegen = true,
+
+			TrackIcon  = "track_images_oval3",
+			TrackImage = "track_oval_3",
+			TrackLogo  = "track_oval_3_logo",
+			
+			TrackType = TRACKTYPE_EVENT,
+			
+			GfxSetPath	= BaseLevelPath.."Nascar/",
+			TrackPath	= BaseLevelPath.."Nascar/Nascar1/",
+			StagePath	= BaseLevelPath.."Nascar/Nascar1/C/",
+	},
+	[68] = {
+			Name = "Garage Test Track",
+
+			Laps = 4,
+			AIHandicapLevel = 42,
+			
+			Rules = GR_TEST,
+			
+			GfxSetPath	= BaseLevelPath.."GarageTest/",
+			TrackPath	= BaseLevelPath.."GarageTest/GarageTest1/",
+			StagePath	= BaseLevelPath.."GarageTest/GarageTest1/A/",
+	},
+	[69] = {
+			-- empty
+	},
+	[73] = {
+			Name = "Curling",
+			Description = TRACK_DESCRIPTION_CURLING,
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_CURLING,
+			StartPosition	= 1,
+			Weather			= 4,
+			
+			TrackIcon  = "track_images_stunt1",
+			TrackImage = "stunt_A1_image",
+			TrackLogo  = "stunt_A1_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[70] = {
+			Name = "High Jump",
+			Description = TRACK_DESCRIPTION_HIGHJUMP,
+
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_HIGHJUMP,
+			StartPosition	= 2,
+			Weather			= 5,
+
+			TrackIcon  = "track_images_stunt6",
+			TrackImage = "stunt_A2_image",
+			TrackLogo  = "stunt_A2_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[74] = {
+			Name = "Stone-Skipping",
+			Description = TRACK_DESCRIPTION_STONESKIPPING,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_STONESKIPPING,
+			StartPosition	= 3,
+			Weather			= 3,
+
+			TrackIcon  = "track_images_stunt2",
+			TrackImage = "stunt_A3_image",
+			TrackLogo  = "stunt_A3_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[75] = {
+			Name = "Ring of Fire",
+			Description = TRACK_DESCRIPTION_RINGOFFIRE,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_RINGOFFIRE,
+			StartPosition	= 4,
+			Weather			= 2,
+
+			TrackIcon  = "track_images_stunt3",
+			TrackImage = "stunt_A4_image",
+			TrackLogo  = "stunt_A4_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[83] = {
+			Name = "Darts",
+			Description = TRACK_DESCRIPTION_DARTS,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_DARTS,
+			StartPosition	= 5,
+			Weather			= 5,
+
+			TrackIcon  = "track_images_stunt5",
+			TrackImage = "stunt_A5_image",
+			TrackLogo  = "stunt_A5_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[81] = {
+			Name = "Royal Flush",
+			Description = TRACK_DESCRIPTION_ROYALFLUSH,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_BLACKDANNY,
+			StartPosition	= 6,
+			Weather			= 0,
+
+			TrackIcon  = "track_images_stunt4",
+			TrackImage = "stunt_A6_image",
+			TrackLogo  = "stunt_A6_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt1/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt1/A/",
+	},
+	[76] = {
+			-- empty
+	},
+	[77] = {
+			-- empty
+	},
+	[78] = {
+			-- empty
+	},
+	[79] = {
+			-- empty
+	},
+	[72] = {
+			Name = "Ski Jump",
+			Description = TRACK_DESCRIPTION_SKIJUMP,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_SKIJUMP,
+			StartPosition	= 1,
+			Weather			= 3,
+
+			TrackIcon  = "track_images_stunt12",
+			TrackImage = "stunt_B1_image",
+			TrackLogo  = "stunt_B1_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+	[80] = {
+			Name = "Field Goal",
+			Description = TRACK_DESCRIPTION_FIELDGOAL,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_FIELDGOAL,
+			StartPosition	= 2,
+			Weather			= 0,
+
+			TrackIcon  = "track_images_stunt11",
+			TrackImage = "stunt_B2_image",
+			TrackLogo  = "stunt_B2_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+	[71] = {
+			Name = "Bowling",
+			Description = TRACK_DESCRIPTION_BOWLING,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_BOWLING,
+			StartPosition	= 3,
+			Weather			= 1,
+
+			TrackIcon  = "track_images_stunt10",
+			TrackImage = "stunt_B3_image",
+			TrackLogo  = "stunt_B3_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+	[82] = {
+			Name = "Basketball",
+			Description = TRACK_DESCRIPTION_BASKETBALL,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_BASKETBALL,
+			StartPosition	= 4,
+			Weather			= 4,
+
+			TrackIcon  = "track_images_stunt9",
+			TrackImage = "stunt_B4_image",
+			TrackLogo  = "stunt_B4_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+	[84] = {
+			Name = "Baseball",
+			Description = TRACK_DESCRIPTION_BASEBALL,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_BASEBALL,
+			StartPosition	= 5,
+			Weather			= 0,
+
+			TrackIcon  = "track_images_stunt7",
+			TrackImage = "stunt_B5_image",
+			TrackLogo  = "stunt_B5_logo",	
+			
+			TrackType = TRACKTYPE_STUNT,		
+
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+	[85] = {
+			Name = "Soccer",
+			Description = TRACK_DESCRIPTION_SOCCER,
+			
+			Rules 			= GR_STUNT,
+			StuntType		= STUNT_SOCCER,
+			StartPosition	= 6,
+			Weather			= 0,
+
+			TrackIcon  = "track_images_stunt8",
+			TrackImage = "stunt_B6_image",
+			TrackLogo  = "stunt_B6_logo",
+			
+			TrackType = TRACKTYPE_STUNT,
+			
+			GfxSetPath	= BaseLevelPath.."Stunt/",
+			TrackPath	= BaseLevelPath.."Stunt/Stunt2/",
+			StagePath	= BaseLevelPath.."Stunt/Stunt2/A/",
+	},
+
+}
+
+-- level index list for easy-to-read level indices
+LevelIndex = {
+	Forest1A		= 1,
+	Forest1B		= 2,
+	Forest1C		= 3,
+	Forest2A		= 4,
+	Forest2B		= 5,
+	Forest2C		= 6,
+	City1A			= 10,
+	City1B			= 11,
+	City1C			= 12,
+	City2A			= 13,
+	City2B			= 14,
+	City2C			= 15,
+	Canal1A			= 16,
+	Canal1B			= 17,
+	Canal1C			= 18,
+	Desert1A		= 22,
+	Desert1B		= 23,
+	Desert1C		= 24,
+	Fields1A		= 28,
+	Fields1B		= 29,
+	Fields1C		= 30,
+	Fields2A		= 31,
+	Fields2B		= 32,
+	Fields2C		= 33,
+	Racing1A		= 40,
+	Racing1B		= 41,
+	Racing1C		= 42,
+	Racing2A		= 43,
+	Racing2B		= 44,
+	Racing2C		= 45,
+	Derby1A			= 52,
+	Derby2A			= 53,
+	Derby3A			= 54,
+	Derby4A			= 55,
+	Derby5A			= 56,
+	Derby6A			= 57,
+	Test			= 58,
+	Arena1			= 59,
+	Arena2			= 60,
+	Arena3			= 61,
+	Arena4			= 62,
+	Arena5			= 63,
+	Arena6			= 64,
+	Nascar1A		= 65,
+	Nascar1B		= 66,
+	Nascar1C		= 67,
+	GarageTestTrack = 68,
+	CURLING			= 73,
+	HIGHJUMP		= 70,
+	STONESKIPPING 	= 74,
+	RINGOFFIRE		= 75,
+	DARTS			= 83,
+	ROYALFLUSH		= 81,
+	SKIJUMP			= 72,
+	FIELDGOAL		= 80,
+	BOWLING			= 71,
+	BASKETBALL		= 82,
+	BASEBALL		= 84,
+	SOCCER			= 85,
+}	

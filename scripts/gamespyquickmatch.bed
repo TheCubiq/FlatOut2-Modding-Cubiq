@@ -1,0 +1,179 @@
+--///////////////////////////////////////////////////////////////////////////
+--// QuickMatch.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 20.6.2004 0:57:43
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local State = nil
+local CurrentSession = 0
+local MaxSessionsToTry = 3
+
+local EventListener
+
+local function JoinNextSession()
+	CurrentSession=CurrentSession+1
+	if CurrentSession <= SessionList:GetNumSessions() and CurrentSession <= MaxSessionsToTry then
+		ShowThinkingWindow()
+		SessionList:SetSessionNum(CurrentSession)
+		SessionList:GetCompleteSession()
+		SessionList:PrepareJoin()
+		State="PREPAREJOIN1"
+	else
+		State = "ERROR"
+		HideThinkingWindow()
+		ShowMessageBox(SAFEPOS(154, 70), nil,
+					OPTIRESULTS_NOGAME,
+					OPTIRESULTS_SEARCH,
+					entermenu("menu_gamespy_quickmatch"),
+					UI_BACK,
+					menu_gamespy_quickmatch.back,
+					UI_CREATEGAME,
+					function() EnterCreateGameMenu("menu_multiplayer_gamespy") end
+					)
+	end
+end
+
+local function SearchGames()
+	GameSpy:StopUpdate()
+	Network:StartSearchGameSpySessions()
+	GameSpy:ResumeUpdate()
+	SessionList:Refresh()
+end
+
+local function NetworkEvents(event)
+	if event.id==EVENT_NETWORK_REQUEST_PLAYERUPDATE then
+		local player=Session:GetLocalPlayer(1)
+		player:GenerateUserId()
+		player.Name=PlayerProfile:GetName()
+		local info = Session:GetInfo()
+
+		if info.CarClass > 4 then
+			player.Car = info.CarClass - 5
+			player.CarValid = true
+		elseif info.CarClass == SessionInfo.CarClass.Stunt or info.Races[info.NextRace].EventType == ReplicatedSession.GAMETYPE_STUNT then
+			player.Car = CarlistStuntCars()[1].index		
+			player.CarValid = false
+		elseif info.CarClass ~= SessionInfo.CarClass.Any then
+			player.Car = CarlistFromClass(info.CarClass, false, true)[1].index
+			player.CarValid = false
+		else
+			player.Car = 0
+			player.CarValid = false
+		end
+		
+		player.CarSkin=1
+		player.CharacterType = PlayerProfile:GetGender()
+		player.TournamentPoints = 0
+
+		if info.CarUpgrades ~= SessionInfo.CarUpgrades.Any then
+			player.UpgradeLevel = info.CarUpgrades
+		else
+			player.UpgradeLevel = SessionInfo.CarUpgrades.All
+		end
+	elseif event.id==EVENT_FIND_SESSIONS_COMPLETED then
+		if SessionList:GetNumSessions()==0 then
+			State="ERROR"
+			HideThinkingWindow()
+			ShowMessageBox(SAFEPOS(154, 70), nil,
+						OPTIRESULTS_NOGAME,
+						OPTIRESULTS_SEARCH,
+						entermenu("menu_gamespy_quickmatch"),
+						UI_BACK,
+						menu_gamespy_quickmatch.back,
+						UI_CREATEGAME,
+						function() EnterCreateGameMenu("menu_multiplayer_gamespy") end
+						)
+		else
+			SessionList:SetSessionNum(1)
+			SessionList:GetCompleteSession()
+			SessionList:PrepareJoin()
+			State="PREPAREJOIN1"
+		end
+	end
+end
+
+menu_gamespy_quickmatch = CreateMenuFromTemplate("template_multiplayer")
+menu_gamespy_quickmatch.options.title = QUICK_TITLE
+menu_gamespy_quickmatch.back = function()
+									EnterMenu("menu_multiplayer_gamespy")
+								end
+
+function menu_gamespy_quickmatch.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	self.items = { }
+end
+
+function menu_gamespy_quickmatch.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+	EventListener = Event:AddListener(NetworkEvents, EVENTTYPE_NETWORK)
+	
+	
+	GameSpy:StopUpdate()
+	--Network:StartMultiplayer()
+	GameSpy:ResumeUpdate()
+		
+	local handler = InputHandler { Name="inputhandler" }
+	handler.onKeyPressed = function( Self, Character, VirtualKey, ScanCode )
+		if VirtualKey == KeyCodes["BUTTON_START"] then
+		elseif VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			HideThinkingWindow()
+			State="NONE"
+			Network:StopMultiplayer()
+			menu_gamespy_quickmatch.back()
+		end
+	end
+			
+	ShowThinkingWindow()
+	SearchGames()
+
+	handler:SetFocus()
+
+	State="SEARCHING"
+	CurrentSession=0
+end
+	
+function menu_gamespy_quickmatch.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+	
+function menu_gamespy_quickmatch.update(self, time)
+	self.parent:update(self, time)
+
+	if menu_gamespy_quickmatch.error then
+		return
+	end
+
+	if State == "PREPAREJOIN1" and SessionList:PrepareJoinCompleted() then
+		if SessionList:PrepareJoinFailed() then
+			State="SEARCHING"
+			JoinNextSession()
+		else
+			GameSpy.StopUpdate()
+			State="PREPAREJOIN2"
+		end
+	elseif State=="PREPAREJOIN2" then
+		if GameSpy.IsUpdateStopped() then
+			GameSpy.ResumeUpdate()
+			SessionList:JoinSession()
+			State="JOINING"
+		end
+	elseif State=="JOINING" then
+		if Session:GetProgress()=="FAILED" then
+			State="SEARCHING"
+			JoinNextSession()
+		elseif Session:GetProgress()=="SUCCESS" then
+			HideThinkingWindow()
+			EnterLobby("menu_multiplayer_gamespy")
+		end
+	end
+end

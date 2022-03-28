@@ -1,0 +1,12 @@
+upgrade_category_icons_size = { 256,256 }
+upgrade_category_icons = {
+	
+	upgrade_category_suspension_icon =		 {  3, 3, 110, 70 },  
+	upgrade_category_tires_brakes_icon = 	{  116, 3, 110, 70 }, 
+	upgrade_category_exhaust_icon =		 {  3, 76, 110, 70 },  
+	upgrade_category_gearbox_icon =		 {  116, 76, 110, 70 }, 
+	upgrade_category_engine_icon = 		{  3, 149, 110, 70 },  
+	upgrade_category_body_icon = 	{  116, 149, 110, 70 }, 
+
+
+}

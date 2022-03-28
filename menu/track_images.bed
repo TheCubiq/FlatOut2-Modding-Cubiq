@@ -1,0 +1,74 @@
+track_images_size = { 512,512 }
+track_images = {
+	
+	track_images_racing1 = {  3, 6, 78, 40 },
+	track_images_racing2 = {  87, 6, 78, 40 },
+	track_images_racing3 = {  172, 6, 78, 40 },
+	track_images_racing4 = {  260, 6, 78, 40 },
+	track_images_racing5 = {  344, 6, 78, 40 },
+	track_images_racing6 = {  429, 6, 78, 40 },
+
+	track_images_fields1 = {  3, 59, 78, 40 },
+	track_images_fields2 = {  87, 59, 78, 40 },
+	track_images_fields3 = {  172, 59, 78, 40 },
+	track_images_fields4 = {  260, 59, 78, 40 },
+	track_images_fields5 = {  344, 59, 78, 40 },
+	track_images_fields6 = {  429, 59, 78, 40 },
+
+	track_images_forest1 = {  3, 112, 78, 40 },
+	track_images_forest2 = {  87, 112, 78, 40 },
+	track_images_forest3 = {  172, 112, 78, 40 },
+	track_images_forest4 = {  260, 112, 78, 40 },
+	track_images_forest5 = {  344, 112, 78, 40 },
+	track_images_forest6 = {  429, 112, 78, 40 },
+
+	track_images_city1 = {  3, 165, 78, 40 },
+	track_images_city2 = {  87, 165, 78, 40 },
+	track_images_city3 = {  172, 165, 78, 40 },
+	track_images_city4 = {  260, 165, 78, 40 },
+	track_images_city5 = {  344, 165, 78, 40 },
+	track_images_city6 = {  429, 165, 78, 40 },
+
+	track_images_desert1 = {  3, 218, 78, 40 },
+	track_images_desert2 = {  87, 218, 78, 40 },
+	track_images_desert3 = {  172, 218, 78, 40 },
+	track_images_canals1 = {  260, 218, 78, 40 },
+	track_images_canals2 = {  344, 218, 78, 40 },
+	track_images_canals3 = {  429, 218, 78, 40 },
+	
+	track_images_derby1 = {  3, 271, 78, 40 },
+	track_images_derby2 = {  87, 271, 78, 40 },
+	track_images_derby3 = {  172, 271, 78, 40 },
+	track_images_derby4 = {  260, 271, 78, 40 },
+	track_images_derby5 = {  344, 271, 78, 40 },
+	track_images_derby6 = {  429, 271, 78, 40 },
+
+	track_images_dirt1 = {  3, 324, 78, 40 },
+	track_images_dirt2 = {  87, 324, 78, 40 },
+	track_images_dirt3 = {  172, 324, 78, 40 },
+	track_images_dirt4 = {  260, 324, 78, 40 },
+	track_images_dirt5 = {  344, 324, 78, 40 },
+	track_images_dirt6 = {  429, 324, 78, 40 },
+
+	track_images_oval1 = {  3, 377, 78, 40 },
+	track_images_oval2 = {  87, 377, 78, 40 },
+	track_images_oval3 = {  172, 377, 78, 40 },
+	track_images_oval4 = {  260, 377, 78, 40 },
+	track_images_oval5 = {  344, 377, 78, 40 },
+	track_images_oval6 = {  429, 377, 78, 40 },
+
+	track_images_stunt1 = {  3, 425, 78, 40 },
+	track_images_stunt2 = {  87, 425, 78, 40 },
+	track_images_stunt3 = {  172, 425, 78, 40 },
+	track_images_stunt4 = {  260, 425, 78, 40 },
+	track_images_stunt5 = {  344, 425, 78, 40 },
+	track_images_stunt6 = {  429, 425, 78, 40 },
+
+	track_images_stunt7 = {  3, 469, 78, 40 },
+	track_images_stunt8 = {  87, 469, 78, 40 },
+	track_images_stunt9 = {  172, 469, 78, 40 },
+	track_images_stunt10 = {  260, 469, 78, 40 },
+	track_images_stunt11 = {  344, 469, 78, 40 },
+	track_images_stunt12 = {  429, 469, 78, 40 },
+
+}

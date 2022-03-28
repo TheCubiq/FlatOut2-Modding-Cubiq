@@ -1,0 +1,26 @@
+track_images_big2_size = { 512,512 }
+track_images_big2 = {
+	
+	track_images_city1_big = {  0, 0, 197, 51 },
+	track_images_city2_big = {  199, 0, 197, 51 },
+	track_images_city3_big = {  0, 52, 197, 51 },
+	track_images_city4_big = {  199, 52, 197, 51 },
+	track_images_city5_big = {  0, 104, 197, 51 },
+	track_images_city6_big = {  199, 104, 197, 51 },
+
+	track_images_desert1_big = {  0, 157, 197, 51 },
+	track_images_desert2_big = {  199, 157, 197, 51 },
+	track_images_desert3_big = {  0, 209, 197, 51 },
+	track_images_canals1_big = {  199, 209, 197, 51 },
+	track_images_canals2_big = {  0, 261, 197, 51 },
+	track_images_canals3_big = {  199, 261, 197, 51 },
+
+	track_images_derby1_big = {  0, 315, 197, 51 },
+	track_images_derby2_big = {  199, 315, 197, 51 },
+	track_images_derby3_big = {  0, 367, 197, 51 },
+	track_images_derby4_big = {  199, 367, 197, 51 },
+	track_images_derby5_big = {  0, 419, 197, 51 },
+	track_images_derby6_big = {  199, 419, 197, 51 },
+
+
+}

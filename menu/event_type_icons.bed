@@ -1,0 +1,15 @@
+event_type_icons_size = { 256,256 }
+event_type_icons = {
+	
+	event_type_1 = {  0, 0, 93, 42 },    -- races
+	event_type_2 = {  93, 0, 93, 42 },  -- derbies/dirts/ovals
+	event_type_3 = {  0, 43, 93, 42 },  -- stunts
+
+	race_type_1 = {  93, 43, 93, 42 },   -- forest
+	race_type_2 = {   0, 86, 93, 42 },   -- field
+	race_type_3 = {  93, 86, 93, 42 },  -- desert
+	race_type_4 = {  0, 129, 93, 42 }, -- canals
+	race_type_5 = {   0, 172, 93, 42 },  -- city
+	race_type_6 = {  93, 129, 93, 42 },  -- racing
+
+}

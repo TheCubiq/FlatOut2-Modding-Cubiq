@@ -1,0 +1,133 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CupSelection.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 13.4.2005 17:13:55
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+menu_career_cupselection = CreateMenuFromTemplate("template_career")
+
+
+menu_career_cupselection.options.title=TRANSLATOR(TITLE_CUPSELECTION)
+menu_career_cupselection.back=backmenu()
+
+local selection_state={}
+
+local function enter_cup()
+	if selection_state.difficulty and selection_state.cup then
+		db.GameFlow.PreRace.Mode=GM_CAREER
+		db.GameFlow.PreRace.Class=selection_state.difficulty
+		db.GameFlow.PreRace.Cup=selection_state.cup
+		Event:PostEvent(event(EVENT_RACE_BEGIN))
+	end
+end
+
+
+local classes = {
+	{ tbl="CupsBeginner",Name=TRANSLATOR(SUBCLASS_BEGINNER) },
+	{ tbl="CupsAmateur", Name=TRANSLATOR(SUBCLASS_AMATEUR) },
+	{ tbl="CupsProfessional", Name=TRANSLATOR(SUBCLASS_PROFESSIONAL) },
+	{ tbl="CupsSuper", Name=TRANSLATOR(SUBCLASS_FINALS) },
+}
+
+
+
+local function CreateCupsFromClass(cls)
+	local t={}	
+
+	local k,v
+	for k,v in pairs(_G[classes[cls].tbl]) do
+		table.insert(t,{ Name=ConvertToWString(v.Name or "Invalid"),index=k})
+	end
+
+	return t
+end
+
+
+local function UpdateCupInfo(menu)
+	local cups=menu.items[selection_state.difficulty].cups
+
+	local cup=cups[selection_state.cup]
+
+	if not cup then
+		GetWindow("cup_number"):SetTitle(L"")
+		GetWindow("cup_name"):SetTitle(L"")
+		return
+	end
+
+	
+	GetWindow("cup_number"):SetTitle(ConvertToWString(string.format("%d / %d",cup.index,table.getn(cups))))
+	GetWindow("cup_name"):SetTitle(cup.Name or L"invalid")
+
+end
+
+
+
+
+
+function menu_career_cupselection.create(self)
+	self.parent:create(self)
+
+
+	
+	self.items = {}
+
+	local k,v
+	for k,v in ipairs(classes) do
+		if not PlayerProfile:IsClassLocked(k-1) then
+				table.insert(self.items,{v.Name,enter_cup,cups=CreateCupsFromClass(k)})
+		end
+	end
+	
+	self:loadResources()
+end
+
+function menu_career_cupselection.init(self)
+	self.parent:init(self)
+
+	selection_state={}
+
+	local parent=Frame{Name="cupframe",Position=POS(300,50),Size=SIZE(256,256)}
+
+	--//num 
+	StaticText{Name="cup_number",Font=fontsmall(),Position=POS(10,10),Size=SIZE(32,32),Parent=parent}
+	StaticText{Name="cup_name",Font=fontsmall(),Position=POS(10,40),Size=SIZE(32,32),Parent=parent}
+
+end
+
+function menu_career_cupselection.moveLeft(self)
+
+	UpdateCupInfo(self)
+end
+
+function menu_career_cupselection.moveRight(self)
+
+	UpdateCupInfo(self)
+end
+
+
+
+function menu_career_cupselection.buttonChange(self,oldbutton,newbutton)
+
+	UpdateCupInfo(self)
+end
+
+
+
+
+function menu_career_cupselection.deinit(self)
+	self.parent:init(self)
+end
+
+function menu_career_cupselection.update(self,time)
+	self.parent:update(self,time)
+
+end
+
+

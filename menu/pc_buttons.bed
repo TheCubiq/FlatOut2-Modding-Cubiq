@@ -1,0 +1,11 @@
+pc_buttons_size = { 128, 64 }
+pc_buttons = {
+	
+	enter_btn = 	{  0, 0, 29, 24 },
+	ragdoll_btn = 	{ 29, 0, 25, 24 },
+	delete_btn = 	{ 4, 24, 25, 24 },
+	esc_btn = 	{ 29, 24, 25, 23 },
+	l_arrow_btn =	{ 55, 0, 25, 23 },
+	r_arrow_btn =	{ 81, 1, 25, 23 },
+	tab_btn =	{ 53, 23, 26, 23 },
+}

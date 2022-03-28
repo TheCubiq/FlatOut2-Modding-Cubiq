@@ -1,0 +1,958 @@
+--///////////////////////////////////////////////////////////////////////////
+--// internal.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2003 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 24.7.2003 13:03:42
+--// 
+--// @Author: Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+ResourceDataPath="data/menu/"
+
+local menustate={}
+local _menupath={}
+--//helper data
+
+GLOBALS = _G
+
+function CopyValue(value)
+	if type(value) == "table" then
+		return CopyTable(value)
+	else
+		return value
+	end
+end
+
+
+
+function CopyTable(tbl)
+	local t={}
+
+	local k,v
+	for k,v in pairs(tbl) do
+		if type(v) == "table" then
+			t[k]=CopyTable(v)
+		else
+			t[k]=v
+		end
+	end
+
+	return t
+end
+
+
+function MergeTable(tbl1,tbl2)
+	if type(tbl1) ~= "table" or type(tbl2) ~= "table" then return end
+
+	local k,v
+	for k,v in pairs(tbl2) do
+		if type(v) == "table" then
+			if type(tbl1[k]) ~= "table" then
+				tbl1[k]=CopyTable(v)
+			else
+				MergeTable(tbl1[k],v)
+			end
+		else
+			tbl1[k]=v
+		end
+	end
+end
+
+function pack(...)
+	return arg
+end
+
+function MONEY(money)
+	return ConvertToWString(string.format("%d CR",money))
+end
+
+function TRANSLATOR(idname)
+	if type(idname) == "string" then
+		return _G[idname] or 65535
+	end
+	return idname or 65535
+end
+
+function LOG(...)
+	DEBUGLOG(string.format(unpack(arg)))
+end
+--//function LOG(...)
+--//	DebugConsolePrint("MENU: "..string.format(unpack(arg)) or "")
+--//end
+
+print=DebugConsolePrint
+
+--//with this we can use c++ style L"wide string" 
+function L(str)
+	return ConvertToWString(str)
+end
+
+
+function DEFAULTBUTTONPOS()
+	return { 260,396 }
+end
+
+function RELATIVEPOS(pos,parentpos)
+	local parent=parentpos or {0,0}
+	
+	local x=pos[1] - parentpos[1]
+	local y=pos[2] - parentpos[2]
+
+	local t={ x, y}
+
+	return t
+end
+
+function SPOS(x,y)
+	return { x+48,y+36 }
+end
+
+--//--------helper functions for menus
+function event(id,arg,data)
+	return { id = id, arg = arg, data = data }
+end
+
+
+function ShowPath()
+	if DEV then
+		local w=W("debug_string")
+		if w then
+			w:SetTitle(ConvertToWString(MenuState.MenuString or "no menupath"))
+			w:WordWrap()
+		end
+	end
+end
+
+
+function NewMenuEntered(menuname)
+	--//if not MenuState then
+	--//	MenuState=newTransaction()
+	--//end
+
+
+	local res=true
+--[[--/*
+	if not MenuState.goBack then
+		MenuState:nextPhase()
+		MenuState.previousMenu=CurrentMenu
+		MenuState.currentMenu=menuname
+		table.insert(_menupath,CurrentMenu)
+	else
+		MenuState.goBack=nil
+	end
+
+	if DEV then
+		local menustring=""
+
+		local k,v
+		for k,v in pairs(_menupath) do
+			menustring=menustring..v.." > "
+		end
+		menustring=menustring..menuname
+		MenuState.MenuString=menustring
+	else
+		MenuState.MenuString=""
+	end
+--]]--*/
+	return res
+end
+
+function BackMenu()
+	error("backmenu not used anymore")
+--[[--/*
+	if MenuState.previousMenu then
+		local menu=MenuState.previousMenu
+		MenuState:prevPhase()
+		MenuState.goBack=true
+		CurrentMenu=MenuState.previousMenu
+		table.remove(_menupath,table.getn(_menupath))
+		EnterMenu(menu)
+	end
+--]]--*/
+end
+
+
+
+
+function backmenu()
+	return function() BackMenu() end
+end
+
+
+function EnterMenu(menuname)
+	--//GUI:EnterMenu(menuname)
+	Event:PostEvent(event(EVENT_MENU_ENTERMENU,nil,menuname))
+end
+
+function entermenu(menuname)
+	local f=function()
+		local n=menuname
+		EnterMenu(n)
+	end
+	return f
+end
+
+function MENUITEM(title,func,...)
+	return { title,func,unpack(arg) }
+end
+
+
+function GetWindow(name)
+	return wm.GetWindow(name)
+end
+
+function W(name)
+	return wm.GetWindow(name)
+end
+
+function R(name)
+	return wm.GetResource(name)
+end
+
+--//---------------
+function disabled()
+	return true
+end
+
+function emptyfunction()
+	return function() end
+end
+
+nofunction = emptyfunction()
+
+
+
+function playmenusound_move()
+	AUDIO.PlayMenuSound(AUDIO.MENUSFX_MOVE)
+end
+
+function playmenusound_action()
+	AUDIO.PlayMenuSound(AUDIO.MENUSFX_SELECT)
+end
+
+function playmenusound_back()
+	AUDIO.PlayMenuSound(AUDIO.MENUSFX_BACK)
+end
+
+function playmenusound_error()
+	AUDIO.PlayMenuSound(AUDIO.MENUSFX_ERROR)
+end
+
+
+
+function instantaction()
+	local f=function()
+		db.GameFlow.PreRace.Mode=GM_INSTANT_ACTION
+		db.GameFlow.PreRace.Rules=GR_RACE
+		Event:PostEvent(event("EVENT_RACE_BEGIN"))
+	end
+	return f
+end
+
+
+function MenubarMoneyUpdate()
+	local w=W("menubar_money")
+	if w then
+		if not w.money then
+			w.money=PlayerProfile:GetMoney()
+			w:SetTitle(MONEY(w.money)) --//ConvertToWString(string.format("$%d",w.money)))
+			return 
+		end
+
+		if not w.updateMoney then
+			w.updateMoney = function(self,value)
+				--//playmenusound_move()
+				w:SetTitle(MONEY(value)) --//ConvertToWString(string.format("$%d",value)))
+				w.money=value
+			end
+		end
+		if not w.endUpdate then
+			w.endUpdate = function(self)
+				--//play sample here
+			end
+		end
+
+		w.onDestroy=animateWindowOnDestroy
+
+		AnimateValue(w,"money",w.updateMoney,false,w.money,PlayerProfile:GetMoney(),false,1.0,false,w.endUpdate,nil)
+	end
+end
+
+
+local dump_recursion=0
+
+function TABLEDUMP(tbl,name)
+	if type(tbl) ~= "table" then LOG(tbl) return end
+
+
+	local indent=""
+	if dump_recursion > 0 then
+		indent=string.rep("  ",dump_recursion)
+	end
+
+	LOG("%s%s = {",indent,name or "table")
+
+	dump_recursion=dump_recursion + 1
+
+	if dump_recursion > 0 then
+		indent=string.rep("  ",dump_recursion)
+	end
+
+	for k,v in pairs(tbl) do
+		local name=k
+		if type(k) == "number" then
+			name=string.format("[%d]",k)
+		end
+
+		if type(v) == "table" then
+			TABLEDUMP(v,name)
+		else
+			if type(v) == "string" then
+				LOG("%s%s=\"%s\",",indent,name,v)
+			elseif type(v) == "number" then
+				LOG("%s%s=%f,",indent,name,v)
+			end
+		end
+	end
+
+	dump_recursion=dump_recursion - 1
+
+	if dump_recursion > 0 then
+		LOG("},")
+	else
+		LOG("}")
+	end
+end
+
+
+enum = function(start,values)
+	local i=start or 0
+	local enumeration=values
+	local k,v
+	local r={}
+	for k,v in pairs(enumeration) do
+		r[v]=i
+		i=i+1	
+	end
+	
+	return r
+end
+
+
+function TimeToMinSecMs(time)
+	local min=time/(1000*60)	
+	local sec=math.mod(time/1000,60)
+	local ms=math.mod(time/10,100)
+
+	return min,sec,ms
+end
+
+function MinSecMsToString(min,sec,ms)
+	local str
+
+	if min < 10 then
+		str=string.format("0%d'",min)
+	else
+		str=string.format("%d'",min)
+	end
+
+	if sec < 10 then
+		str=str..string.format("0%d''",sec)
+	else
+		str=str..string.format("%d''",sec)
+	end
+
+	if ms < 10 then
+		str=str..string.format("0%d",ms)
+	else
+		str=str..string.format("%d",ms)
+	end
+
+	return str
+end
+
+function TimeToString(time)
+	if time <= 0 then
+		return "DNF" 
+	end
+
+	return MinSecMsToString(TimeToMinSecMs(time))
+end
+
+function GetHighScore(level_id,class_id,pos)
+	local leveldata=Levels[level_id]
+
+	if not leveldata then return {} end
+	
+	local hs
+	class_id=1
+
+	if leveldata.StuntType then
+		hs=HighScoreManager:GetStuntHighScore(leveldata.StuntType,pos or 1)
+		hs.type="stunt"
+		if leveldata.StuntType == STUNT_FIELDGOAL then
+			hs.type="time"
+			hs.laptime=hs.score
+		end
+		hs.unit=GameFlow.GetStuntScoreType(leveldata.StuntType) --//get units
+	elseif leveldata.TrackType == TRACKTYPE_DERBY then
+--[[--/*		if not class_id then
+			for i=1,3 do
+				local k=HighScoreManager:GetWreDerbyHighScore(level_id,i,pos or 1)
+				if not hs or (hs.points > k.points and k.valid) then
+					hs=k
+				end
+			end
+		else
+--]]--*/
+			hs=HighScoreManager:GetWreDerbyHighScore(level_id,class_id or 1,pos or 1)
+--//		end
+
+		hs.type="derby"
+	else
+--[[--/*		if not class_id then
+			for i=1,3 do
+				k=HighScoreManager:GetRacingHighScore(level_id,i,pos or 1)
+				if not hs or (hs.laptime > k.laptime and k.valid) then
+					hs=k
+				end
+			end
+		else
+--]]--*/
+			hs=HighScoreManager:GetRacingHighScore(level_id,class_id or 1,pos or 1)
+--//		end
+		hs.type="race"
+	end
+
+	return hs
+end
+
+function FormatHighScore(hs)
+	local str
+
+	if not hs or not hs.type then return L"INVALID HS" end
+
+	if not hs.valid then
+		return L""
+	end
+
+	if hs.type == "stunt" then
+		str=WStringConcat(ConvertToWString(string.format("%d ",hs.score)),hs.unit)
+		str=WStringConcat(str,L"  ")
+		str=WStringConcat(str,hs.name)
+	elseif hs.type == "derby" then
+		str=WStringConcat(ConvertToWString(string.format("%d  ",hs.points)),hs.name)
+	else
+		str=WStringConcat(ConvertToWString(string.format("%s  ",TimeToString(hs.laptime))),hs.name)
+	end
+
+	return str
+end
+
+
+function FormatHighScoreScore(hs)
+	local str
+
+	if not hs or not hs.type then return L"INVALID HS" end
+
+	if not hs.valid then return L"" end
+	
+	if hs.type == "stunt" then
+		str=WStringConcat(ConvertToWString(string.format("%d ",hs.score)),hs.unit)
+	elseif hs.type == "derby" then
+		str=ConvertToWString(string.format("%d",hs.points))
+	else
+		str=ConvertToWString(TimeToString(hs.laptime))
+	end
+
+	return str
+end
+
+
+local confirmationdialogfunction
+local messageboxfunction
+
+function ConfirmationDialog(text,returnfunction)
+	local f=function(event)
+		local f=confirmationdialogfunction
+		confirmationdialogfunction=nil
+		SetEventHandler(EVENT_MENU_CONFIRMATIONDIALOG_EXIT,nil)
+
+		f(event.arg)
+	end
+
+	confirmationdialogfunction=returnfunction
+
+	SetEventHandler(EVENT_MENU_CONFIRMATIONDIALOG_EXIT,f)
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_YES),BUTTON_BACK,TRANSLATOR(UI_NO))
+	GUI:InitConfirmationDialog(text)
+end
+
+
+function MessageBox(text,buttons,returnfunction)
+	local f=function(event)
+		local f=messageboxfunction
+		messageboxfunction=nil
+		SetEventHandler(EVENT_MENU_CONFIRMATIONDIALOG_EXIT,nil)
+
+		f(event.arg)
+	end
+
+	messageboxfunction=returnfunction
+
+	SetEventHandler(EVENT_MENU_CONFIRMATIONDIALOG_EXIT,f)
+
+	GUI:InitMessageBox(text,buttons)
+end
+
+--//--finite statemachine state help functions and templates
+
+--//removes everything from state and adds newstate to it
+function FSM_init_state(self,_newstate)
+	self:RemoveAll()
+	
+	if _newstate then
+		self:AddState(_newstate)
+	end
+end
+
+--//add hang state (entercondition is always true and exitcondition is always false)
+function FSM_add_hang_state(self)
+	local t={
+		Interval = 0,
+		
+		EnterCondition = function(self,time)
+			return true
+		end,
+		
+		--no need for other functions
+	}
+
+	self:AddState(t)
+end
+
+
+
+--//add delaystate
+function FSM_add_delay_state(self,seconds)
+
+	--wait state
+	
+	local t={
+		Interval = 0,
+		
+		delay=seconds,
+		
+		EnterCondition = function(self,time)
+			return true
+		end,
+		
+		Enter = function(self,time)
+			self.time=0
+			self.exit_cond=nil
+		end,
+		
+		Update = function(self,dt)
+			self.time = self.time+dt
+			
+			if self.time >= self.delay then
+				self.exit_cond=true
+			end
+		end,
+		
+	}
+
+	--//state that exits wait state and hangs
+	local r={
+		Interval = 0,
+		
+		waitstate = t,
+		
+		EnterCondition = function(self,time)
+
+			return self.waitstate.exit_cond
+		end,
+	
+	}
+
+	self:AddState(t)
+	self:AddState(r)
+
+end
+
+--//executes function  (if exitcond is true then exitcondition is defined)
+function FSM_add_function(self,func,use_exitcond,arg)
+	
+	local t = {
+		Interval = 0,
+		
+		func = func,
+		func_args = arg,
+		
+		use_exitcondition = use_exitcond,
+		
+		EnterCondition = function(self,time)
+			return true
+		end,
+	
+		Enter = function(self,time)
+			self.func(unpack(self.func_args))
+		end,
+		
+		ExitCondition = function(self,time)
+			return self.use_exitcondition
+		end,
+	}
+	
+	self:AddState(t)
+	
+end
+
+
+
+function FSM_add_fadewait(self)
+
+	local t={
+		Interval = 0,
+		
+		EnterCondition = function(self,time)
+			return true
+		end,
+		
+		Enter = function(self,time)
+			self.exit_cond=nil		
+		end,
+		
+		Update = function(self,dt)
+			LOG("fadeupdate")
+			if not MenuScene:IsFading() then 
+				self.exit_cond=true
+			end
+		end,
+
+	}
+
+	--//state that exits wait state and hangs
+	local r={
+		Interval = 0,
+		
+		waitstate = t,
+		
+		EnterCondition = function(self,time)
+
+			return self.waitstate.exit_cond
+		end,
+	
+	}
+
+	self:AddState(t)
+	self:AddState(r)
+
+end
+
+function FSM_add_reset(self)
+	FSM_add_function(self,self.Reset,false,{ self })
+end
+
+--NOTE the state machine is automatically reinited when the condition fails
+function FSM_add_wait_for_event(Self, UpdateDelay, UpdateFunction, SuccessCondition, FailCondition, FailFunction, TimeOut)
+	local state={}
+	state.Interval = UpdateDelay
+	state.EnterCondition=function(self,time)
+		return true
+	end
+	
+	state.Enter = function(self,time)
+		self.time=0
+	end
+	
+		
+	state.Update=function(self,dt)
+		UpdateFunction()
+		local failed=false
+		if TimeOut then
+			self.time = self.time+dt
+			if self.time >= TimeOut then
+				failed=true
+			end
+		end
+		if FailCondition~=nil and FailCondition() then
+			failed=true
+		end
+		if failed then
+			FSM_init_state(Self)
+			if FailFunction~=nil then
+				FailFunction()
+			end
+		end
+	end
+		
+	state.ExitCondition=function(self,time)
+		return false
+	end
+		
+	
+	Self:AddState(state)		
+	
+	state={}
+	
+	state.EnterCondition=function(self, time)
+		return SuccessCondition()
+	end
+	
+	state.ExitCondition=function(self, time)
+		return false
+	end
+	Self:AddState(state)
+end
+
+-- The state machine is reinited after a failure
+function FSM_check_condition(Self, Condition, FailFunction)
+	local state={}
+	state.EnterCondition=function(self,time)
+		return true
+	end
+	
+	state.ExitCondition=function(self, time)
+		return false
+	end
+	
+	state.Enter=function(self, time)
+	end
+	
+	state.Update=function(self,dt)
+		if not Condition() then
+			FSM_init_state(Self)
+			FailFunction()
+		end
+	end
+	
+	
+	Self:AddState(state)
+	
+	state={}
+	state.EnterCondition=function(self, time)
+		return Condition()
+	end
+	
+	state.ExitCondition=function(self, time)
+		return false
+	end
+	Self:AddState(state)
+end
+
+function AddEventCallback(Function, EventTypes) 
+	local temp={}
+	local f=function(event)
+		Function(event)
+		Event:RemoveListener(temp.listener) 
+	end
+	temp.listener=Event:AddListener(f, EventTypes)
+end
+
+
+-- The listbox params for CreateSingleColoumnListBox has the following structure
+--[[--/*
+local listboxParams={
+	ListBoxTemplate={},
+	Left=0,
+	Top=0,
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=100,
+	RowHeight=16,
+	RowPadding=0,
+	RowTemplate={},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+	end,
+	NumRows=1,
+}
+--]]--*/
+ 
+function CreateSingleColoumnListBox(ListBoxParams)
+	local params=ListBoxParams
+
+	local width=params.LeftPadding+params.RowWidth+params.RightPadding
+	local height=params.TopPadding
+	height=height+params.RowHeight*params.NumRows
+	height=height+params.RowPadding*(params.NumRows-1)
+	height=height+params.BottomPadding
+
+	params.ListBoxTemplate.Position=POS(params.Left, params.Top)
+
+	params.ListBoxTemplate.Size=SIZE(width, height)
+
+	local listBox=ListBox(params.ListBoxTemplate)
+
+	params.RowTemplate.Parent=listBox
+
+	local y=params.TopPadding
+	params.RowTemplate.Size=SIZE(params.RowWidth, params.RowHeight)
+
+	for i=1, params.NumRows do
+		params.RowTemplate.Position=POS(params.LeftPadding, y)
+--		local row=addchild(_G[params.RowTemplateType](params.RowTemplate))
+		local row=_G[params.RowTemplateType](params.RowTemplate)
+		params.RowTemplateCust(row, i)
+		y=y+params.RowPadding+params.RowHeight
+	end
+
+	return listBox
+end
+ 
+
+-- The listbox params for CreateDoubleColoumnListBox has the following structure
+--[[--/*
+local listboxParams={
+	ListBoxTemplate={},
+	Left=0,
+	Top=0,
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=100,
+	RowHeight=16,
+	RowPadding=0,
+	RowTemplate={},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+	end,
+	NumRows=1,
+	Coloumns={
+		[1]={
+			Name="coloumn1", -- _row# is added
+			ColoumnTemplate={},
+			ColoumnTemplateType="Button",
+			ColoumTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+		}
+	}
+}
+--]]--*/
+ 
+function CreateMultiColoumnListBox(ListBoxParams)
+	local params=ListBoxParams
+
+	local width=params.LeftPadding+params.RowWidth+params.RightPadding
+	local height=params.TopPadding
+	height=height+params.RowHeight*params.NumRows
+	height=height+params.RowPadding*(params.NumRows-1)
+	height=height+params.BottomPadding
+
+	params.ListBoxTemplate.Position=POS(params.Left, params.Top)
+
+	params.ListBoxTemplate.Size=SIZE(width,	height)
+
+	local listBox=ListBox(params.ListBoxTemplate)
+
+	params.RowTemplate.Parent=listBox
+
+	local y=params.TopPadding
+	params.RowTemplate.Size=SIZE(params.RowWidth, params.RowHeight)
+
+	local numColoumns=table.getn(params.Coloumns)
+	for	i=1, params.NumRows	do
+		params.RowTemplate.Position=POS(params.LeftPadding,	y)
+		if params.RowName then
+			params.RowTemplate.Name=params.RowName.."_row"..i
+		end
+--		local row=addchild(_G[params.RowTemplateType](params.RowTemplate))
+		local row=_G[params.RowTemplateType](params.RowTemplate)
+		params.RowTemplateCust(row,	i)
+
+		for	j=1, numColoumns do
+			local coloumn=params.Coloumns[j]
+			coloumn.ColoumnTemplate.Parent=row
+			coloumn.ColoumnTemplate.Name=coloumn.Name..string.format("_row%i", i)
+--			local coloumncont=addchild(_G[coloumn.ColoumnTemplateType](coloumn.ColoumnTemplate))
+			local coloumncont=_G[coloumn.ColoumnTemplateType](coloumn.ColoumnTemplate)
+			coloumn.ColoumnTemplateCust(coloumncont, i,	j)
+		end
+
+		y=y+params.RowPadding+params.RowHeight
+	end
+
+	return listBox
+end
+
+LoadingImages={
+	[1]=SubImage("loading_anim1", "multiplayerloading.tga", {0,0, 64, 64}, SIZE(128, 128)),	
+	[2]=SubImage("loading_anim2", "multiplayerloading.tga", {64,0, 64, 64}, SIZE(128, 128)),	
+	[3]=SubImage("loading_anim3", "multiplayerloading.tga", {0,64, 64, 64}, SIZE(128, 128)),	
+	[4]=SubImage("loading_anim4", "multiplayerloading.tga", {64,64, 64, 64}, SIZE(128, 128)),
+}
+LoadingImages[5]=LoadingImages[3]
+LoadingImages[6]=LoadingImages[2]		
+
+local ThinkingWindowFSM
+local ThinkingWindow
+local PrevThinkingFocus
+
+function ShowThinkingWindow(dontstealfocus)
+	if ThinkingWindow then
+		HideThinkingWindow()
+	end
+	GUI:AllowOnlineOptionsMenu(false)
+	local Pos=SAFEPOS(506, 9)
+	local win=Frame{Name="thinkingwindow", Position = Pos, Size=wm.GetResourceSize(LoadingImages[1]), ShowBorders=FALSE, Layer=5}
+	win:AttachResource(LoadingImages[1])
+	wm.ActivateWindow(win)
+	if not dontstealfocus then
+		PrevThinkingFocus=wm.GetFocusHandle()
+		win:SetFocus()
+	else
+		PrevThinkingFocus=nil
+	end
+	
+	local delay=0.03
+	local fsm=FSM()
+	FSM_init_state(fsm)
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{2})
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{3})
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{4})
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{5})
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{6})
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_delay_state(fsm, delay)
+	FSM_add_function(fsm,AnimateThinkingWindow,FALSE,{1})	 
+	ThinkingWindowFSM=fsm
+	ThinkingWindow=win
+end
+
+function AnimateThinkingWindow(FrameNr)
+	if ThinkingWindow ~=nil then
+		ThinkingWindow:AttachResource(LoadingImages[FrameNr])
+	end
+	if FrameNr==1 and ThinkingWindowFSM~=nil then
+			ThinkingWindowFSM:Reset()
+	end
+
+end
+
+function HideThinkingWindow()
+	GUI:AllowOnlineOptionsMenu(true)
+	if ThinkingWindow~=nil then
+		wm.DeactivateWindow(ThinkingWindow)
+		FSM_init_state(ThinkingWindowFSM)
+		ThinkingWindowFSM:Remove()
+		ThinkingWindowFSM=nil
+		ThinkingWindow=nil
+		if PrevThinkingFocus then
+			wm.SetFocus(PrevThinkingFocus)
+		end
+		PrevThinkingFocus=nil		
+	end
+end

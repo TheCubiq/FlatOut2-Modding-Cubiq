@@ -1,0 +1,124 @@
+--///////////////////////////////////////////////////////////////////////////
+--// ExtrasMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2006 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 14.4.2006 16:24:15
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+local function playcredits()
+	GUI:PlayCredits()
+	GUI:SetBackgroundVideo("data/video/bg_main")
+end
+
+local function playmaking()
+	if PS2 then
+		GUI:PlayVideo("data/intro/mo_")
+	else
+		GUI:PlayVideo("data/video/mo_")
+	end
+	GUI:SetBackgroundVideo("data/video/bg_main")
+end
+
+
+menu_extras = CreateMenuFromTemplate("template_basic")
+
+menu_extras.options.title=TRANSLATOR(TITLE_EXTRAS)
+
+menu_extras.back = entermenu("menu_mainmenu")
+
+function menu_extras.create(self)
+	self.parent:create(self)
+
+    
+	self:loadResources()
+
+	self.items = {
+		MENUITEM(TRANSLATOR(EXTRAS_CREDITS), playcredits, ICON(self,"icon_credits")),
+		MENUITEM(TRANSLATOR(EXTRAS_VIDEOS_MAKINGOF),playmaking,ICON(self,"icon_extras")),
+		MENUITEM(TRANSLATOR(EXTRAS_ENTERCODE),entermenu("menu_extras_cheatcode"),ICON(self,"icon_extras"))
+	}
+
+
+
+
+end
+
+function menu_extras.init(self)
+	self.parent:init(self)
+
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+end
+
+function menu_extras.deinit(self)
+	self.parent:deinit(self)
+end
+
+
+menu_extras_cheatcode = CreateMenuFromTemplate("template_basic")
+
+menu_extras_cheatcode.options.title=TRANSLATOR(TITLE_EXTRAS_ENTERCODE)
+
+menu_extras_cheatcode.back=entermenu("menu_extras")
+
+function menu_extras_cheatcode.create(self)
+	self.parent:create(self)
+
+	self:addResource("keyboard.tga",keyboard,keyboard_size)
+
+	self:loadResources()
+end
+
+function menu_extras_cheatcode.init(self)
+	self.parent:init(self)
+
+	wm.SetTextInput(L"")
+
+	local keyboard=VirtualKeyboard{Name="kb",Mode=VKMODE_CHEATCODES,Font=fontmedium(),Title=TRANSLATOR(EXTRAS_ENTERCODE),TitleFont=fontlarge(),MaxSize=16,
+		TitleResources={ self:getResource("keyboard_title_bars_tip"), self:getResource("keyboard_title_bars_main") },
+		InputResources={ self:getResource("keyboard_title_bars_tip2"), self:getResource("keyboard_title_bars_main2") },
+		KeyboardResources={ self:getResource("keyboard_bg_tip"), self:getResource("keyboard_bg_main")} }
+
+	
+
+	function keyboard.onBack(self)
+		EnterMenu("menu_extras")
+		playmenusound_back()
+	end
+
+	function keyboard.onAction(self)
+		if GUI:CheckCheatCode(wm.GetTextInput()) then
+			print("cheat accepted")
+			playmenusound_action()
+		else
+			print("invalid cheat")
+			playmenusound_back()
+		end
+
+		EnterMenu("menu_extras")
+	end
+
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+end
+
+function menu_extras_cheatcode.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_extras_cheatcode.update(self)
+	if PC then
+		W("kb"):ProcessKeyQueue()
+	end
+end
+
+
+

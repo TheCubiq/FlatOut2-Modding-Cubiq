@@ -1,0 +1,217 @@
+common_size = { 512,256 }
+common = {
+
+	selection_arrow_l = {  40, 3, 6, 13 },
+	selection_arrow_r = {  48, 3, 6, 13 },
+	tab_l = {  3, 39, 18, 21 },
+	tab_r = {  3, 62, 18, 21 },
+	tab_bar = {  4, 85, 15, 20 },
+	
+	start_line_symbol = {  25, 40, 10, 25 },
+	time_trial_gate_symbol = {  25, 68, 10, 25 },
+	
+	black_transparent_50 = {  3, 109, 16, 16 },
+
+	white_transparent = {  57, 3, 15, 16 },
+	black_transparent = {  76, 3, 16, 16 },
+	
+	small_trophy_gold = {  40, 24, 24, 26 },
+	small_trophy_silver = {  70, 24, 24, 26 },
+	small_trophy_bronze = {  100, 24, 24, 26 },
+
+	tiny_trophy_white_30 = {  50, 166, 18, 27 },
+	tiny_trophy_yellow_30 = {  71, 166, 18, 27 },
+	
+	tiny_trophy_gold = {  130, 24, 18, 20 },
+	tiny_trophy_silver = {  152, 24, 18, 20 },
+	tiny_trophy_bronze = {  174, 24, 18, 20 },
+
+	minute_trophy_gold = {  195, 24, 12, 17 },
+	minute_trophy_silver = {  210, 24, 12, 17 },
+	minute_trophy_bronze = {  226, 24, 12, 17 },
+	
+	white_arrow_right = {  99, 3, 8, 16 },
+	
+	control_arrow_up_pal_1 = {  113, 2, 8, 18 },
+	control_arrow_down_pal_1 = {  123, 2, 8, 18 },
+	control_arrow_right_pal_1 = {  135, 2, 18, 8 },
+	control_arrow_left_pal_1 = {  135, 12, 18, 8 },
+
+	control_arrow_up_pal_3 = {  157, 2, 8, 18 },
+	control_arrow_down_pal_3 = {  167, 2, 8, 18 },
+	control_arrow_right_pal_3 = {  179, 2, 18, 8 },
+	control_arrow_left_pal_3 = {  179, 12, 18, 8 },
+	
+	option_arrow_l = {  202, 3, 6, 13 },
+	option_arrow_r = {  210, 3, 6, 13 },
+
+	scroll_arrow_down = {  221, 3, 11, 5 },
+	scroll_arrow_up = {  221, 11, 11, 5 },
+	scroll_arrow_right = {  202, 48, 5, 11 },
+	scroll_arrow_left = {  210, 48, 5, 11 },
+
+	scroll_arrow_orange_down = {  127, 54, 13, 6 },
+	scroll_arrow_orange_up = {  143, 54, 13, 6 },
+
+	border_up_left = {  238, 3, 15, 15 },
+	border_up_right = {  239, 21, 15, 15 },
+	border_down_right = {  239, 40, 15, 15 },
+	border_down_left = {  238, 58, 15, 15 },
+	border_left = {  238, 76, 15, 14 },
+	border_up = {  239, 93, 14, 15 },
+	border_right = {  239, 112, 15, 14 },
+	border_down = {  221, 112, 14, 15 },
+	border_centre = {  221, 94, 14, 14 },
+	
+	icon_stamp_forest = {  38, 62, 27, 27 },
+	icon_stamp_city = {  68, 62, 27, 27 },
+	icon_stamp_canal = {  98, 62, 27, 27 },
+	icon_stamp_desert = {  128, 62, 27, 27 },
+	icon_stamp_fields = {  158, 62, 27, 27 },
+	icon_stamp_racing = {  188, 62, 27, 27 },
+	icon_stamp_stunt = {  38, 92, 27, 27 },
+	icon_stamp_derby_dirt_oval = {  68, 92, 27, 27 },
+	icon_stamp_time_attack = {  98, 122, 27, 27 },
+
+	gamespy_logo = {  3, 128, 147, 35 },
+	
+	narrow_black_bar_50 = {  6, 169, 16, 19 },
+	wide_black_bar_50 = {  6, 188, 16, 25 },
+	narrow_white_bar_30 = {  28, 169, 16, 19 },
+	wide_white_bar_30 = {  28, 188, 16, 25 },
+
+	yellow_star = {  153, 90, 20, 18 },
+	steering_wheel = {  174, 90, 15, 15 },
+	check_mark = {  192, 90, 17, 16 },
+	
+	xbox_voice_communicator = 	{  153, 112, 21, 18 },
+	xbox_voice_tv = 		{  175, 112, 22, 18 },
+	xbox_voice_muted =		{  198, 112, 19, 18 },
+	xbox_talking = { 261, 69, 20, 19 },
+	
+	xbox_friend_invite_received = {  154, 134, 20, 19 },
+	xbox_friend_invite_received_big = {  256, 1, 32, 32 },
+	xbox_friend_sent = {  176, 134, 20, 19 },
+	xbox_game_invite_received = {  199, 134, 20, 19 },
+	xbox_game_invite_received_big = {  256, 33, 32, 32 },
+	xbox_game_invite_sent = {  221, 134, 20, 19 },
+	xbox_friend_online = {  132, 92, 20, 19 },
+
+	xbox_trig_l = {  293, 65, 10, 13 },
+	xbox_trig_r = {  303, 65, 10, 13 },
+	
+	rank_icon_1 = {  257, 3, 19, 19 },
+	rank_icon_2 = {  279, 3, 19, 19 },
+	rank_icon_3 = {  301, 3, 19, 19 },
+	rank_icon_4 = {  323, 3, 19, 19 },
+	rank_icon_5 = {  345, 3, 19, 19 },
+	rank_icon_6 = {  367, 3, 19, 19 },
+	rank_icon_7 = {  389, 3, 19, 19 },
+	rank_icon_8 = {  411, 3, 19, 19 },
+	rank_icon_9 = {  433, 3, 19, 19 },
+	rank_icon_10 = {  455, 3, 19, 19 },
+	
+	rank_icon_11 = {  257, 25, 19, 19 },
+	rank_icon_12 = {  279, 25, 19, 19 },
+	rank_icon_13 = {  301, 25, 19, 19 },
+	rank_icon_14 = {  323, 25, 19, 19 },
+	rank_icon_15 = {  345, 25, 19, 19 },
+	rank_icon_16 = {  367, 25, 19, 19 },
+	rank_icon_17 = {  389, 25, 19, 19 },
+	rank_icon_18 = {  411, 25, 19, 19 },
+	rank_icon_19 = {  433, 25, 19, 19 },
+	rank_icon_20 = {  455, 25, 19, 19 },
+	rank_icon_21 = {  257, 47, 19, 19 },
+	rank_icon_22 = {  279, 47, 19, 19 },
+	rank_icon_23 = {  301, 47, 19, 19 },
+	rank_icon_24 = {  323, 47, 19, 19 },
+	rank_icon_25 = {  345, 47, 19, 19 },
+	rank_icon_26 = {  367, 47, 19, 19 },
+	rank_icon_27 = {  389, 47, 19, 19 },
+	rank_icon_28 = {  411, 47, 19, 19 },
+	rank_icon_29 = {  433, 47, 19, 19 },
+	rank_icon_30 = {  455, 47, 19, 19 },
+	rank_icon_31 = {  257, 69, 19, 19 },
+	rank_icon_32 = {  279, 69, 19, 19 },
+	rank_icon_33 = {  301, 69, 19, 19 },
+	rank_icon_34 = {  323, 69, 19, 19 },
+	rank_icon_35 = {  345, 69, 19, 19 },
+	rank_icon_36 = {  367, 69, 19, 19 },
+	rank_icon_37 = {  389, 69, 19, 19 },
+	rank_icon_38 = {  411, 69, 19, 19 },
+	rank_icon_39 = {  433, 69, 19, 19 },
+	rank_icon_40 = {  455, 69, 19, 19 },
+	rank_icon_41 = {  257, 91, 19, 19 },
+	rank_icon_42 = {  279, 91, 19, 19 },
+	rank_icon_43 = {  301, 91, 19, 19 },
+	rank_icon_44 = {  323, 91, 19, 19 },
+	rank_icon_45 = {  345, 91, 19, 19 },
+	rank_icon_46 = {  367, 91, 19, 19 },
+	rank_icon_47 = {  389, 91, 19, 19 },
+	rank_icon_48 = {  411, 91, 19, 19 },
+	rank_icon_49 = {  433, 91, 19, 19 },
+	rank_icon_50 = {  455, 91, 19, 19 },
+	
+	
+	car_icon =		{  112, 225, 55, 19  },	
+	upgrade_icon =		{  358, 179, 55, 19  }, 
+	rank_icon = 		{  188, 225, 55, 19  },
+	ranking_points_icon =	{  358, 221, 55, 19 },
+	ranking_races_icon = 	{  358, 200, 55, 19 },
+	players_icon =		{  451, 173, 55, 19 },
+	status_icon =		{  452, 194, 55, 19 },
+	game_type_icon = 	{  47, 197, 55, 19  },
+	rank_value_bottom =	{  237, 175, 28, 18  },
+	clock_yellow_icon =	{  289, 5, 55, 19  },
+	clock_stroke = 		{  170, 226, 18, 20  },
+	
+	upgrade_glow_half = {  216, 43, 20, 16 },
+	upgrade_glow_full = { 417, 180, 34, 16 },
+	upgrade_backdrop =  { 235, 195, 35, 14 },
+	
+
+	keyboard_button_small = { 461, 219, 50, 33  },
+	keyboard_button_big = {  3, 219, 90, 33 },
+	
+	keyboard_glow_small = {  261, 99, 50, 33 },
+	keyboard_glow_big = {  261, 99, 90, 33 },
+
+	empty_box = {  257, 113, 100, 60 },
+
+	end_rounded_left = {  477, 3, 10, 64 },
+	end_rounded_right = {  489, 3, 10, 64 },
+
+	cup_streaks = {  477, 69, 22, 7 },
+
+	derby_class_selection_text = {  114, 217, 237, 37 },
+
+	money_glow = {  364, 118, 111, 60 },
+
+	finals_trophy = {  115, 166, 41, 40 },
+
+	finals_trophy_slot = {  176, 167, 41, 40 },
+
+	tiny_trophy_slot = {  92, 166, 18, 20 },
+
+	finals_trophy_glow = {  282, 190, 59, 53 },
+	
+	crash_bonus_star = { 477, 83, 21, 20 },
+	
+	player_lobby_icon = 	{ 240, 151, 16, 22 },
+	player_lobby_icon_2 = 	{ 245, 136, 9, 15 },
+
+	scroll_up_icon =	{  323, 30, 11, 8 },
+	scroll_down_icon =	{  323, 39, 11, 8 }, 
+	scroll_up_glow =	{  336, 28, 17, 15 },
+	scroll_down_glow = 	{  336, 44, 17, 15 },
+
+	scroll_left_icon =	{  294, 44, 8, 11 },
+	scroll_right_icon =	{  303, 44, 8, 11 },
+	scroll_left_glow =	{  290, 25, 16, 17 },
+	scroll_right_glow = 	{  307, 25, 16, 17 },
+
+	current_car_symbol_derby =	{  354, 0, 48, 48 },
+	current_car_symbol_racing =	{  354, 50, 48, 48 },
+	current_car_symbol_street =	{  404, 62, 48, 48 },
+	coin = {  405, 1, 61, 48 },
+}

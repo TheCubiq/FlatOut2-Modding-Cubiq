@@ -1,0 +1,6 @@
+beginner_selected_size = { 512,512 }
+beginner_selected = {
+	
+	beginner_selected_dark = {  100, 0, 412, 282 },
+
+}

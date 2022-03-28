@@ -1,0 +1,9 @@
+hardcore_selected_size = { 512,512 }
+hardcore_selected = {
+	
+	hardcore_selected_dark = {  0, 0, 373, 331 },
+
+	beginner_text_backdrop = {  0, 369, 250, 21 },
+	hardcore_text_backdrop = {  0, 345, 250, 21 },
+
+}

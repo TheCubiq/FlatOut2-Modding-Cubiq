@@ -1,0 +1,80 @@
+--///////////////////////////////////////////////////////////////////////////
+--// transaction.lua
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 24.3.2005 14:17:45
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local Transaction = {}
+
+function newTransaction()
+	local newtable={}
+
+	local t = {
+		__index=function(tbl,key) 
+							if Transaction[key] then 
+								return Transaction[key] 
+							end
+							
+							return getmetatable(tbl).__newindex[key]
+						end,
+		__phases = {},
+	}
+	
+	setmetatable(newtable,t)
+	newtable:nextPhase()
+	
+	return newtable
+
+end
+
+function Transaction.nextPhase(self)
+	local meta=getmetatable(self)			
+
+	local t
+	if meta.__newindex then 
+		t=CopyTable(meta.__newindex)
+	else
+	 	t={}
+	end
+	
+	table.insert(meta.__phases,t)	
+	meta.__newindex=t
+		
+end
+
+function Transaction.prevPhase(self)
+	local meta=getmetatable(self)	
+	
+	local count=table.getn(meta.__phases)
+	
+	if count > 1 then
+		meta.__newindex=meta.__phases[count-1]
+		table.remove(meta.__phases)
+	end
+end
+
+function Transaction.reset(self)
+	local meta=getmetatable(self)
+
+	meta.__phases={}
+	self:nextPhase()
+end
+
+
+function Transaction.commit(self,target)
+	local phase=getmetatable(self).__newindex
+	
+	if target then
+		local k,v
+		for k,v in pairs(phase) do
+				target[k]=v
+		end
+	else
+		return CopyTable(phase)
+	end
+end

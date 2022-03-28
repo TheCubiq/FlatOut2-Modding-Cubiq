@@ -1,0 +1,39 @@
+
+TRACKTYPE_FOREST = 1
+TRACKTYPE_FIELDS = 2
+TRACKTYPE_DESERT = 3
+TRACKTYPE_CANAL = 4
+TRACKTYPE_CITY = 5
+TRACKTYPE_RACING = 6
+
+Tournaments = {
+
+
+		[1] = {
+			Name	= "MAGICAL FOREST MOTOR PICNIC",
+			Icon = TRACKTYPE_FOREST,
+			
+			Description = "TRANQUIL FOREST, BEAUTIFUL LANDSCAPES, MAGIC CARPETS, BLACK DRAGONS, PASSED OUT FINNISH PEOPLE, NAKED PEOPLE SWIMMING IN THE LAKE, THE MAGICAL FOREST HAS IT ALL.",
+			
+			Races	= {
+				[1] = { Level = 22,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+				[2] = { Level = 16,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+				[3] = { Level = 28,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+			},
+		},
+		
+		[2] = {
+			Name	= "FIELDS OF PEACE AND FLOWERS",
+			Icon = TRACKTYPE_FIELDS,
+			
+			Description = "LIKE WOODSTOCK, FIELDS ARE FILLED WITH PEACE LOVING HIPPIES JUST WAITING TO BE CRUSHED UNDER YOUR CAR",
+			
+			Races	= {
+				[1] = { Level = 1,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+				[2] = { Level = 29,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+				[3] = { Level = 23,	Laps = 1,	AIHandicapLevel	= 1,	AIUpgradeLevel	= 1 },
+			},
+		},
+	
+
+}

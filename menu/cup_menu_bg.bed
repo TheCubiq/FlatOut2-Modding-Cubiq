@@ -1,0 +1,6 @@
+cup_menu_bg_size = { 512,256 }
+cup_menu_bg = {
+	
+	cup_menu_bg = {  3, 3, 506, 250 },
+
+}

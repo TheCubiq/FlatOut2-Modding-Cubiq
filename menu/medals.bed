@@ -1,0 +1,8 @@
+medals_size = { 512,256 }
+medals = {
+
+	gold_medal = {  2, 4, 122, 167 },
+	silver_medal = {  125, 4, 122, 167 },
+	bronze_medal = {  261, 4, 122, 167 },
+
+}

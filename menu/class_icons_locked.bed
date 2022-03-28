@@ -1,0 +1,7 @@
+class_icons_locked_size = { 512,256 }
+class_icons_locked = {
+	
+	class_icon_a_locked = {  3, 3, 110, 70 },
+
+
+}

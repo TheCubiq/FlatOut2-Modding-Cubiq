@@ -1,0 +1,29 @@
+track_logos2_size = { 512,512 }
+track_logos2 = {
+	
+	track_derby_1_logo = {  0, 0, 160, 64 },      -- derby 1
+	track_derby_2_logo = {  160, 0, 160, 64 },    -- derby 2
+	track_derby_3_logo = {  320, 0, 160, 64 },     -- derby 3
+	track_oval_1_logo = {  0, 64, 160, 64 },   -- nascar 1
+	track_oval_2_logo = {  160, 64, 160, 64 },    -- nascar 2
+	track_oval_3_logo = {  320, 64, 160, 64 },     -- nascar 3
+	track_arena_1_logo = {  0, 128, 160, 64 },   -- arena 1
+	track_arena_2_logo = {  160, 128, 160, 64 },   -- arena 2
+	track_arena_3_logo = {  320, 128, 160, 64 },   -- arena 3
+	track_stunt_1a_logo = {  0, 192, 160, 64 },   -- high jump
+	track_stunt_2a_logo = {  160, 192, 160, 64 },   -- stone skip
+	track_stunt_3a_logo = {  320, 192, 160, 64 },   -- curling
+	track_stunt_4a_logo = {  0, 256, 160, 64 },   -- ring of fire
+	track_stunt_5a_logo = {  160, 256, 160, 64 },   -- blackjack
+	track_stunt_6a_logo = {  320, 256, 160, 64 },   -- ski jump
+	track_stunt_1b_logo = {  0, 320, 160, 64 },   -- bowling
+	track_stunt_2b_logo = {  160, 320, 160, 64 },   -- basketball
+	track_stunt_3b_logo = {  320, 320, 160, 64 },   -- baseball
+	track_stunt_4b_logo = {  0, 384, 160, 64 },   -- soccer
+	track_stunt_5b_logo = {  160, 384, 160, 64 },   -- field goal
+	track_stunt_6b_logo = {  320, 384, 160, 64 },   -- breakdown
+	track_racing_1a_logo = {  0, 448, 160, 64 },   -- racing 1
+	track_racing_1b_logo = {  160, 448, 160, 64 },   -- racing 1
+	track_racing_1c_logo = {  320, 448, 160, 64 },   -- racing 1
+	
+}

@@ -1,0 +1,19 @@
+upgrade_suspension_1_size = { 512, 512 }
+upgrade_suspension_1 = {
+
+	
+	tires_brakes_brakes_pro  =        	{  0, 0, 151, 130 },
+	tires_brakes_brakes_racing  =        	{  152, 0, 151, 128 },
+	
+	tires_brakes_tires_stock	  = 	{ 333, 0, 179, 146 },
+	tires_brakes_tires_racing	=	{ 0, 130, 175, 146  },
+	tires_brakes_tires_pro		= 	{ 202, 365, 175, 146 },
+	
+	suspension_anti_roll_bars_stock	 	=	 {  355, 273, 157, 130 },
+	suspension_anti_roll_bars_racing	=	{ 0, 277, 196, 132 },
+	suspension_anti_roll_bars_pro		= 	{ 174, 128, 194, 141  },
+	
+ 	suspension_steering_upgrade_pro	 = 	{  0, 408, 202, 104 },
+
+}
+	

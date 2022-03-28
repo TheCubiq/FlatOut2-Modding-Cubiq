@@ -1,0 +1,109 @@
+--///////////////////////////////////////////////////////////////////////////
+--// StartScreen.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2006 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 1.2.2006 16:03:41
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+menu_startscreen = CreateMenuFromTemplate("template_basic")
+
+menu_startscreen.options.title=L""
+
+
+function menu_startscreen.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+
+end
+
+local function start_attract()
+	--//AnimateWindowAlpha(W("start_text"),1.0,0.0,0.2)		
+
+	--//menu_startscreen.in_attract=true
+	--//GUI:StartAttract()
+
+	GUI:PlayVideo("data/video/attra",true)
+	Event:SendEvent(event(EVENT_GAMEFLOW_RESET_TIMER_AFTER_ATTRACT))
+
+	GUI:SetBackground("data/menu/generic6_bg.tga")
+	AnimateWindowAlpha(W("start_text"),0.0,1.0,0.3,0.3)		
+
+	Event:PostEvent(event(EVENT_MENU_ATTRACT_END))
+end
+
+function menu_startscreen.init(self)
+--//	self.parent:init(self)
+
+
+	local text=TRANSLATOR(PRESS_START)
+	if XBOX then
+		text=TRANSLATOR(PRESS_START_XBOX)
+	end
+
+	local w=StaticText{Name="start_text",Title=text,Position=POS(320,390),IgnoreGlobalAlpha=TRUE,Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(34)}
+	
+
+	w.time=0
+
+	local input=InputHandler{}
+
+
+	function input.onKeyPressed(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A then
+			if XBOX then
+				XBoxLive.Auth.SilentSignIn(GUI:GetLastActiveController())
+				XBoxLiveUpdateStatus()
+			end
+			StartGame()
+			EnterMenu("menu_profiles")
+		end
+	end
+
+
+	local function button_fade(event)
+		local w=W("start_text")
+
+		if w.hide then
+			w:ShowWindow()
+			w.hide=nil
+		else
+			w:HideWindow()
+			w.hide=true
+		end
+
+	end
+
+	self.buttontimerhandle=Event:AddTimer(button_fade,300)
+
+	self.timerhandle=Event:AddTimer(start_attract,30*1000,nil,TRUE)
+
+
+	GUI:SetBackground("data/menu/generic6_bg.tga")
+end
+
+function menu_startscreen.deinit(self)
+--//	self.parent:deinit(self)
+	Event:RemoveTimer(self.timerhandle)
+	Event:RemoveTimer(self.buttontimerhandle)
+	
+end
+
+function menu_startscreen.eventhandler(self,event)
+	if event.id == EVENT_MENU_ATTRACT_END then	
+		menu_startscreen.timerhandle=Event:AddTimer(start_attract,30*1000,nil,TRUE)
+	end
+end
+
+
+function menu_startscreen.starthide(self)
+	AnimateWindowAlpha(W("start_text"),W("start_text"):GetAlpha(),0.0,0.3)
+
+end
+

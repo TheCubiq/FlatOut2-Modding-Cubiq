@@ -1,0 +1,38 @@
+track_icons_2_locked_size = { 512,512 }
+track_icons_2_locked = {
+	
+	track_icon_28_locked = {  3, 3, 110, 70 },     -- city 1a
+	track_icon_29_locked = {  116, 3, 110, 70 },   -- city 1b
+	track_icon_30_locked = {  229, 3, 110, 70 },   -- city 1c
+	track_icon_31_locked = {  342, 3, 110, 70 },   -- city 2a
+	track_icon_32_locked = {  3, 76, 110, 70 },    -- city 2b
+	track_icon_33_locked = {  116, 76, 110, 70 },  -- city 2c
+
+	track_icon_34_locked = {  229, 76, 110, 70 },  -- derby 1
+	track_icon_35_locked = {  342, 76, 110, 70 },  -- derby 2
+	track_icon_36_locked = {  3, 149, 110, 70 },   -- derby 3
+	track_icon_37_locked = {  116, 149, 110, 70 }, -- derby 4
+	track_icon_38_locked = {  229, 149, 110, 70 }, -- derby 5
+	track_icon_39_locked = {  342, 149, 110, 70 }, -- derby 6
+	
+	track_icon_40_locked = {  3, 222, 110, 70 },   -- oval 1
+	track_icon_41_locked = {  116, 222, 110, 70 }, -- oval 2
+	
+	track_icon_42_locked = {  229, 222, 110, 70 }, -- stunt a1 - curling
+
+	track_icon_43_locked = {  342, 222, 110, 70 }, -- stunt a2 - highjump
+	track_icon_44_locked = {  3, 295, 110, 70 },   -- stunt a3 - stone skipping
+	track_icon_45_locked = {  116, 295, 110, 70 }, -- stunt a4 - breakdown
+	track_icon_46_locked = {  229, 295, 110, 70 }, -- stunt a5 - ring of fire 
+	
+	track_icon_47_locked = {  342, 295, 110, 70 }, -- stunt a6 - blackjack
+	track_icon_48_locked = {  3, 368, 110, 70 },   -- stunt b1 - ski jump
+	track_icon_49_locked = {  116, 368, 110, 70 }, -- stunt b2 - 
+	track_icon_50_locked = {  229, 368, 110, 70 }, -- stunt b3 - 
+	
+	track_icon_51_locked = {  342, 368, 110, 70 }, -- stunt b4 -
+	track_icon_52_locked = {  3, 441, 110, 70 },   -- stunt b5 -
+	track_icon_53_locked = {  116, 441, 110, 70 }, -- stunt b6 -
+
+
+}

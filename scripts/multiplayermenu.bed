@@ -1,0 +1,287 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MultiplayerMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 17.5.2005 11:06:36
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+MPMODE_NONE = 1
+MPMODE_LAN = 2
+MPMODE_GAMESPY = 3
+MPMODE_XBOXLIVE = 4
+
+MultiplayerMode = MPMODE_NONE
+JoinSessionFromCommandLine = false
+CreateSessionFromCommandLine = false
+local JoinCommandLineState=nil
+local SearchWaitStart
+local StartTime=nil
+
+local CreateCommandLineSessionEventListener=nil
+
+function ShowJoinSessionFromCommandLineError()
+	HideThinkingWindow()
+	ShowMessageBox(SAFEPOS(154, 70), nil,
+		MULTIPLAYER_NOSESSION,
+		GAMESPYRESULTS_TRY,
+		function()ShowThinkingWindow() JoinSessionFromCommandLine() end,
+		ICON_MAIN_QUITGAME,
+		function() EnterMenu(menu_multiplayer_lobby.backmenu)end
+	)	
+end
+
+local function CommandLineSessionEvents(e)
+	if e.id == EVENT_NETWORK_REQUEST_PLAYERUPDATE then
+		local player=Session:GetLocalPlayer(1)
+		
+		if MultiplayerMode == MPMODE_LAN then
+			player:GenerateUserId()
+			player.Name=PlayerProfile:GetName()
+		elseif MultiplayerMode == MPMODE_GAMESPY then
+			player:GenerateUserId()
+			player.Name=PlayerProfile:GetName()
+		elseif MultiplayerMode == MPMODE_XBOXLIVE then
+			player.Name=XBoxLive.Auth.GetSignedInUserName(1)
+			player.UId=XBoxLive.Auth.GetSignedInUserId(1)
+		end
+		
+		local info = Session:GetInfo()
+
+		if info.CarClass > 4 then
+			player.Car = info.CarClass - 5
+			player.CarValid = true
+		elseif info.CarClass == SessionInfo.CarClass.Stunt or info.Races[info.NextRace].EventType == ReplicatedSession.GAMETYPE_STUNT then
+			player.Car = CarlistStuntCars()[1].index		
+			player.CarValid = false
+		elseif info.CarClass ~= SessionInfo.CarClass.Any then
+			player.Car = CarlistFromClass(info.CarClass, false, true)[1].index
+			player.CarValid = false
+		else
+			player.Car = 0
+			player.CarValid = false
+		end
+		
+		if CarSkin then
+			player.CarSkin = CarSkin
+		else
+			player.CarSkin = 1
+		end
+		player.TournamentPoints = 0
+		
+		if info.CarUpgrades ~= SessionInfo.CarUpgrades.Any then
+			player.UpgradeLevel = info.CarUpgrades
+		else
+			player.UpgradeLevel = SessionInfo.CarUpgrades.All
+		end
+		
+		SessionEvents = { }
+	elseif e.id == EVENT_NETWORK_CREATE_SESSION_RESULT then
+		Event:RemoveListener(CreateCommandLineSessionEventListener)
+		if e.data == 1 then
+			HideThinkingWindow()
+			EnterLobby()
+		elseif e.data == 0 then
+			HideThinkingWindow()
+			Network:StopMultiplayer()
+			MessageBox(
+				LIVE_FAILED,
+				MESSAGEBOX_YESNO,
+				function(value)
+					if value == TRUE then
+						ShowThinkingWindow()
+						CreateSessionFromCommandLine()
+					else
+						--this will force a quit
+						EnterMenu(menu_multiplayer_lobby.backmenu)
+					end
+				end
+			)
+		end
+	elseif e.id == EVENT_NETWORK_JOIN_RESULT then
+		JoinCommandLineState=nil
+		if e.data == 0 then
+			Network:DeleteSession()
+			ShowJoinSessionFromCommandLineError()
+		elseif e.data == 1 then
+			HideThinkingWindow()
+			EnterLobby()
+		end
+	end
+	
+end
+
+
+function CreateSessionFromCommandLine(backmenu)
+	if backmenu then
+		menu_multiplayer_lobby.backmenu = backmenu
+	end
+
+	CreateCommandLineSessionEventListener=Event:AddListener(CommandLineSessionEvents, EVENTTYPE_NETWORK)
+	
+	local info
+	if MultiplayerMode == MPMODE_LAN then
+		Network:CreateLanSession()
+		info = Session:GetInfo()
+		info.SessionName = PlayerProfile:GetName()
+	elseif MultiplayerMode == MPMODE_GAMESPY then
+		GameSpy:StopUpdate()
+		Network:CreateGameSpySession()
+		GameSpy:ResumeUpdate()
+		info = Session:GetInfo()
+		info.SessionName = PlayerProfile:GetName()
+	elseif MultiplayerMode == MPMODE_XBOXLIVE then
+		Network:CreateXBoxLiveSession()	
+		info = Session:GetInfo()
+		info.SessionName = XBoxLive.Auth.GetSignedInUserName(1)
+	end
+	
+	info.TournamentType = ReplicatedSession.GAMETYPE_TOURNAMENT
+	
+	Session:ClearAllRaces()	
+	Session:AddRace()
+	info.Races[1].StageNr=1
+	info.Races[1].TrackType=Levels[1].TrackType
+	info.Races[1].EventType=ReplicatedSession.GAMETYPE_RACE
+	info.Races[1].LapsOrTimeLimit=Levels[1].Laps
+	info.Races[1].Raced=false
+
+	if PS2 then
+		info.MaxPublicSlots = 6
+		info.MaxPrivateSlots = 0
+	else
+		info.MaxPublicSlots = 8
+		info.MaxPrivateSlots = 0
+	end
+	
+	info.RatedGame=false
+	info.CarClass=SessionInfo.CarClass.Any
+	info.NextRace=1
+	info.CarUpgrades		= SessionInfo.CarUpgrades.Any
+	info.NitroRegen			= SessionInfo.NitroRegen.Regen100
+	info.DamageLevel		= ReplicatedSession.DAMAGELEVEL_100
+	info.DerbyDamageLevel	= ReplicatedSession.DERBYDAMAGELEVEL_100	
+	
+	Session:CreateSession()
+end
+
+
+
+function JoinSessionFromCommandLine()
+ 	if MultiplayerMode == MPMODE_XBOXLIVE then
+		menu_multiplayer_lobby.backmenu = "menu_xboxlive"
+	elseif MultiplayerMode == MPMODE_GAMESPY then
+		menu_multiplayer_lobby.backmenu = "menu_multiplayer_gamespy"
+	else
+		menu_multiplayer_lobby.backmenu = "menu_lan_modeselect"
+	end
+
+	CreateCommandLineSessionEventListener=Event:AddListener(CommandLineSessionEvents, EVENTTYPE_NETWORK)
+	if MultiplayerMode == MPMODE_LAN then
+		Network:CreateLanSession()
+		Session:JoinSessionFromCommandLine()
+	elseif MultiplayerMode == MPMODE_GAMESPY then
+		GameSpy:StopUpdate()
+		Network:StartSearchGameSpySessions()
+		GameSpy:ResumeUpdate()
+		SessionList:Refresh()
+		JoinCommandLineState="SEARCHING"
+	elseif MultiplayerMode == MPMODE_XBOXLIVE then
+	end	
+	StartTime=nil
+end
+
+function UpdateJoinSessionFromCommandLine(time)
+	
+	if StartTime==nil then
+		StartTime=time
+	end
+	local searchTime=time-StartTime
+
+	local maxSearch
+	local retryTime
+	if CommandLine["-join_timeout"] then
+		maxSearch=CommandLine["-join_timeout"]
+	end
+	local retryTime=5
+	if CommandLine["-join_retry"] then
+		retryTime=CommandLine["-join_retry"]
+	end
+	
+	maxSearch=tonumber(maxSearch)
+	retryTime=tonumber(retryTime)
+	if not maxSearch then
+		maxSearch=30
+	end
+	
+	if not retryTime then
+		retryTime=5
+	end
+	
+
+	if MultiplayerMode == MPMODE_GAMESPY then
+		if JoinCommandLineState=="SEARCHING" then
+			if SessionList:IsRefreshCompleted() then
+				if SessionList:GetNumSessions()~=0 then
+					SessionList:SetSessionNum(1)
+					SessionList:PrepareJoin()
+					JoinCommandLineState="PREPAREJOIN"
+				else
+					JoinCommandLineState="WAITING"
+					SearchWaitStart=searchTime
+				end
+			end
+		elseif JoinCommandLineState=="PREPAREJOIN" then
+			if SessionList:PrepareJoinCompleted() then
+				if SessionList:PrepareJoinFailed() then
+					JoinCommandLineState="ERROR"
+					ShowJoinSessionFromCommandLineError()
+				else
+					SessionList:JoinSession()
+					JoinCommandLineState="JOINING"
+				end
+			end
+		elseif JoinCommandLineState=="WAITING" then
+			if searchTime-SearchWaitStart > retryTime then
+				SessionList:Refresh()
+				JoinCommandLineState="SEARCHING"
+			elseif searchTime > maxSearch then
+				JoinCommandLineState="ERROR"
+				ShowJoinSessionFromCommandLineError()
+			end
+		end
+	end
+end
+
+menu_multiplayer = CreateMenuFromTemplate("template_basic")
+
+menu_multiplayer.options.title=TITLE_MULTIPLAYER
+
+menu_multiplayer.back=entermenu("menu_mainmenu")
+
+function menu_multiplayer.create(self)
+	self.parent:create(self)
+
+	GameFlow.ClearRace()
+
+	self:loadResources()
+			
+	self.items={
+		MENUITEM(TRANSLATOR(ICON_MAIN_PARTYMODE), function() EnterPartyModeMenu(false) end,	ICON(self,"icon_party_mode")),
+		MENUITEM(TRANSLATOR(ICON_MULTIPLAYER_PC), function() MultiplayerMode = MPMODE_GAMESPY; EnterMenu("menu_multiplayer_gamespy_checkavailability"); end, ICON(self,"icon_online")),
+		MENUITEM(TRANSLATOR(ICON_MULTIPLAYER_LAN), function() MultiplayerMode = MPMODE_LAN; EnterMenu("menu_lan_modeselect"); end, ICON(self,"icon_system_link")),
+	}
+end
+
+function menu_multiplayer.init(self) 
+	self.parent:init(self)
+	
+	GUI:SetBackgroundVideo("data/video/bg_main")
+end
+
+function menu_multiplayer.deinit(self)
+	self.parent:deinit(self)
+end

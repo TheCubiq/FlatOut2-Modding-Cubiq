@@ -1,0 +1,7 @@
+ai1_and_ai2_poses_size = { 512,512 }
+ai1_and_ai2_poses = {
+	
+	ai1_pose = {  0, 32, 263, 480 },
+	ai4_pose = {  263, 32, 249, 480 },
+
+}

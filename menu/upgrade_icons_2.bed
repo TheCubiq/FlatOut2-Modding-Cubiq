@@ -1,0 +1,36 @@
+upgrade_icons_2_size = { 512,512 }
+upgrade_icons_2 = {
+	
+	gearbox_clutch_pro_icon = {  3, 3, 110, 70 },   
+	gearbox_flywheel_stock_icon = {  116, 3, 110, 70 }, 
+	gearbox_flywheel_racing_icon = {  229, 3, 110, 70 }, 
+	gearbox_flywheel_pro_icon = {  342, 3, 110, 70 }, 
+
+	exhaust_exhaust_stock_icon = {  3, 76, 110, 70 },
+	exhaust_exhaust_racing_icon = {  116, 76, 110, 70 },
+	exhaust_exhaust_pro_icon = {  229, 76, 110, 70 }, 
+	exhaust_exhaust_manifold_stock_icon = {  342, 76, 110, 70 }, 
+	exhaust_exhaust_manifold_racing_icon = {  3, 149, 110, 70 }, 
+	exhaust_exhaust_manifold_pro_icon = {  116, 149, 110, 70 }, 
+
+	suspension_shocks_stock_icon = {  229, 149, 110, 70 }, 
+	suspension_shocks_racing_icon = {  342, 149, 110, 70 },
+	suspension_shocks_pro_icon = {  3, 222, 110, 70 },  
+	suspension_anti_roll_bars_stock_icon = {  116, 222, 110, 70 }, 
+	suspension_anti_roll_bars_racing_icon = {  229, 222, 110, 70 }, 
+	suspension_anti_roll_bars_pro_icon = {  342, 222, 110, 70 }, 
+
+	tires_brakes_tires_stock_icon = {  3, 295, 110, 70 },   
+	tires_brakes_tires_racing_icon = {  116, 295, 110, 70 }, 
+	tires_brakes_tires_pro_icon = {  229, 295, 110, 70 }, 
+	tires_brakes_brakes_stock_icon = {  342, 295, 110, 70 }, 
+	tires_brakes_brakes_racing_icon = {  3, 368, 110, 70 },   
+	tires_brakes_brakes_pro_icon = {  116, 368, 110, 70 }, 
+
+	body_body_upgrade_stock_icon = {  229, 368, 110, 70 }, 
+	body_body_upgrade_racing_icon = {  342, 368, 110, 70 }, 
+	body_body_upgrade_pro_icon = {  3, 441, 110, 70 },   
+	body_chassis_upgrade_stock_icon = {  116, 441, 110, 70 }, 
+	body_chassis_upgrade_racing_icon = {  229, 441, 110, 70 }, 
+	body_chassis_upgrade_pro_icon = {  342, 441, 110, 70 }, 
+}

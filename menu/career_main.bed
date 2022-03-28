@@ -1,0 +1,10 @@
+career_main_size = { 512,64 }
+career_main = {
+	
+	cups_passed_bar = {  3, 3, 506, 35 },
+	white_bar_transparent_20 = {  3, 41, 16, 16 },
+	cup_passed_gold = {  26, 41, 13, 13 },
+	cup_passed_silver = {  42, 41, 13, 13 },
+	cup_passed_bronze = {  58, 41, 13, 13 },
+
+}

@@ -1,0 +1,1468 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CareerRacemapMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 19.8.2005 16:22:41
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+--//this is bad.
+
+dofile("data/menu/backdrops1.bed")
+dofile("data/menu/selection_elements.bed")
+dofile("data/menu/selection_elements_2.bed")
+dofile("data/menu/track_images.bed")
+dofile("data/menu/map_backdrop.bed")
+
+local PHASE_CLASS = 1
+local PHASE_CUP = 2
+
+TYPE_STUNT = 1
+TYPE_CUP = 2
+TYPE_EVENT = 3
+
+local FADEGROUP_CLASS = 1
+local FADEGROUP_CUPS = 2
+local FADEGROUP_MEDALS = 3
+
+local trackimage_timerhandle
+
+local state
+local currentphase
+local phase_class = {}
+local phase_cup = {}
+
+local mapcoords = {
+	[1] = { 1,1 },
+	[2] = { 2,1 },
+	[3] = { 3,1 },
+	[4] = { 4,1 },
+	[5] = { 1,2 },
+	[6] = { 2,2 },
+	[7] = { 3,2 },
+	[8] = { 4,2 },
+	[9] = { 1,3 },
+	[10] = { 2,3 },
+	[11] = { 3,3 },
+	[12] = { 4,3 },
+}
+
+local function getmap(id)
+	return mapcoords[id]
+end
+
+local trophys = {
+	"small_trophy_gold",
+	"small_trophy_silver",
+	"small_trophy_bronze",
+}
+
+local cup_data = {
+
+	--//derby
+	[1] = {
+		map_pos=POS(128,0),
+
+		cup_icon = "cup_sign_derby",
+		
+		subclass_positions = {
+			POS(128,0),
+			POS(768,0),
+			POS(1408,0),
+		},
+
+		items = {
+			[1] = {
+				[1] = { map=getmap(1),position=POS(312,177) },
+				[2] = { map=getmap(1),position=POS(433,177) },
+				[3] = { map=getmap(2),position=POS(892-512,177) },
+				[4] = { map=getmap(3),position=POS(1013-1024,177) },
+				[5] = { map=getmap(3),position=POS(1134-1024,177) },
+				[6] = { map=getmap(4),position=POS(1532-1536,177) },
+				[7] = { map=getmap(4),position=POS(1653-1536,177) },
+				[8] = { map=getmap(4),position=POS(1774-1536,177) },
+			},
+
+			[2] = {
+				[1] = { map=getmap(1),position=POS(338,273) },
+				[2] = { map=getmap(1),position=POS(459,273) },
+				[3] = { map=getmap(2),position=POS(917-512,273) },
+				[4] = { map=getmap(3),position=POS(1038-1024,273) },
+				[5] = { map=getmap(3),position=POS(1160-1024,273) },
+				[6] = { map=getmap(4),position=POS(1557-1536,273) },
+				[7] = { map=getmap(4),position=POS(1678-1536,273) },
+				[8] = { map=getmap(4),position=POS(1800-1536,273) },
+
+			},
+
+		},
+
+	},
+
+	--//race
+	[2] = {
+			map_pos=POS(128,354),
+
+			cup_icon = "cup_sign_race",
+
+			subclass_positions = {
+				POS(128,354),
+				POS(768,354),
+				POS(1408,354),
+			},
+
+			items = {
+
+				--//y x
+				[1] = {  
+					[1] = { map=getmap(5), position=POS(313,534-512), },
+					[2] = { map=getmap(5), position=POS(434,534-512), },
+					[3] = { map=getmap(6), position=POS(892-512,534-512), },
+					[4] = { map=getmap(6), position=POS(1013-512,534-512), },
+					[5] = { map=getmap(7), position=POS(1135-1024,534-512), },
+					[6] = { map=getmap(7), position=POS(1471-1024,534-512), },
+					[7] = { map=getmap(8), position=POS(1592-1536,534-512), },
+					[8] = { map=getmap(8), position=POS(1714-1536,534-512), },
+					[9] = { map=getmap(8), position=POS(1835-1536,534-512), },
+				},
+				[2] = {
+				 	[1] = { map=getmap(5), position=POS(338,627-512), },
+					[2] = { map=getmap(5), position=POS(459,627-512), },
+					[3] = { map=getmap(6), position=POS(917-512,627-512), },
+					[4] = { map=getmap(7), position=POS(1038-1024,627-512), },
+					[5] = { map=getmap(7), position=POS(1160-1024,627-512), },
+					[6] = { map=getmap(7), position=POS(1496-1024,627-512), },
+					[7] = { map=getmap(8), position=POS(1617-1536,627-512), },
+					[8] = { map=getmap(8), position=POS(1739-1536,627-512), },
+					[9] = { map=getmap(8), position=POS(1860-1536,627-512), },
+				},
+			},
+	},
+
+	--//street
+	[3] = {
+			map_pos=POS(128,704),
+
+			cup_icon = "cup_sign_street",
+
+			subclass_positions = {
+				POS(128,704),
+				POS(768,704),
+				POS(1408,704),
+			},
+
+			items = {
+
+				--//y x
+				[1] = {  
+					[1] = { map=getmap(5), position=POS(252,884-512), },
+					[2] = { map=getmap(5), position=POS(373,884-512), },
+					[3] = { map=getmap(5), position=POS(495,884-512), },
+					[4] = { map=getmap(6), position=POS(892-512,884-512), },
+					[5] = { map=getmap(6), position=POS(1013-512,884-512), },
+					[6] = { map=getmap(7), position=POS(1135-1024,884-512), },
+					[7] = { map=getmap(7), position=POS(1471-1024,884-512), },
+					[8] = { map=getmap(8), position=POS(1592-1536,884-512), },
+					[9] = { map=getmap(8), position=POS(1714-1536,884-512), },
+					[10] = { map=getmap(8), position=POS(1835-1536,884-512), },
+				},
+				[2] = {
+					[1] = { map=getmap(5), position=POS(277,977-512), },
+					[2] = { map=getmap(5), position=POS(398,977-512), },
+					[3] = { map=getmap(6), position=POS(520-512,977-512), },
+					[4] = { map=getmap(6), position=POS(917-512,977-512), },
+					[5] = { map=getmap(7), position=POS(1038-1024,977-512), },
+					[6] = { map=getmap(7), position=POS(1160-1024,977-512), },
+					[7] = { map=getmap(7), position=POS(1496-1024,977-512), },
+					[8] = { map=getmap(8), position=POS(1617-1536,977-512), },
+					[9] = { map=getmap(8), position=POS(1739-1536,977-512), },
+					[10] = { map=getmap(8), position=POS(1860-1536,977-512), },
+				},
+			},
+	},
+
+	--//grand final
+	[4] = {
+			map_pos=POS(128,0),
+			
+			cup_icon = "cup_sign_street",
+
+			subclass_positions = {
+				POS(128,0),
+			},
+
+			items = {
+				[1] = {
+					[1] = { map=getmap(1),position=POS(312,177) },
+					[2] = { map=getmap(1),position=POS(433,177) },
+				},
+
+				[2] = {
+					[1] = { map=getmap(1),position=POS(338,273) },
+					[2] = { map=getmap(1),position=POS(459,273) },
+				},
+			},
+	},
+
+}
+
+local class_pos = POS(0,1056)
+local class_data = {
+	{ title=TRANSLATOR(TITLE_DERBY),id=1, description=TRANSLATOR(CLASS_DESCRIPTION_DERBY),classname="ClassC", icon="class_sign_1",icon_locked="class_sign_1_locked",map=getmap(9),position=POS(37,1145-1024), finals_position=POS(269,176), finals_icon="derby_finals_icon"},
+	{ title=TRANSLATOR(TITLE_RACING),id=2, description=TRANSLATOR(CLASS_DESCRIPTION_RACING),classname="ClassB",icon="class_sign_2",icon_locked="class_sign_2_locked", map=getmap(9), position=POS(56,1217-1024), finals_position=POS(294,255), finals_icon="race_finals_icon"},
+	{ title=TRANSLATOR(TITLE_STREET),id=3,description=TRANSLATOR(CLASS_DESCRIPTION_STREET),classname="ClassA", icon="class_sign_3",icon_locked="class_sign_3_locked", map=getmap(9), position=POS(78,1289-1024), finals_position=POS(320,336), finals_icon="street_finals_icon" },
+	{ title=TRANSLATOR(TITLE_GRANDFINALS),id=4,description=TRANSLATOR(CLASS_DESCRIPTION_FINALS),classname="Finals", icon="class_sign_4",icon_locked="class_sign_4_locked", map=getmap(9), position=POS(100,1361-1024 ), },
+}
+    
+
+local map_images = {
+	[1] = { "map_1", "map_2", "map_3", "map_4" },
+	[2] = { "map_5", "map_6", "map_7", "map_8" },
+	[3] = { "map_9", "map_10", "map_11", "map_12" },
+}
+
+local subclasses = {
+	[1] = { name=TRANSLATOR(TITLE_BEGINNER), subclass=1 },
+	[2] = { name=TRANSLATOR(TITLE_AMATEUR), subclass=2 },
+	[3] = { name=TRANSLATOR(TITLE_PROFESSIONAL), subclass=3 },
+	[4] = { name=TRANSLATOR(TITLE_FINALS), subclass=4 },
+}
+
+
+
+menu_career_racemap = CreateMenuFromTemplate("template_career")
+
+
+local function RemoveWindows(windows)
+	if not windows then return end
+
+	for k,v in pairs(windows) do
+		if type(v) == "table" and not v.window then
+			RemoveWindows(v)
+		else
+			MenuMap:RemoveWindow(v.window or v)
+			if v.medal then
+				MenuMap:RemoveWindow(v.medal)
+			end
+
+			if v.result then
+				MenuMap:RemoveWindow(v.result)
+			end
+		end
+	end
+end
+
+local function CreateClassWindows(current_class)
+
+	local class_data=Classes[current_class]
+	local class_cupdata=class_data.Cups
+	local class_eventdata=class_data.Events
+	local menu=menu_career_racemap
+	
+	local menu_data=cup_data[current_class].items
+
+
+	local t={}
+
+
+--//	for subclass,subclassdata in pairs(Classes[current_class].SubClasses) do
+	for i=1,3 do
+		local subclassdata=Classes[current_class].SubClasses[i]
+
+		if subclassdata then
+
+			for k,v_index in ipairs(subclassdata.Cups) do
+				local v=class_cupdata[v_index]
+				local cupnum=v_index
+
+				local x=v.MenuIndex[1]
+				local y=v.MenuIndex[2]
+
+				if not t[y] then
+					t[y]={}
+				end
+
+				local data=menu_data[y][x]
+
+
+				local medal
+				local result
+
+				local resource
+				if PlayerProfile:IsCupLocked(current_class,cupnum) then
+					resource=menu:getResource("cup_sign_locked")
+				else
+					if current_class == 4 then
+						if k == 1 then
+							resource=menu:getResource("cup_sign_derby")
+						elseif k == 2 then
+							resource=menu:getResource("cup_sign_race")
+						elseif k == 3 then
+							resource=menu:getResource("cup_sign_street")
+						elseif k == 4 then
+							resource=menu:getResource("cup_sign_street")
+						end
+					else
+						resource=menu:getResource(cup_data[current_class].cup_icon)
+					end
+
+					local pos=PlayerProfile:GetCupPosition(current_class,cupnum)
+					if pos > 0 and pos <= 8 then
+						medal=menu:getResource(string.format("result_ribbon_%d",pos))
+
+						if pos <= 3 then
+							result=menu:getResource(string.format("result_trophy_%d",pos))
+						end
+					end
+				end
+				
+				local window_id=MenuMap:AddWindow(data.position,GetResourceSize(resource),resource,FADEGROUP_CUPS,unpack(data.map))
+
+				local medal_id
+				if medal then
+					local pos=CopyTable(data.position)
+					local size=SIZE(43,14)
+					pos[1]=pos[1] + 6
+					pos[2]=pos[2] + 4
+					medal_id=MenuMap:AddWindow(pos,size,medal,FADEGROUP_CUPS,window_id,unpack(data.map))
+				else
+					medal_id=nil
+				end
+
+				local result_id
+
+				if result then
+					local pos=CopyTable(data.position)
+					local size=GetResourceSize(result)
+					result_id=MenuMap:AddWindow(pos,size,result,FADEGROUP_CUPS,window_id,unpack(data.map))
+				else
+					result_id=nil
+				end
+
+				table.insert(t[y],{ type=TYPE_CUP, subclass=i, pos=data.position, id=cupnum, window=window_id,medal=medal_id,result=result_id })
+			end
+
+			if current_class ~= 4 then			
+				for k,v_index in ipairs(subclassdata.Events) do
+					local v=class_eventdata[v_index]
+					local eventnum=v_index
+
+					local x=v.MenuIndex[1]
+					local y=v.MenuIndex[2]
+
+					if not t[y] then
+						t[y]={}
+					end
+
+					local data=menu_data[y][x]
+
+
+					local medal
+					local result
+
+					local resource
+					if PlayerProfile:IsEventLocked(current_class,eventnum) then
+							resource=menu:getResource("event_sign_locked")
+					else
+						if v.Rules == GR_STUNT then
+							resource=menu:getResource("stunt_sign")
+						else
+							resource=menu:getResource("derby_sign")
+						end
+
+						local pos=PlayerProfile:GetEventPosition(current_class,eventnum)
+						if pos > 0 and pos <= 8 then
+							medal=menu:getResource(string.format("result_ribbon_%d",pos))
+
+							if pos <= 3 then
+								if v.Rules == GR_STUNT then
+									result=menu:getResource(string.format("stunt_result_trophy_%d",pos))
+								else
+									result=menu:getResource(string.format("event_result_trophy_%d",pos))
+								end
+							end
+						end
+					end
+
+					local window_id=MenuMap:AddWindow(data.position,GetResourceSize(resource),resource,FADEGROUP_CUPS,unpack(data.map))
+
+					local type=TYPE_EVENT
+					if v.Rules == GR_STUNT then
+						type=TYPE_STUNT
+					end
+
+					local medal_id
+					if medal then
+						local pos=CopyTable(data.position)
+						local size=SIZE(43,14)
+						pos[1]=pos[1] + 6
+						pos[2]=pos[2] + 4
+						medal_id=MenuMap:AddWindow(pos,size,medal,FADEGROUP_CUPS,window_id,unpack(data.map))
+					else
+						medal_id=nil
+					end
+
+					local result_id
+
+					if result then
+						local pos=CopyTable(data.position)
+						local size=GetResourceSize(result)
+						result_id=MenuMap:AddWindow(pos,size,result,FADEGROUP_CUPS,window_id,unpack(data.map))
+					else
+						result_id=nil
+					end
+
+					table.insert(t[y],{ type=type, subclass=i, pos=data.position, id=eventnum, window=window_id,medal=medal_id,result=result_id })
+				end
+			end
+		end
+	end
+
+
+	return t
+end
+
+
+local phases = {
+	[PHASE_CLASS] = phase_class,
+	[PHASE_CUP] = phase_cup,
+}
+
+local function InitPhase(newphase)
+
+	state.oldphase = state.phase
+	state.phase = newphase
+
+	if currentphase and currentphase.deinit then
+		currentphase.deinit()
+	end
+
+	currentphase = phases[state.phase]
+
+	currentphase.init()
+
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+function phase_class.update()
+	local data=class_data[state.selected_class]
+
+	if state.finals then
+		MenuMap:SetSelectorResource(menu_career_racemap:getResource("finals_selection"))
+		MenuMap:SetSelectedWindow(state.finalwindows[state.selected_class])
+	else
+		MenuMap:SetSelectorResource(menu_career_racemap:getResource("class_selection"))
+		MenuMap:SetSelectedWindow(state.classwindows[state.selected_class])
+	end
+
+
+	W("cup_name"):SetTitle(L"")
+
+	W("class_description"):SetTitle(data.description)
+	W("class_description"):WordWrap()
+
+
+
+	W("class_title"):SetTitle(data.title)
+
+	local current_subclass=1
+	local total_cups=0
+	local total_events=0
+
+	if state.finals or state.selected_class == 4 then
+		current_subclass=1
+		total_events=0
+		total_cups=4
+	else
+		for i=1,3 do
+			if not PlayerProfile:IsSubClassLocked(state.selected_class,i) then
+				current_subclass=i
+			end
+
+			local s=Classes[state.selected_class].SubClasses[i]
+			if s and s.Cups then
+				total_cups = total_cups + table.getn(s.Cups)
+			end
+
+			if s and s.Events then
+				total_events = total_events + table.getn(s.Events)
+			end
+
+		end
+	end		
+
+	W("subclass_title"):SetTitle(subclasses[current_subclass].name)
+
+	if current_subclass ~= 4 then
+
+		local class_data=Classes[state.selected_class]
+
+		local cups_completed=0
+		local events_completed=0
+
+		for i=1,total_cups do
+			local pos=PlayerProfile:GetCupPosition(state.selected_class,i)
+			if pos > 0 and pos <= 3 then
+				cups_completed = cups_completed + 1
+			end
+		end
+
+
+		for i=1,total_events do
+			local pos=PlayerProfile:GetEventPosition(state.selected_class,i)
+			if pos > 0 and pos <= 3 then
+				events_completed = events_completed + 1
+			end
+		end
+
+
+		local w=W("completed_cups")
+		w:SetTitle(WStringConcat(ConvertToWString(string.format("%d/%d ",cups_completed,total_cups)),TRANSLATOR(RACETRACKTYPE_CUPS) ))
+		state.completed_cups_handle=AnimateWindowAlpha(w,w:GetAlpha(),1.0,0.2,0.0,state.completed_cups_handle)
+
+		if total_events > 0 then
+			w=W("completed_events")
+			w:SetTitle(WStringConcat(ConvertToWString(string.format("%d/%d ",events_completed,total_events)),TRANSLATOR(RACETRACKTYPE_EVENTS) ))
+			state.completed_events_handle=AnimateWindowAlpha(w,w:GetAlpha(),1.0,0.2,0.0,state.completed_events_handle)
+			w=W("completed_text2")
+			state.completed_title2_handle=AnimateWindowAlpha(w,w:GetAlpha(),1.0,0.2,0.0,state.completed_title2_handle)
+
+		else
+			w=W("completed_events")
+			state.completed_events_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_events_handle)
+			w=W("completed_text2")
+			state.completed_title2_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_title2_handle)
+		end
+
+		w=W("completed_text")
+		state.completed_title_handle=AnimateWindowAlpha(w,w:GetAlpha(),1.0,0.2,0.0,state.completed_title_handle)
+
+		w=W("class_description")
+		state.description_handle=AnimateWindowAlpha(w,w:GetAlpha(),1.0,0.2,0.0,state.description_handle)
+
+
+	else
+		local w=W("completed_cups")
+		state.completed_cups_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_cups_handle)
+
+		w=W("completed_events")
+		state.completed_events_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_events_handle)
+
+		w=W("completed_text")
+		state.completed_title_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_title_handle)
+
+		w=W("completed_text2")
+		state.completed_title2_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.completed_title2_handle)
+
+		w=W("class_description")
+		state.description_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,state.description_handle)
+	end
+end
+
+function phase_class.onKeyPressed(self,character,virtualkey,scancode)
+	--//kn(/l)ife is good
+	if not state then return end
+
+	if virtualkey == KeyCodes.BUTTON_LEFT then
+		if not state.finals and state.finalwindows[state.selected_class] then
+			state.finals=state.selected_class
+		elseif state.finals then
+			state.finals=nil
+		end
+		playmenusound_move()
+		phase_class.update()
+	elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+		if not state.finals and state.finalwindows[state.selected_class] then
+			state.finals=state.selected_class
+		elseif state.finals then
+			state.finals=nil
+		end
+		playmenusound_move()
+		phase_class.update()
+	elseif virtualkey == KeyCodes.BUTTON_UP then
+		if state.selected_class > 1 then
+			state.selected_class = state.selected_class - 1
+		else
+			state.selected_class = table.getn(state.classwindows)
+		end
+		if not state.finalwindows[state.selected_class] then
+			state.finals=nil
+		end
+		playmenusound_move()
+		phase_class.update()
+	elseif virtualkey == KeyCodes.BUTTON_DOWN then
+		if state.selected_class < table.getn(state.classwindows) then
+			state.selected_class = state.selected_class + 1
+		else
+			state.selected_class = 1
+		end
+
+		if not state.finalwindows[state.selected_class] then
+			state.finals=nil
+		end
+		playmenusound_move()
+		phase_class.update()
+	elseif virtualkey == KeyCodes.BUTTON_START then
+		if not PlayerProfile:IsClassLocked(state.selected_class) then
+			playmenusound_action()
+			
+			if state.finals then
+				local selection = {}
+				selection.event_type=TYPE_CUP
+				selection.event_id=Classes[state.finals].SubClasses[4].Cups[1]
+				selection.classname=class_data[state.finals].classname
+				selection.class_id=state.finals
+				selection.subclass=4
+				ShowCupInfo(selection,entermenu("menu_career_racemap"),function() EnterRace(selection) end)
+			else
+				if cup_data[class_data[state.selected_class].id] then
+					state.class_id=class_data[state.selected_class].id
+					state.selected_cup=nil
+					state.subclass=nil
+					InitPhase(PHASE_CUP)
+				end
+			end
+		else
+			playmenusound_error()
+
+			if Garage:HasCarFromClass(state.selected_class) then
+				MessageBox(TRANSLATOR(CAREER_GORACE_NOCARSELECTED),MESSAGEBOX_YESNO,function(value) if value == TRUE then EnterMenu("menu_career_garage") end end)
+			else
+				if PlayerProfile:CanBuyCarFromClass(state.selected_class) then
+					MessageBox(TRANSLATOR(CAREER_GORACE_NOCARBOUGHT),MESSAGEBOX_YESNO,function(value) if value == TRUE then EnterCarShopClass(state.selected_class) end end)
+				else
+					MessageBox(TRANSLATOR(CAREER_GORACE_NOCARMONEY),MESSAGEBOX_OK,function() end)
+				end
+			end
+		end
+	elseif virtualkey == KeyCodes.BUTTON_SELECT then
+		if state.allowback and not state.move_on then
+			playmenusound_back()
+			MenuMap:DrawSelector(false)
+			state.allowback=false
+			state=nil
+			EnterMenu("menu_career")
+		end
+	end
+end
+
+function phase_class.init()
+	state = state or {}
+	state.allowback=false
+
+	if state.oldphase then
+		MenuMap:SetMapPosition(unpack(class_pos))
+		MenuMap:SetMapZoom(1.0)
+	else
+		MenuMap:SetMapPosition(class_pos[1],class_pos[2],FALSE)
+--//		MenuMap:SetMapZoom(2.8,FALSE)
+		MenuMap:SetMapZoom(1.0)
+	end
+
+--//	W("bar_left_1"):ShowWindow()
+--//	W("bar_left_2"):ShowWindow()
+
+	local w=W("class_infobox")
+	w.handle=AnimateWindowPos(w,POS(650,w.position[2]),w.position,0.3,0.4,w.handle)
+
+
+	MenuMap:SetSelectorResource(menu_career_racemap:getResource("class_selection"))
+	MenuMap:DrawSelector(false)
+
+	W("racemap_handler").onKeyPressed = phase_class.onKeyPressed
+
+	state.selected_class = state.selected_class or Garage:GetCarClass(PlayerProfile:GetActiveCar())
+	state.finals=nil
+	
+
+
+
+	phase_class.update()
+end
+
+function phase_class.trigger(trigger)
+	if trigger == MENUTRIGGER_MENUMAP_MAPMOVE_START then
+		state.allowback=false
+		MenuMap:DrawSelector(false)
+	elseif trigger == MENUTRIGGER_MENUMAP_MAPMOVE_END then
+		if state then
+			RemoveWindows(state.eventwindows)
+			state.eventwindows=nil
+			MenuMap:DrawSelector(true)
+			state.allowback=true
+		end
+	elseif trigger == MENUTRIGGER_MENUMAP_ZOOM_END then
+		MenuMap:FadeWindowGroup(FADEGROUP_CLASS,0.0,1.0,0.2,0.1)
+		MenuMap:DrawSelector(true)
+		if state then
+			state.allowback=true
+			phase_class.update()
+		end
+	end
+end
+
+
+
+function phase_class.deinit()
+	
+	local w=W("class_infobox")
+	w.handle=AnimateWindowPos(w,POS(w:GetPosition()),POS(650,w.position[2]),0.2,0.0,w.handle)
+
+
+
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+local function HideTrackImages()
+	local current=state.trackimages[state.trackimages_index]
+
+	local i
+
+	for i=1,9 do
+		local w=current[i]
+		w.alpha_handle=AnimateWindowAlpha(w,w:GetAlpha(),0.0,0.2,0.0,w.alpha_handle)
+	end
+end
+
+local function ShowTrackImages(data)
+	
+	HideTrackImages()
+
+	if state.trackimages_index == 1 then
+		state.trackimages_index=2 
+	else
+		state.trackimages_index=1
+	end
+
+
+	local images = {
+		[TRACKTYPE_FOREST] = "track_images_forest1",
+		[TRACKTYPE_FIELDS] = "track_images_fields1",
+		[TRACKTYPE_DESERT] = "track_images_desert1",
+		[TRACKTYPE_CANAL] = "track_images_canals1",
+		[TRACKTYPE_CITY] = "track_images_city1",
+		[TRACKTYPE_RACING] = "track_images_racing1",
+	}
+
+	current=state.trackimages[state.trackimages_index]
+	
+	local total_size=GetResourceSize(menu_career_racemap:getResource(images[TRACKTYPE_FOREST]))
+	local res_size=CopyTable(total_size)
+
+	total_size[1]=(total_size[1]-9)*table.getn(data.Races)
+	
+	local pos=total_size
+	pos[1] = (278 + total_size[1]/2)-res_size[1]
+
+	local delay=0.2
+	for i=1,table.getn(data.Races) do
+		local w=current[i]
+
+		local leveldata
+
+		local resource
+		
+
+		if i > table.getn(data.Races) then
+			resource=menu_career_racemap:getResource("track_trail")
+		else
+			leveldata=Levels[data.Races[table.getn(data.Races)-(i-1)].Level]
+			resource=menu_career_racemap:getResource(leveldata.TrackIcon)  --//images[leveldata.TrackType or TRACKTYPE_FOREST])
+		end
+
+		res_size=GetResourceSize(resource)
+
+
+		w:AttachResource(resource)
+		w:SetSize(unpack(res_size))
+
+--//		local pos=CopyTable(w.position)
+		pos[2]=w.position[2]
+	
+		local startpos=CopyTable(pos)
+		startpos[1]=-(res_size[1]+32)
+		
+		w.alpha_handle=AnimateWindowAlpha(w,0.0,1.0,0.2,delay,w.alpha_handle)
+		w.pos_handle=AnimateWindowPos(w,startpos,pos,0.3,delay,w.pos_handle)
+
+		pos[1] = pos[1] - (res_size[1] - 9)
+		delay=delay+0.05
+	end
+
+end
+
+
+local function GetSubClass(id,type)
+
+	for k,v in pairs(Classes[state.selected_class].SubClasses) do
+		local _data
+		if type == TYPE_CUP then
+			_data=v.Cups
+		else
+			_data=v.Events
+		end
+
+		for _k,_v in pairs(_data) do
+			if _v == id then
+				return k
+			end
+		end
+	end
+end
+
+
+local function GetNearestWindowDown(x,y)
+	local windowdata=state.eventwindows[y][x]
+	local menu_data=cup_data[state.selected_class].items
+
+
+	local cur_p=windowdata.pos[1]
+	cur_p = cur_p+menu_data[y][x].map[1]*512
+
+	local nearest_p=100000000
+	local nearest_data
+
+	for k,v in pairs(state.eventwindows[y+1]) do
+	
+		local pos=v.pos			
+		
+		local p = math.abs((pos[1]+menu_data[y+1][k].map[1]*512) - cur_p)
+
+		if p < nearest_p then
+			nearest_p=p
+			nearest_data=v
+		end
+	end
+
+	local _data
+
+	if nearest_data.type == TYPE_CUP then
+		_data=Classes[state.selected_class].Cups[nearest_data.id]
+	else
+		_data=Classes[state.selected_class].Events[nearest_data.id]
+	end
+
+	return unpack(_data.MenuIndex)
+end
+
+local function GetNearestWindowUp(x,y)
+	local windowdata=state.eventwindows[y][x]
+	local menu_data=cup_data[state.selected_class].items
+	
+	local cur_p=windowdata.pos[1]
+	cur_p = cur_p+menu_data[y][x].map[1]*512
+
+	local nearest_p=100000000
+	local nearest_data
+
+	for k,v in pairs(state.eventwindows[y-1]) do
+		local pos=v.pos			
+		
+		local f=(pos[1]+menu_data[y-1][k].map[1]*512)
+		local p = math.abs((pos[1]+menu_data[y-1][k].map[1]*512) - cur_p)
+
+		if p < nearest_p then
+			nearest_p=p
+			nearest_data=v
+		end
+	end
+
+	local _data
+
+	if nearest_data.type == TYPE_CUP then
+		_data=Classes[state.selected_class].Cups[nearest_data.id]
+	else
+		_data=Classes[state.selected_class].Events[nearest_data.id]
+	end
+
+	return unpack(_data.MenuIndex)
+end
+
+local function SetSubClassArrows()
+	local subclass=state.subclass
+
+	if subclass > 1 then
+		state.left_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_left"),W("subclass_arrow_left"):GetAlpha(),1.0,0.3,0.0,state.left_arrow_handle)
+	else
+		state.left_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_left"),W("subclass_arrow_left"):GetAlpha(),0.0,0.3,0.0,state.left_arrow_handle)
+	end
+
+	if subclass < 3 and state.selected_class ~= 4 then --//and not PlayerProfile:IsSubClassLocked(state.selected_class,subclass+1) then
+		state.right_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_right"),W("subclass_arrow_right"):GetAlpha(),1.0,0.3,0.0,state.right_arrow_handle)
+	else
+		state.right_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_right"),W("subclass_arrow_right"):GetAlpha(),0.0,0.3,0.0,state.right_arrow_handle)
+	end
+
+end
+
+function SetBackdropBarSizes(subclass)
+	local barpos_l=POS(-5,177)
+	local barpos_r=POS(421,177)
+	local w
+
+	--//hoaxize background bar size
+	if subclass == 1 and state.class_id ~= 3 then
+		w=W("cup_backdrop_l")
+		w.handle=AnimateWindowPos(w,{ w:GetPosition() },barpos_l,0.2,0.0,w.handle)
+		w=W("cup_backdrop_r")
+		w.handle=AnimateWindowPos(w,{ w:GetPosition() },barpos_r,0.2,0.0,w.handle)
+	elseif state.subclass == 2 or (state.class_id == 3 and subclass == 1) then
+		w=W("cup_backdrop_l")
+		w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_l[1]-60,barpos_l[2] },0.2,0.0,w.handle)
+		w=W("cup_backdrop_r")
+		w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_r[1]+60,barpos_r[2] },0.2,0.0,w.handle)
+	elseif subclass == 3 then
+		if state.class_id == 1 then
+			w=W("cup_backdrop_l")
+			w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_l[1]-60,barpos_l[2] },0.2,0.0,w.handle)
+			w=W("cup_backdrop_r")
+			w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_r[1]+60,barpos_r[2] },0.2,0.0,w.handle)
+		else
+			w=W("cup_backdrop_l")
+			w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_l[1]-120,barpos_l[2] },0.2,0.0,w.handle)
+			w=W("cup_backdrop_r")
+			w.handle=AnimateWindowPos(w,{ w:GetPosition() },{ barpos_r[1]+120,barpos_r[2] },0.2,0.0,w.handle)
+		end
+	end
+end
+
+function phase_cup.update()
+	
+	local cupdata=cup_data[state.class_id]
+	local windowdata=state.eventwindows[state.selected_cup.y][state.selected_cup.x]
+
+	MenuMap:SetSelectedWindow(windowdata.window)
+
+	local _data
+	if windowdata.type == TYPE_CUP then
+		_data=Classes[state.selected_class].Cups[windowdata.id]
+		W("prize_1"):SetTitle(MONEY(_data.CupWinnings[1]))
+		W("prize_2"):SetTitle(MONEY(_data.CupWinnings[2]))
+		W("prize_3"):SetTitle(MONEY(_data.CupWinnings[3]))
+	else
+		_data=Classes[state.selected_class].Events[windowdata.id]
+
+		W("prize_1"):SetTitle(MONEY(_data.CupWinnings[1]))
+		W("prize_2"):SetTitle(MONEY(_data.CupWinnings[2]))
+		W("prize_3"):SetTitle(MONEY(_data.CupWinnings[3]))
+	end
+
+	W("cup_name"):SetTitle(ConvertToWString(_data.Name or ""))
+
+	local subclass=windowdata.subclass --//GetSubClass(windowdata.id,windowdata.type)
+
+	if subclass ~= state.subclass then
+		state.subclass=subclass
+		MenuMap:SetMapPosition(unpack(cupdata.subclass_positions[state.subclass]))
+		SetSubClassArrows()
+
+		SetBackdropBarSizes(subclass)
+	end
+	if state.class_id == 4 then
+		W("level_text"):SetTitle(TRANSLATOR(TITLE_FINALS))
+	else
+		W("level_text"):SetTitle(subclasses[subclass].name)
+	end
+
+	ShowTrackImages(_data)
+
+end
+
+local function IsSubClassValid(subclass)
+	return not PlayerProfile:IsSubClassLocked(state.selected_class,subclass)
+end
+
+function phase_cup.onKeyPressed(self,character,virtualkey,scancode)
+	if virtualkey == KeyCodes.BUTTON_LEFT then
+		if state.selected_cup.x > 1 then
+			--//if IsSubClassValid(state.eventwindows[state.selected_cup.y][state.selected_cup.x-1].subclass) then
+				state.selected_cup.x = state.selected_cup.x - 1 
+				phase_cup.update()
+			--//end
+			playmenusound_move()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+		if state.selected_cup.x < table.getn(state.eventwindows[state.selected_cup.y]) then
+			--//if IsSubClassValid(state.eventwindows[state.selected_cup.y][state.selected_cup.x+1].subclass) then
+				state.selected_cup.x = state.selected_cup.x + 1
+				phase_cup.update()
+			--//end
+			playmenusound_move()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_UP then
+		if state.selected_cup.y > 1 then
+			local x,y=GetNearestWindowUp(state.selected_cup.x,state.selected_cup.y)
+			if x and y then
+				state.selected_cup.x=x
+				state.selected_cup.y=y
+			else
+				state.selected_cup.y = state.selected_cup.y - 1
+			end
+			phase_cup.update()
+			playmenusound_move()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_DOWN then
+		if state.selected_cup.y < table.getn(state.eventwindows) then
+			local x,y=GetNearestWindowDown(state.selected_cup.x,state.selected_cup.y)
+			if x and y then
+				state.selected_cup.x=x
+				state.selected_cup.y=y
+			else
+				state.selected_cup.y = state.selected_cup.y + 1
+			end
+			phase_cup.update()
+			playmenusound_move()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_START then
+		local cupdata=state.eventwindows
+		local data=cupdata[state.selected_cup.y][state.selected_cup.x]
+		local _data
+		if data.type == TYPE_CUP then
+			_data=Classes[state.class_id].Cups[data.id]
+			if PlayerProfile:IsCupLocked(state.class_id,data.id) then playmenusound_error(); return end
+		else
+			_data=Classes[state.class_id].Events[data.id]
+			if PlayerProfile:IsEventLocked(state.class_id,data.id) then playmenusound_error(); return end
+		end
+
+		local level=Levels[_data.Races[1].Level]
+
+		state.move_on=true
+		local selection = {}
+		selection.event_type=data.type
+		selection.event_id=data.id
+		selection.classname=class_data[state.selected_class].classname
+		selection.class_id=state.class_id
+		selection.subclass=state.subclass
+
+		selection.logo=level.TrackLogo
+		selection.image=level.TrackImage
+
+		if data.type ~= TYPE_CUP then
+			if Garage:GetCarClass(PlayerProfile:GetActiveCar()) ~= state.class_id then
+				playmenusound_error()
+			else
+				MenuMap:DrawSelector(false)
+				--//show stunt info and then go to stunt car selection
+				if data.type == TYPE_STUNT then
+					playmenusound_action()
+					--//ShowTrackInfo(selection,entermenu("menu_career_racemap"),
+					--//			  function() 
+					local cars=CarlistStuntCars(); 
+					EnterCarSelection(function(car) 
+											selection.car=car; 
+											EnterRace(selection); 
+									end,entermenu("menu_career_racemap"),cars,false,true,true,false,"data/menu/stunt_car_selection_bg.tga")
+					--//				end)
+				else
+					playmenusound_action()
+					EnterRace(selection)
+					--//ShowTrackInfo(selection,entermenu("menu_career_racemap"),function() EnterRace(selection) end)
+
+
+
+--//				EnterRace(selection)
+				end
+			end
+		else
+			--//special case for finals
+			if selection.class_id == 4 then
+				local carclass=selection.event_id
+
+				if carclass ~= 4 and carclass ~= Garage:GetCarClass(PlayerProfile:GetActiveCar()) then
+					if Garage:HasCarFromClass(carclass) then
+						MessageBox(TRANSLATOR(CAREER_GORACE_NOCARSELECTED),MESSAGEBOX_YESNO,function(value) if value == TRUE then EnterMenu("menu_career_garage") end end)
+					else
+						if PlayerProfile:CanBuyCarFromClass(carclass) then
+							MessageBox(TRANSLATOR(CAREER_GORACE_NOCARBOUGHT),MESSAGEBOX_YESNO,function(value) if value == TRUE then EnterCarShopClass(carclass) end end)
+						else
+							MessageBox(TRANSLATOR(CAREER_GORACE_NOCARMONEY),MESSAGEBOX_OK,function() end)
+						end
+					end
+					state.move_on=nil
+					return
+				end
+			end
+
+
+			playmenusound_action()
+			ShowCupInfo(selection,entermenu("menu_career_racemap"),function() EnterRace(selection) end)
+			--//ShowTrackInfo(selection,entermenu("menu_career_racemap"),function() EnterRace(selection) end)
+			--//EnterRaceSelection(selection)
+		end
+	elseif virtualkey == KeyCodes.BUTTON_SELECT then
+		if state.allowback and not state.move_on then
+			state.allowback=false
+			InitPhase(PHASE_CLASS)
+			playmenusound_back()
+		end
+	end
+end
+
+
+function phase_cup.init()
+
+	AnimateWindowAlpha(W("track_image_bar"),W("track_image_bar"):GetAlpha(),1.0,0.2)
+	state.title_handle=AnimateWindowAlpha(W("level_text"),W("level_text"):GetAlpha(),1.0,0.2,0.0,state.title_handle)
+	state.title_bar1handle=AnimateWindowAlpha(W("level_text_bar1"),W("level_text_bar1"):GetAlpha(),1.0,0.2,0.0,state.title_bar1handle)
+	state.title_bar2handle=AnimateWindowAlpha(W("level_text_bar2"),W("level_text_bar2"):GetAlpha(),1.0,0.2,0.0,state.title_bar2handle)
+	--//AnimateWindowAlpha(W("cup_backdrop"),W("cup_backdrop"):GetAlpha(),1.0,0.2,0.4)
+
+	state.allowback=true
+
+	state.eventwindows=CreateClassWindows(state.class_id)
+
+	local default_selected = { x=1, y=1 }
+	local default_subclass = 1
+
+	--//scan for first available cup
+	local cupdata=state.eventwindows
+	for i=1,table.getn(cupdata[1]) do
+		local data=cupdata[1][i]
+		if not PlayerProfile:IsCupLocked(state.class_id,data.id) then
+			local pos = PlayerProfile:GetCupPosition(state.class_id,data.id)
+			if pos > 3 then
+				default_selected.x=i
+				default_subclass=data.subclass
+				break
+			end
+		end
+	end
+
+	state.selected_cup = state.selected_cup or default_selected
+	state.subclass = state.subclass or default_subclass
+
+
+
+	local cupdata=cup_data[state.class_id]
+
+	MenuMap:SetMapPosition(unpack(cupdata.subclass_positions[state.subclass]))
+
+--//	W("bar_left_1"):ShowWindow()
+--//	W("bar_left_2"):ShowWindow()
+
+	W("racemap_handler").onKeyPressed = phase_cup.onKeyPressed
+
+
+	MenuMap:SetSelectorResource(menu_career_racemap:getResource("cup_selection"))
+	MenuMap:DrawSelector(true)
+	
+
+	phase_cup.update()
+	SetBackdropBarSizes(state.subclass)
+
+	MenuMap:FadeWindowGroup(FADEGROUP_CUPS,1.0,1.0,0.0001,0.00001)
+end
+
+function phase_cup.trigger(trigger)
+	if trigger == MENUTRIGGER_MENUMAP_MAPMOVE_START then
+		state.allow_arrow=false
+		state.allowback=false
+	elseif trigger == MENUTRIGGER_MENUMAP_MAPMOVE_END then
+		state.allow_arrow=true
+		state.allowback=true
+		SetSubClassArrows()
+--//		W("bar_right_1"):ShowWindow()
+--//		W("bar_right_2"):ShowWindow()
+--//		W("bar_right_3"):ShowWindow()
+		--//MenuMap:FadeWindowGroup(FADEGROUP_CUPS,0.0,1.0,0.1,0.05)
+		MenuMap:SetSelectedWindow(state.eventwindows[state.selected_cup.y][state.selected_cup.x].window)
+
+		AnimateWindowAlpha(W("cup_backdrop_l"),W("cup_backdrop_l"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("cup_backdrop_r"),W("cup_backdrop_r"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("cup_backdrop_black"),W("cup_backdrop_black"):GetAlpha(),0.5,0.2)
+		AnimateWindowAlpha(W("trophy_bar"),W("trophy_bar"):GetAlpha(),0.5,0.2)
+		AnimateWindowAlpha(W("prize_title"),W("prize_title"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("prize_1_title"),W("prize_1_title"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("prize_2_title"),W("prize_2_title"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("prize_3_title"),W("prize_3_title"):GetAlpha(),1.0,0.2)
+
+		AnimateWindowAlpha(W("prize_1"),W("prize_1"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("prize_2"),W("prize_2"):GetAlpha(),1.0,0.2)
+		AnimateWindowAlpha(W("prize_3"),W("prize_3"):GetAlpha(),1.0,0.2)
+	end
+end
+
+function phase_cup.deinit()
+	
+	HideTrackImages()
+
+	state.allow_arrow=nil
+
+	AnimateWindowAlpha(W("trophy_bar"),W("trophy_bar"):GetAlpha(),0.0,0.2)
+
+	AnimateWindowAlpha(W("cup_backdrop_l"),W("cup_backdrop_l"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("cup_backdrop_r"),W("cup_backdrop_r"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("cup_backdrop_black"),W("cup_backdrop_black"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_title"),W("prize_title"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_1_title"),W("prize_1_title"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_2_title"),W("prize_2_title"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_3_title"),W("prize_3_title"):GetAlpha(),0.0,0.2)
+
+	AnimateWindowAlpha(W("prize_1"),W("prize_1"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_2"),W("prize_2"):GetAlpha(),0.0,0.2)
+	AnimateWindowAlpha(W("prize_3"),W("prize_3"):GetAlpha(),0.0,0.2)
+
+	AnimateWindowAlpha(W("track_image_bar"),W("track_image_bar"):GetAlpha(),0.0,0.2)
+
+	state.left_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_left"),W("subclass_arrow_left"):GetAlpha(),0.0,0.2,0.0,state.left_arrow_handle)
+	state.right_arrow_handle=AnimateWindowAlpha(W("subclass_arrow_right"),W("subclass_arrow_right"):GetAlpha(),0.0,0.2,0.0,state.right_arrow_handle)
+	state.title_handle=AnimateWindowAlpha(W("level_text"),W("level_text"):GetAlpha(),0.0,0.2,0.0,state.title_handle)
+	state.title_bar1handle=AnimateWindowAlpha(W("level_text_bar1"),W("level_text_bar1"):GetAlpha(),0.0,0.2,0.0,state.title_bar1handle)
+	state.title_bar2handle=AnimateWindowAlpha(W("level_text_bar2"),W("level_text_bar2"):GetAlpha(),0.0,0.2,0.0,state.title_bar2handle)
+--//	W("bar_right_1"):HideWindow()
+--//	W("bar_right_2"):HideWindow()
+--//	W("bar_right_3"):HideWindow()
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+menu_career_racemap.items={}
+menu_career_racemap.options.title=TRANSLATOR(TITLE_CAREER)
+
+
+
+function menu_career_racemap.create(self)
+	self.parent:create(self)
+
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("selection_elements_2.tga",selection_elements_2,selection_elements_2_size)
+	self:addResource("track_images.tga",track_images,track_images_size)
+	self:addResource("map_backdrop.tga",map_backdrop,map_backdrop_size)
+	self:addResource("backdrops1.tga",backdrops1,backdrops1_size)
+
+	self:addResource("map_1",image("map_1.tga"))
+
+	self:loadResources()
+
+end
+
+function menu_career_racemap.init(self)
+	self.parent:init(self)
+
+	local size=SIZE(512,512)
+	local uv={0.0, 0.0, 1.0, 1.0}
+
+	state=state or {}
+	state.move_on=nil
+	state.allowback=true
+
+	MenuMap:Reset()
+	MenuMap:SetMenu(self)
+
+	local x,y,v
+
+	for y=1,table.getn(map_images) do
+		for x,v in ipairs(map_images[y]) do
+			MenuMap:AddBackground(x,y,size,self:getResource("map_1"),uv) --//self:getResource(v),uv)
+		end
+	end
+
+
+	local ppos=POS(0,0)
+	local p=Frame{Name="class_infobox", Position=POS(650,ppos[2]),Size=SIZE(640,480)}
+	p.position=ppos
+
+	Frame{Position=RELATIVEPOS(POS(297,89),ppos),Size=SIZE(20,28),Parent=p}:AttachResource(self:getResource("cls_title_ang"))
+	Frame{Position=RELATIVEPOS(POS(297+20,89),ppos),Size=SIZE(323,28),DrawBackgroundColor=TRUE,Parent=p,Color=GetPaletteColor(0),Alpha=0.5} --//:AttachResource(self:getResource("class_info_box_strech"))
+
+	StaticText{Name="class_title",Position=RELATIVEPOS(POS(323,91),ppos),Parent=p,Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	Frame{Position=RELATIVEPOS(POS(309,131),ppos),Size=SIZE(30,74),Parent=p}:AttachResource(self:getResource("cls_info_ang"))
+	Frame{Position=RELATIVEPOS(POS(339,131),ppos),Size=SIZE(301,74),Parent=p,DrawBackgroundColor=TRUE,Color=GetPaletteColor(0),Alpha=0.5}
+
+	local len=wm.GetTextWidth(TRANSLATOR(HEADER_COMPLETED),fontmedium())
+
+	StaticText{Name="subclass_title",Position=RELATIVEPOS(POS(333,135),ppos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Name="completed_text",Title=TRANSLATOR(HEADER_COMPLETED),Position=RELATIVEPOS(POS(333+9,135+24),ppos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(34)}
+	StaticText{Name="completed_cups",Position=RELATIVEPOS(POS(333+9+len+4,135+24),ppos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Name="completed_text2",Title=TRANSLATOR(HEADER_COMPLETED),Position=RELATIVEPOS(POS(333+9+9,135+24+24),ppos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(34)}
+	StaticText{Name="completed_events",Position=RELATIVEPOS(POS(333+9+9+len+4,135+24+24),ppos),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+
+	Frame{Position=RELATIVEPOS(POS(339,233),ppos),Size=SIZE(30,69),Parent=p}:AttachResource(self:getResource("cls_desc_ang"))
+	Frame{Position=RELATIVEPOS(POS(369,233),ppos),Size=SIZE(271,69),Parent=p,DrawBackgroundColor=TRUE,Color=GetPaletteColor(0),Alpha=0.5}
+
+	Frame{Position=RELATIVEPOS(POS(359,302),ppos),Size=SIZE(30,69),Parent=p}:AttachResource(self:getResource("cls_desc_ang"))
+	Frame{Position=RELATIVEPOS(POS(389,302),ppos),Size=SIZE(640-389,69),Parent=p,DrawBackgroundColor=TRUE,Color=GetPaletteColor(0),Alpha=0.5}
+
+	StaticText{Name="class_description",Position=RELATIVEPOS(POS(368,241),ppos),Size=SIZE(180,300),Parent=p,TextLineAdjust=7,Font=fontsmall(),Color=GetPaletteColor(34)}
+
+
+	p=Frame{Name="subclass_arrow_left",Position=POS(52,218),Size=SIZE(45,88)}:AttachResource(self:getResource("map_arrow_left"))
+	p.position={ p:GetPosition() }
+	p:SetAlpha(0)
+	p=Frame{Name="subclass_arrow_right",Position=POS(543,218),Size=SIZE(45,88)}:AttachResource(self:getResource("map_arrow_right"))
+	p.position={ p:GetPosition() }
+	p:SetAlpha(0)
+
+	menu_career_racemap.time=0
+	self.arrowhandle=Event:AddTimer(function(event) 
+										local w1=W("subclass_arrow_left")
+										local w2=W("subclass_arrow_right")
+										local t = menu_career_racemap.time + event.data/1000
+                                        menu_career_racemap.time = t	
+
+										local a=math.abs(math.sin(t*3)*5)
+										w1:SetPosition(w1.position[1]-a,w1.position[2])
+										w2:SetPosition(w2.position[1]+a,w2.position[2])
+									end,0)
+
+	w=Frame{Name="level_text_bar1",Position=POS(326,365),Size=SIZE(13,31)}:AttachResource(self:getResource("cup_title_bot_ang"))
+	w:SetAlpha(0)
+	w=Frame{Name="level_text_bar2",Position=POS(326+13,365),Size=SIZE(302,31)}:AttachResource(self:getResource("cup_title_bot"))
+	w:SetAlpha(0)
+
+	StaticText{Name="level_text",Position=POS(350,367),Font=fontlarge(),Color=GetPaletteColor(33)}:SetAlpha(0)
+
+	state.classwindows={}
+	state.finalwindows={}
+	local w
+	local k,v
+	for k,v in ipairs(class_data) do
+		local resource=self:getResource(v.icon)
+		local locked=PlayerProfile:IsClassLocked(k)
+		local locked_resource
+--//		if locked then
+--//			locked_resource=self:getResource("class_signs_locked")
+--//		end
+
+		if v.id ~= 4 or not locked then  --//skip grand final if its locked
+
+			local w=MenuMap:AddWindow(v.position,GetResourceSize(resource),resource,FADEGROUP_CLASS,unpack(v.map))
+			if locked_resource then
+				MenuMap:AddWindow(v.position,GetResourceSize(locked_resource),locked_resource,FADEGROUP_CLASS,unpack(v.map))
+			end
+
+	--//		if not locked then
+			table.insert(state.classwindows,w)
+	--//		end
+		end
+	end
+
+	local ppos=POS(0,62)
+	local p=Frame{Name="track_image_bar",Position=ppos,Size=SIZE(640,73)}:AttachResource(self:getResource("black_transparent_50"))
+	p:SetAlpha(0)
+
+	StaticText{Name="cup_name",Font=fontsmall(), Position=POS(278,68),Align=FONTF_CENTER,Color=GetPaletteColor(3)}
+
+	state.trackimages={}
+	state.trackimages[1]={}
+	state.trackimages[2]={}
+	state.trackimages_index=1
+
+	local pos=RELATIVEPOS(POS(278,91),ppos)
+	local size=GetResourceSize(self:getResource("track_images_forest1"))
+
+	for i=1,9 do
+		local w=Frame{Position=pos,Size=size,Parent=p,Alpha=0}
+		w.position=CopyTable(pos)
+		table.insert(state.trackimages[1],w)
+
+		w=Frame{Position=pos,Size=size,Parent=p,Alpha=0}
+		w.position=CopyTable(pos)
+		table.insert(state.trackimages[2],w)
+
+		pos[1]=pos[1] + size[1] + 4
+	end
+
+	
+	p=Frame{Name="cup_backdrop_l",Position=POS(-5,177),Size=SIZE(224,167),Layer=1}:AttachResource(self:getResource("map_backdrop_left"))
+	p:SetAlpha(0)
+
+	p=Frame{Name="cup_backdrop_r",Position=POS(421,177),Size=SIZE(224,167),Layer=1}:AttachResource(self:getResource("map_backdrop_right"))
+	p:SetAlpha(0)
+
+	p=Frame{Name="cup_backdrop_black",Position=POS(0,173),Size=SIZE(640,176),Layer=1,DrawBackgroundColor=TRUE,Color=GetPaletteColor(0)}
+	p:SetAlpha(0)
+
+	local trophysize=GetResourceSize(self:getResource("minute_trophy_gold"))
+
+	w=Frame{Name="trophy_bar",Position=POS(0,137),Size=SIZE(640,21),DrawBackgroundColor=TRUE,Alpha=0,Color=GetPaletteColor(0)}
+
+	StaticText{Name="prize_title",Title=TRANSLATOR(HEADER_CUPPRIZES),Font=fontsmall(),Position=POS(79,139),Color=GetPaletteColor(33),Alpha=0}
+	StaticText{Name="prize_1_title",Title=TRANSLATOR(HEADER_1ST),Font=fontsmall(),Position=POS(187,138),Alpha=0,Color=GetPaletteColor(33)}
+	StaticText{Name="prize_2_title",Title=TRANSLATOR(HEADER_2ND),Font=fontsmall(),Position=POS(304,138),Alpha=0,Color=GetPaletteColor(33)}
+	StaticText{Name="prize_3_title",Title=TRANSLATOR(HEADER_3RD),Font=fontsmall(),Position=POS(425,138),Alpha=0,Color=GetPaletteColor(33)}
+
+	StaticText{Name="prize_1",Font=fontsmall(),Position=POS(187+wm.GetTextWidth(TRANSLATOR(HEADER_1ST),fontsmall())+4,138),Alpha=0,Color=GetPaletteColor(34)}
+	StaticText{Name="prize_2",Font=fontsmall(),Position=POS(304+wm.GetTextWidth(TRANSLATOR(HEADER_2ND),fontsmall())+4,138),Alpha=0,Color=GetPaletteColor(34)}
+	StaticText{Name="prize_3",Font=fontsmall(),Position=POS(425+wm.GetTextWidth(TRANSLATOR(HEADER_3RD),fontsmall())+4,138),Alpha=0,Color=GetPaletteColor(34)}
+
+
+	local input=InputHandler{Name="racemap_handler"}
+	
+	input:SetFocus()
+	
+	InitPhase(state.phase or PHASE_CLASS)
+	
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	MenuMap:Enable()
+
+--//	GUI:SetBackgroundVideo("data/video/bg_main")
+	GUI:SetBackground("data/menu/generic4_bg.tga")
+end
+
+function menu_career_racemap.trigger(self,trigger)
+	if currentphase and currentphase.trigger then
+		currentphase.trigger(trigger)
+	end
+end
+
+
+function menu_career_racemap.deinit(self)
+
+	currentphase=nil
+
+	MenuMap:Reset()
+
+	Event:RemoveTimer(self.arrowhandle)
+
+	self.parent:deinit(self)
+	
+end
+
+
+function menu_career_racemap.startshow(self)
+	self.parent:startshow(self)
+
+
+
+end
+
+
+function menu_career_racemap.starthide(self)
+	self.parent:starthide(self)
+
+
+end
+
+
+
+
+

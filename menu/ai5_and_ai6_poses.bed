@@ -1,0 +1,7 @@
+ai5_and_ai6_poses_size = { 512,512 }
+ai5_and_ai6_poses = {
+	
+	ai5_pose = {  0, 32, 263, 480 },
+	ai6_pose = {  263, 32, 249, 480 },
+
+}

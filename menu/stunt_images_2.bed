@@ -1,0 +1,9 @@
+stunt_2_image_size = { 512,512 }
+stunt_2_image = {
+	
+	stunt_A5_image = {  3, 3, 250, 250 },      -- ring of fire
+	stunt_A6_image = {  259, 3, 250, 250 },    -- blackjack
+	stunt_B1_image = {  3, 259, 250, 250 },    -- skijump
+	stunt_B2_image = {  259, 259, 250, 250 },  -- 
+
+}

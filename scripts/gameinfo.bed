@@ -1,0 +1,500 @@
+--///////////////////////////////////////////////////////////////////////////
+--// bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 27.7.2004 22:39:44
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local Layout={
+	InfoLeft=10,
+	NumRows=8,
+	NumRowsNarrow=7,
+	InfoLeftNarrow=10,
+	InfoTop=17,
+	InfoTopNarrow=60,
+	TextLabelDiff=13,	
+	InfoLabelWidth=100,
+	InfoLabelHeight=16,
+	InfoLabelPadding=16,
+	InfoTextHeight=16,
+	InfoTextPadding=16,
+	InfoLabelFont=fontsmall(),
+	InfoLabelFontColor={255, 200, 0, 255},
+	InfoTextFont=fontsmall(),
+	InfoTextFontColor={255, 255, 255, 255},
+	TrackIconLeft=185,
+	TrackIconTop=16,
+	TrackIconLeftNarrow=10,
+	TrackIconTopNarrow=16,
+	
+	MapPos=POS(185, 60),
+	MapPosNarrow=POS(80, 5),
+	MapSize=SIZE(64, 64),
+	
+	
+	
+}
+
+
+
+local InfoTitlesLive=
+{
+--GAME_TYPE,
+GAME_HANDLING, 
+GAME_TRACK,
+GAME_CARS,
+GAME_UPGRADES,
+GAME_LAPS,
+GAME_RATED,
+--GAME_DAMAGE,
+
+GAME_RAGDOLL,
+GAME_PLAYERS,
+GAME_RESERVED,
+--GAME_GUESTS,
+GAME_POINTS,
+GAME_LANGUAGE,
+}
+
+local RowNumsLive=
+{
+	--["GameType"]=1,
+	["SimulationLevel"]=1,
+	["Track"]=2,
+	["Cars"]=3,
+	["CarUpgrades"]=4,
+	["LapsOrTime"]=5,
+	["RatedGame"]=6,
+	--["Damage"]=7,
+	["RagdollRelease"]=7,	
+	["Players"]=8,
+	["ReservedForFriends"]=9,
+	--["AllowGuests"]=11,
+	["AverageSkill"]=10,
+	["Language"]=11,
+}
+
+
+local InfoTitlesLink=
+{
+--GAME_TYPE,
+GAME_HANDLING, 
+GAME_TRACK,
+GAME_CARS,
+GAME_UPGRADES,
+GAME_LAPS,
+--GAME_DAMAGE,
+GAME_RAGDOLL,
+GAME_PLAYERS,
+}
+
+local RowNumsLink=
+{
+	--["GameType"]=1,
+	["SimulationLevel"]=1,
+	["Track"]=2,
+	["Cars"]=3,
+	["CarUpgrades"]=4,
+	["LapsOrTime"]=5,
+	--["Damage"]=6,
+	["RagdollRelease"]=6,	
+	["Players"]=7,
+}
+
+local CurrentInfoPage=1
+local NumInfoPages=2
+local GetSessionInfo=nil
+local NumRows=nil
+local InfoTitles={}
+local RowNums={}
+
+--[[--
+local function GetGameType(EventTypeIn, SubEventTypeIn)
+	if EventTypeIn==EventType.RACE and SubEventTypeIn==SubEventType.RACE_NORMAL then
+		return GAME_TYPE_QUICK
+	elseif EventTypeIn==EventType.RACE and SubEventTypeIn==SubEventType.RACE_DOUBLESMASH then
+		return GAME_TYPE_DOUBLE
+	elseif EventTypeIn==EventType.DERBY and SubEventTypeIn==SubEventType.DERBY_LASTMANSTANDING then
+		return GAME_TYPE_DERBY
+	elseif EventTypeIn==EventType.RACE and SubEventTypeIn==SubEventType.RACE_TAG then	
+		return GAME_TYPE_TAG
+	end
+end
+
+local function GetSimulationLevel(SimulationLevel)
+	if SimulationLevel==SessionInfo.SimulationLevel.Easy then
+		return GAME_HANDLING_NORMAL
+	else
+		return GAME_HANDLING_PRO
+	end
+end
+
+local function GetTrack(TrackNum)
+	return ConvertToWString(Levels[TrackNum].Name)
+end
+
+local function GetCars(Num)
+	if Num==SessionInfo.CarClass.Any then
+		return GAME_CARS_ANY
+	elseif Num==SessionInfo.CarClass.ClassA then
+		return GAME_CARS_CLASSA
+	elseif Num==SessionInfo.CarClass.ClassB then
+		return GAME_CARS_CLASSB
+	elseif Num==SessionInfo.CarClass.ClassC then
+		return GAME_CARS_CLASSC
+	else
+		local tbl=cardealer_data.car_data
+		for i,j in pairs(tbl) do
+			if j.car==Num then
+				return ConvertToWString(j.name)
+			end
+		end
+		return ConvertToWString("")
+	end
+end
+
+local CarUpgrades=
+{
+	[SessionInfo.CarUpgrades.None]=GAME_UPGRADES_NONE,
+	[SessionInfo.CarUpgrades.Medium]=GAME_UPGRADES_MED,
+	[SessionInfo.CarUpgrades.All]=GAME_UPGRADES_ALL,
+}
+
+
+local function GetYesNo(Value)
+	if Value==0 then
+		return GAME_NO
+	else
+		return GAME_YES
+	end
+end
+
+local function GetTimeLimit(Limit)
+	if Limit==SessionInfo.TimeLimit.ThreeMins then
+		return GAME_MINUTES_3
+	elseif Limit==SessionInfo.TimeLimit.FiveMins then
+		return GAME_MINUTES_5
+	else
+		return GAME_ERROR
+	end
+end
+
+local function GetLanguage(LanguageNum)
+	if LanguageNum==1 then
+		return GAME_LANGUAGE_ANY
+	elseif LanguageNum==2 then
+		return GAME_ENGLISH
+	elseif LanguageNum==3 then
+		return GAME_GERMAN
+	elseif LanguageNum==4 then
+		return GAME_FRENCH
+	elseif LanguageNum==5 then
+		return GAME_SPANISH
+	elseif LanguageNum==6 then
+		return GAME_ITALIAN
+	end
+end
+
+local function GetDamage(Damage)
+	if Damage==SessionInfo.DamageLevel.On then
+		return GAME_ON
+	elseif Damage==SessionInfo.DamageLevel.Off then
+		return GAME_OFF
+	else
+		return GAME_ERROR
+	end
+end
+
+local function GetRagdollRelease(RagdollRelease)
+	if RagdollRelease==SessionInfo.RagdollRelease.On then
+		return GAME_ON
+	elseif RagdollRelease==SessionInfo.RagdollRelease.Off then
+		return GAME_OFF
+	else
+		return GAME_ERROR
+	end
+end
+
+local function GetAverageSkill(AverageSkill)
+	return ConvertToWString(string.format("%i", AverageSkill))
+end
+
+local function GetInfo(RowNr)
+	local info=GetSessionInfo()
+	if info then
+		--if RowNr==RowNums["GameType"] then
+		--	return GetGameType(info.EventType, info.SubEventType)
+		if RowNr==RowNums["SimulationLevel"] then
+			return GetSimulationLevel(info.SimulationLevel)
+		elseif RowNr==RowNums["Track"] then
+			return GetTrack(info.StageNr)
+		elseif RowNr==RowNums["Cars"] then
+			return GetCars(info.CarClass)
+		elseif RowNr==RowNums["CarUpgrades"] then
+			return CarUpgrades[info.CarUpgrades]
+		elseif RowNr==RowNums["RatedGame"] then
+			return GetYesNo(info.RatedGame)
+		--elseif RowNr==RowNums["Damage"] then
+		--	return GetDamage(info.DamageLevel)
+		elseif RowNr==RowNums["RagdollRelease"] then
+			return GetRagdollRelease(info.RagdollRelease)
+		elseif RowNr==RowNums["LapsOrTime"] then
+			if info.EventType==EventType.RACE and info.SubEventType==SubEventType.RACE_NORMAL then
+				return ConvertToWString(string.format("%i", info.Laps))
+			else
+				return GetTimeLimit(info.TimeLimit)
+			end
+		elseif RowNr==RowNums["Players"] then
+			local numPlayers=string.format("%i/%i", info.FilledPublicSlots+info.FilledPrivateSlots, info.MaxPublicSlots+info.MaxPrivateSlots)
+			return ConvertToWString(numPlayers)
+		elseif RowNr==RowNums["ReservedForFriends"] then
+			return ConvertToWString(string.format("%i", info.MaxPrivateSlots))
+		--elseif RowNr==RowNums["AllowGuests"] then
+		--	return GetYesNo(info.AllowGuests)
+		elseif RowNr==RowNums["Language"] then
+			return GetLanguage(info.Language)
+		elseif RowNr==RowNums["AverageSkill"] then
+			return GetAverageSkill(info.AverageSkill)
+		else
+			return ConvertToWString("")
+		end
+		
+	end
+	return ConvertToWString("")	
+end
+
+local function GetTrackIcon()
+	local info=GetSessionInfo()
+	if info then
+		local level=info.StageNr
+		local class
+		local course
+		local track
+		for class=1, 4 do
+			local numCourses=table.getn(Classes[class].Courses)
+			for course=1, numCourses do
+				local numTracks=table.getn(Classes[class].Courses[course])
+				for track=1, numTracks do
+					if Classes[class].Courses[course][track].Level==level then
+						for i,j in pairs(trackselection_layout[class][track]) do
+							if j[3][1]==course then
+								return track_icons[j[2] ]
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	return noimage()
+end
+
+local function GetSessionInfoFromList()
+	local info=nil
+	local sessionNum=wm.GetWindow("sessionlist"):GetSelectedRow()
+	if sessionNum>=1 and sessionNum<=SessionList:GetNumSessions() then
+		SessionList:SetSessionNum(sessionNum)
+		info=SessionList:GetSessionInfo()
+	end
+	return info
+end
+
+local function GetSessionInfoFromSession()
+	local info=Session:GetSessionInfo()
+	return info
+end
+--]]--
+function CreateGameInfoBox(BoxPos, BoxSize, UseSessionList, Narrow, SystemLink)
+		if UseSessionList then
+			GetSessionInfo=GetSessionInfoFromList
+		else
+			GetSessionInfo=GetSessionInfoFromSession
+		end
+		
+		if SystemLink then
+			InfoTitles=InfoTitlesLink
+			RowNums=RowNumsLink
+		else
+			InfoTitles=InfoTitlesLive
+			RowNums=RowNumsLive
+		end
+
+		local trackIconPos
+		local mapPos
+		local numRows
+		local infoLeft
+		local infoTop
+		if Narrow then
+			trackIconPos=POS(Layout.TrackIconLeftNarrow, Layout.TrackIconTopNarrow)
+			mapPos=Layout.MapPosNarrow
+			numRows=Layout.NumRowsNarrow
+			infoLeft=Layout.InfoLeftNarrow
+			infoTop=Layout.InfoTopNarrow	
+		else
+			trackIconPos=POS(Layout.TrackIconLeft, Layout.TrackIconTop)
+			mapPos=Layout.MapPos
+			numRows=Layout.NumRows
+			infoLeft=Layout.InfoLeft
+			infoTop=Layout.InfoTop
+		end
+		
+		local infoBox=Frame{Name="infobox", Position=MakeSafePos(BoxPos), Size=BoxSize, DrawBackground=TRUE}
+--		local trackIcon=Frame{Name="trackicon", Position=trackIconPos, Size=wm.GetResourceSize(track_icons.forestI_A), DrawBackground=FALSE, ShowBorders=FALSE, Parent=infoBox}
+		local trackIcon=Frame{Name="trackicon", Position=trackIconPos, Size=SIZE(10,10), DrawBackground=FALSE, ShowBorders=FALSE, Parent=infoBox}
+		local map=Frame{Name="map", Position=mapPos, Size=Layout.MapSize, ShowBorders=FALSE, Parent=infoBox}
+
+		local listboxParams={
+			ListBoxTemplate={Name="infolabels", ShowBorders=FALSE, Parent=infoBox},
+			Left=infoLeft,
+			Top=infoTop,
+			LeftPadding=0,
+			RightPadding=0,
+			TopPadding=0,
+			BottomPadding=0,
+			RowWidth=Layout.InfoLabelWidth,
+			RowHeight=Layout.InfoLabelHeight,
+			RowPadding=Layout.InfoLabelPadding,
+			RowTemplate={Font=Layout.InfoLabelFont, DrawBackgroundColor=FALSE, ShowBorders=FALSE, TitleCentering=TITLE_CENTER_NONE},
+			RowTemplateType="StaticText",
+			RowTemplateCust=function(Row, RowNr)
+				Row:SetColor(Layout.InfoLabelFontColor)
+			end,
+			NumRows=numRows
+		}
+
+		local infoTitles=CreateSingleColoumnListBox(listboxParams)
+		infoTitles.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+			if InfoTitles[RowNr] then
+				RowObject:SetTitle(InfoTitles[RowNr])
+			else
+				RowObject:SetTitle(ConvertToWString(""))
+			end
+		end
+		
+		NumRows=table.getn(InfoTitles)
+		local addOne
+		if math.mod(NumRows, numRows)==0 then
+			addOne=0
+		else
+			addOne=1
+		end
+		NumInfoPages=math.floor(NumRows / numRows)+addOne
+		
+		NumRows=NumInfoPages*numRows
+		infoTitles:SetNumRows(NumRows)
+		
+		
+		if NumRows > numRows then
+			local leftArrowPos=AddPos(BoxPos, POS(-10, BoxSize[2] / 2))
+			local rightArrowPos=AddPos(BoxPos, POS(-4+BoxSize[1], BoxSize[2] / 2))
+			local win=Frame{Name="infoboxleft", Position=MakeSafePos(leftArrowPos), Size=GetResourceSize(common.control_arrow_left_pal_3), ShowBorders=FALSE}
+			win:AttachResource(common.control_arrow_left_pal_3)
+			local win=Frame{Name="infoboxright", Position=MakeSafePos(rightArrowPos), Size=GetResourceSize(common.control_arrow_right_pal_3), ShowBorders=FALSE}
+			win:AttachResource(common.control_arrow_right_pal_3)
+		end
+
+		local listboxParams={
+			ListBoxTemplate={Name="infotext", ShowBorders=FALSE, Parent=infoBox},
+			Left=infoLeft,
+			Top=infoTop+Layout.TextLabelDiff,
+			LeftPadding=0,
+			RightPadding=0,
+			TopPadding=0,
+			BottomPadding=0,
+			RowWidth=Layout.InfoLabelWidth,
+			RowHeight=Layout.InfoTextHeight,
+			RowPadding=Layout.InfoTextPadding,
+			RowTemplate={Font=Layout.InfoTextFont, DrawBackgroundColor=FALSE, ShowBorders=FALSE, TitleCentering=TITLE_CENTER_NONE},
+			RowTemplateType="StaticText",
+			RowTemplateCust=function(Row, RowNr)
+				Row:SetColor(Layout.InfoTextFontColor)
+			end,
+			NumRows=numRows
+		}
+
+		local infoText=CreateSingleColoumnListBox(listboxParams)
+		infoText.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+			--RowObject:SetTitle(GetInfo(RowNr))
+			local icon=nil
+			--GetTrackIcon()
+			if icon==nil then
+				trackIcon:HideWindow()
+			else
+				trackIcon:AttachResource(GetTrackIcon())
+				trackIcon:ShowWindow()
+			end
+			
+			local map=wm.GetWindow("map")
+			--[[--local info=GetSessionInfo()
+			if info then
+				local track=info.StageNr
+				if Levels[track] then
+					if Levels[track].Map then
+						map:AttachResource(Levels[track].Map)
+					else
+						map:AttachResource(trackIcon)
+					end
+					map:ShowWindow()
+				else
+					map:HideWindow()
+				end
+			else--]]--
+				map:HideWindow()
+			--end
+		end
+
+		infoText:SetNumRows(NumRows)	
+end
+
+function HideGameInfoBox()
+	wm.GetWindow("infobox"):HideWindow()
+	local win=wm.GetWindow("infoboxleft")
+	if win then
+		win:HideWindow()
+	end
+	win=wm.GetWindow("infoboxright")
+	if win then
+		win:HideWindow()
+	end
+
+end
+
+function ShowGameInfoBox()
+	wm.GetWindow("infobox"):ShowWindow()
+	local win=wm.GetWindow("infoboxleft")
+	if win then
+		win:ShowWindow()
+	end
+	win=wm.GetWindow("infoboxright")
+	if win then
+		win:ShowWindow()
+	end
+
+end
+
+function RefreshGameInfoBox()
+	wm.GetWindow("trackicon"):HideWindow()
+	wm.GetWindow("infotext"):Refresh()
+end
+
+function NextInfoPage()
+	CurrentInfoPage=CurrentInfoPage+1
+	if CurrentInfoPage>NumInfoPages then
+		CurrentInfoPage=1
+	end
+	wm.GetWindow("infolabels"):SetSelectedRow((CurrentInfoPage-1)*NumRows+1)
+	wm.GetWindow("infotext"):SetSelectedRow((CurrentInfoPage-1)*NumRows+1)
+end
+
+function PrevInfoPage()
+	CurrentInfoPage=CurrentInfoPage-1
+	if CurrentInfoPage<1 then
+		CurrentInfoPage=NumInfoPages
+	end
+	wm.GetWindow("infolabels"):SetSelectedRow((CurrentInfoPage-1)*NumRows+1)
+	wm.GetWindow("infotext"):SetSelectedRow((CurrentInfoPage-1)*NumRows+1)
+end

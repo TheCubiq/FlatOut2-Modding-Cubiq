@@ -1,0 +1,10 @@
+ps2_controller_size = { 256,256 }
+ps2_controller = {
+
+	ps2_pad = {  10, 5, 185, 141 },
+	ps2_top_left_shake = {  122, 5, 33, 28 },	
+	ps2_top_right_shake = {  159, 5, 33, 28 },	
+	ps2_bottom_left_shake = {  125, 5, 44, 44 },	
+	ps2_bottom_right_shake = {  171, 5, 44, 44 },	
+
+}

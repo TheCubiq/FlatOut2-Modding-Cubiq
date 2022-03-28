@@ -1,0 +1,7 @@
+race_selection_bg_size = { 512,512 }
+race_selection_bg = {
+	
+	race_selection_bg = {  0, 0, 512, 512 },
+
+
+}

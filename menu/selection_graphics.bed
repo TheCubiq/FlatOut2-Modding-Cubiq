@@ -1,0 +1,21 @@
+selection_graphics_size = { 512,128 }
+selection_graphics = {
+	
+	black_bar_left_wide_65 = {  3, 3, 340, 25 },
+	black_bar_left_narrow_65 = {  3, 31, 340, 19 },
+	black_bar_right_narrow_65 = {  339, 3, 170, 19 },
+	
+	empty_box = {  3, 53, 19, 19 },
+	star_box = {  24, 53, 19, 19 },
+	flag_box = {  45, 53, 19, 19 },
+	
+	clock = {  3, 75, 14, 14 },
+	lap = {  20, 75, 14, 14 },
+	
+	class_selection = {  67, 53, 150, 74 },
+	cup_selection = {  220, 53, 54, 58 },
+	stunt_dirt_selection = {  277, 53, 42, 42 },
+	race_selection = {  322, 53, 50, 48 },
+
+
+}

@@ -1,0 +1,438 @@
+--///////////////////////////////////////////////////////////////////////////
+--// GameSpy.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 2.12.2004 20:15:23
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local State="NONE"
+
+CableErrorMessageActive = false
+GameSpyErrorMessageActive = false
+InErrorState = false
+
+function CheckGameSpyErrors()
+	if not NetworkConfiguration.IsCableConnected() then
+		if not InErrorState then
+			if GUI:IsMessageBoxActive() or wm.GetWindow("messagebox") ~= nil then
+				-- Things get confusing if we pop up the disconnect message when another message box is already active,
+				-- so don't show the dialog until the existing message box is closed
+				return
+			end
+			
+			CableErrorMessageActive = true
+			MessageBox(
+				PS2_NET_CABLE_DISCONNECTED,
+				MESSAGEBOX_OK,
+				function(value)
+					if value == TRUE then
+						CableErrorMessageActive = false
+						EnterMenu("menu_multiplayer_gamespy_disconnect")
+					end
+				end
+			)
+		end
+		InErrorState = true
+		return true
+	end
+
+	if CableErrorMessageActive then
+		CableErrorMessageActive = false
+		GUI:CloseMessageBox()
+	end
+	InErrorState = false
+	return false
+end
+
+local GameSpyAvailableFSM
+
+function EnterGameSpy()
+	StartNetwork()
+	
+	if NetworkConfiguration.IsAdapterPresent() then
+		EnterMenu("menu_checksavedevice_network")
+	else
+		MessageBox(GAMESPY_NETADAPTER_NOTCONNECTED, MESSAGEBOX_OK, function() end)
+	end
+end
+
+
+local Layout={
+	BoxPos=POS(21, 76),
+
+	ListPos=POS(85, 33),
+	ListItemWidth=325,
+	ListItemHeight=24,
+	ListItemPadding=0,
+	ListFont=fontsmall(),
+	ListFontColor={255, 255, 255, 255},
+	ListSelectedFontColor={255, 200, 0, 255},
+	ListActiveItemColor={0, 0, 0, 75},
+	ListInactiveItemColor={0,0,0,0},
+	ListNumRows=8,	
+	
+	FriendRequestPos=POS(440, 181),
+	GameInvitePos=POS(67, 181),	
+}
+
+local Controller=1
+
+local SigningOut
+local CurrentTime
+local CommandLineJoinOrCreateInProgress
+
+local function GetControllerId()
+	return Controller
+end
+
+local function DoSignOut()
+	ShowThinkingWindow()
+	
+	SigningOut = true
+	
+	if Session ~= nil and Session:IsGameSpy() then
+		Session:Disconnect()
+		GameSpy:StopUpdate()
+		Session:DeleteSession()
+		GameSpy:ResumeUpdate()
+	end
+
+	Network:StopMultiplayer()
+	NetworkConfiguration.Disconnect()
+	if GameSpy.HasInstance() then
+		GameSpy.DeleteInstance()
+	end
+	
+	StopNetwork()
+end
+
+menu_multiplayer_gamespy_disconnect = CreateMenuFromTemplate("template_basic")
+menu_multiplayer_gamespy_disconnect.options.title = L""
+menu_multiplayer_gamespy_disconnect.back = function() end
+
+function menu_multiplayer_gamespy_disconnect.create(self)
+	self.parent:create(self)
+	self:loadResources()
+end
+
+local DiscoState
+local StartTime
+
+function menu_multiplayer_gamespy_disconnect.init(self)
+	self.parent:init(self)
+	
+	local w = StaticText { Title=PS2_NET_DISCONNECTING, Position=POS(320,230), Size=SIZE(640,20), Font=fontlarge(), Color=GetPaletteColor(34), Align=FONTF_CENTER }
+
+	StartTime = nil
+	CurrentTime = 0
+	DiscoState = "INIT"
+end
+
+function menu_multiplayer_gamespy_disconnect.update(self, time)
+	self.parent:update(self, time)
+
+	if StartTime == nil then
+		StartTime = time
+	end
+	
+	if DiscoState == "INIT" and time > StartTime + 1 then
+		DoSignOut()
+		DiscoState = "DISCONNECT"
+	end
+
+	if DiscoState == "DISCONNECT" then
+		if CurrentTime == 0 then
+			CurrentTime = time
+		end
+		local dt = time - CurrentTime
+		CurrentTime = time
+
+		local res = NetworkConfiguration.Update(dt*1000)
+		if res ~= NetworkConfiguration.RES_WAITING then
+			SigningOut = false
+			HideThinkingWindow()
+			StopNetwork()
+			DiscoState = "READY"
+		end
+	end
+
+	if DiscoState == "READY" and time > StartTime + 2 then
+		HideThinkingWindow()
+		EnterMenu("menu_mainmenu")
+	end	
+end
+
+local function SignOut()
+	MessageBox(GAMESPY_LOGOUT, MESSAGEBOX_YESNO, function(value) if value == TRUE then DoSignOut() end end)
+end
+
+menu_multiplayer_gamespy = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy.options.title = TITLE_GAMESPY_MAIN
+menu_multiplayer_gamespy.back = function()
+						if PS2 then
+							SignOut()
+						else
+							EnterMenu("menu_multiplayer")
+						end
+					end
+
+function menu_multiplayer_gamespy.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+
+	if not CommandLine["-host"] and not CommandLine["-join"] then
+		self.items = {
+			{ ICON_GAMESPY_QUICKRACE, entermenu("menu_gamespy_quickmatch"), ICON(self,"icon_quickmatch")},
+			{ ICON_GAMESPY_FINDGAMES, function() EnterOptimatchMenu("menu_multiplayer_gamespy") end, ICON(self,"icon_xbl_optimatch")},
+			{ ICON_GAMESPY_CREATEGAME, function() EnterCreateGameMenu("menu_multiplayer_gamespy") end, ICON(self,"icon_xbl_create_game")},
+		}
+		
+		if PS2 then
+			table.insert(self.items, { ICON_GAMESPY_LOGOUT, function() SignOut() end, ICON(self,"icon_xbl_logout") } )
+		end
+	end
+end
+
+function menu_multiplayer_gamespy.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+	
+	--GameSpy.GetPlayersList():SetUserIndex(GUI:GetLastActiveController())
+	
+	SigningOut = false
+	CurrentTime = 0
+	StartTime = nil
+
+	Network:StopMultiplayer()
+	CommandLineJoinOrCreateInProgress=false
+	if CommandLine["-host"] or CommandLine["-join"]  then
+		ShowThinkingWindow()
+		GUI:SetHelpButtons()
+	end
+	
+--[[	if Session ~= nil and Session:IsGameSpy() then
+		GameSpy:StopUpdate()
+		Session:DeleteSession()
+		GameSpy:ResumeUpdate()
+	end--]]
+end
+	
+	
+function menu_multiplayer_gamespy.deinit(self)
+	self.parent:deinit(self)
+	GUI:SetMenuController(0)
+end
+	
+function menu_multiplayer_gamespy.update(self, time)
+	self.parent:update(self, time)
+	
+	if StartTime == nil then
+		StartTime = time
+	end	
+	
+	
+	if not GUI:IsMenuAnimating() and not CommandLineJoinOrCreateInProgress and ( CommandLine["-host"] or CommandLine["-join"] )  then
+		if CreateGameFromCommandLine then
+			CreateSessionFromCommandLine("menu_lan_modeselect")
+		elseif JoinGameFromCommandLine then
+			JoinSessionFromCommandLine()
+		else
+			Event:PostEvent(event(EVENT_QUIT))
+		end
+		CommandLineJoinOrCreateInProgress=true
+		CreateGameFromCommandLine = false
+		JoinGameFromCommandLine = false
+	elseif CommandLineJoinOrCreateInProgress then 
+		UpdateJoinSessionFromCommandLine(time-StartTime)	
+	end
+
+	if menu_multiplayer_gamespy.error then
+		return
+	end
+	
+	if SigningOut then
+		if CurrentTime==0 then
+			CurrentTime=time
+		end
+		local dt=time-CurrentTime
+		CurrentTime=time
+
+		local res = NetworkConfiguration.Update(dt*1000)
+		if res ~= NetworkConfiguration.RES_WAITING then
+			SigningOut = false
+			HideThinkingWindow()
+			StopNetwork()
+			EnterMenu("menu_mainmenu")
+		end
+	end
+end
+
+
+function menu_multiplayer_gamespy.startshow(self)
+	self.parent:startshow(self)
+end
+
+function menu_multiplayer_gamespy.starthide(self)
+	self.parent:starthide(self)
+end
+
+--
+-- GAMESPY AVAILABILITY CHECK
+--
+
+menu_multiplayer_gamespy_checkavailability = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_gamespy_checkavailability.options.title = GAMESPY_AVAILABILITY_CHECK
+
+local StartTime
+local PrevTime
+
+function menu_multiplayer_gamespy_checkavailability.create(self)
+	self.parent:create(self)
+	
+	self:loadResources()
+	
+	self.items = { }
+end
+
+function menu_multiplayer_gamespy_checkavailability.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+	local w = StaticText { Title=GAMESPY_SEARCHING, Position=POS(320,230), Size=SIZE(640,20), Font=fontlarge(), Color=GetPaletteColor(34), Align=FONTF_CENTER }
+	ShowThinkingWindow()
+	GameSpy.CreateInstance()
+	GameSpy.StartAvailableCheck()
+
+	StartTime = nil
+	PrevTime = nil
+
+	State = "GAMESPY"
+	
+	local handler = InputHandler{}
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if GUI:IsMenuAnimating() then
+			return
+		end
+		
+		if VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			handler:HideWindow()
+			HideThinkingWindow()
+--			State = "IDLE"
+			GameSpy.CancelAvailableCheck()
+			GameSpy.DeleteInstance()
+			if PS2 then
+				NetworkConfiguration.Disconnect()
+				State = "DISCONNECT"
+			else
+				EnterMenu("menu_multiplayer")
+				State = "IDLE"
+			end
+		end
+	end
+	handler:SetFocus()
+	GUI:SetHelpButtons(BUTTON_BACK, UI_BACK)
+end
+
+function menu_multiplayer_gamespy_checkavailability.deinit(self)
+	self.parent:deinit(self)
+end
+
+function menu_multiplayer_gamespy_checkavailability.update(self,time)
+	self.parent:update(self,time)
+
+	if menu_multiplayer_gamespy_checkavailability.error and State ~= "DISCONNECT" then
+		return
+	end
+	
+	if StartTime == nil then
+		StartTime = time
+	end
+	
+	if State == "GAMESPY" then
+		if GameSpy.IsAvailableCheckReady() then
+			if GameSpy.NetworkError() then
+				State = "ERROR"
+				HideThinkingWindow()
+				MessageBox(
+					GENERIC_NETWORK_ERROR,
+					MESSAGEBOX_OK,
+					function(value)
+						if PS2 then
+							ShowThinkingWindow()
+							State = "DISCONNECT"
+							NetworkConfiguration.Disconnect()
+							GameSpy.DeleteInstance()
+						else
+							GameSpy.DeleteInstance()
+							EnterMenu("menu_mainmenu")
+						end
+					end
+				)
+			elseif GameSpy.IsTemporaryUnavailable() then
+				State = "ERROR"
+				HideThinkingWindow()
+				MessageBox(
+					GAMESPY_NOT_AVAILABLE,
+					MESSAGEBOX_OK,
+					function(value)
+						if PS2 then
+							ShowThinkingWindow()
+							State = "DISCONNECT"
+							NetworkConfiguration.Disconnect()
+							GameSpy.DeleteInstance()
+						else
+							GameSpy.DeleteInstance()
+							EnterMenu("menu_mainmenu")
+						end
+					end
+				)
+			elseif not GameSpy.IsAvailable() then
+				State = "ERROR"
+				HideThinkingWindow()
+				MessageBox(
+					GAMESPY_ONLINE_SUPPORT,
+					MESSAGEBOX_OK,
+					function(value)
+						if PS2 then
+							ShowThinkingWindow()
+							State = "DISCONNECT"
+							NetworkConfiguration.Disconnect()
+							GameSpy.DeleteInstance()
+						else
+							GameSpy.DeleteInstance()
+							EnterMenu("menu_mainmenu")
+						end
+					end
+				)
+			else
+				State = "READY"
+			end
+		end
+	elseif State == "DISCONNECT" then
+		if PrevTime == nil then
+			PrevTime = time
+		end
+		local dt = time - PrevTime
+		PrevTime = time
+		
+		local res = NetworkConfiguration.Update(dt*1000)
+		if res ~= NetworkConfiguration.RES_WAITING then
+			State = "IDLE"
+			HideThinkingWindow()
+			StopNetwork()
+			EnterMenu("menu_multiplayer_networkconfig")
+		end	
+	end
+	
+	if State == "READY" and time > StartTime + 2 then
+		HideThinkingWindow()
+		EnterMenu("menu_multiplayer_gamespy")
+	end	
+end

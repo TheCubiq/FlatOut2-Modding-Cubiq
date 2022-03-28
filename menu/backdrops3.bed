@@ -1,0 +1,42 @@
+backdrops3_size = { 256,128 }
+backdrops3 = {
+
+	options_6_slices_r_ang = { 86, 1, 41, 118 },
+	options_6_slices_l_ang = { 128, 1, 41, 118 },
+	options_6_strech = 	 { 123, 1, 10, 118 },
+
+	options_5_slices_r_ang = { 86, 1, 41, 98 },
+	options_5_slices_l_ang = { 128, 1, 41, 98 },
+	options_5_strech = 	 { 123, 1, 10, 98 },
+
+	options_4_slices_r_ang = { 86, 1, 41, 78 },
+	options_4_slices_l_ang = { 128, 1, 41, 78 },
+	options_4_strech = 	 { 123, 1, 10, 78 },
+
+	options_1_slice_r_ang =  { 86, 1, 10, 18 },
+	options_1_slice_l_ang =	 { 130, 1, 10, 18 },
+	
+	options_description_bd = { 1, 1, 20, 88 },
+	
+	found_games_r_ang = 	 { 22, 1, 32, 88 },
+	found_games_l_ang =	 { 53, 1, 32, 88 },
+	found_games_strech =	 { 49, 1, 10, 88 },
+		
+	sr_highscore_bar_ang =   { 171, 1, 31, 92 },
+	sr_highscore_bar_str =   { 198, 1, 2, 92 },
+	single_highscore_bar_ang = { 171, 1, 10, 16 },
+
+	ingame_title_bar_ang = 		{ 234, 98, 16, 38 },
+	ingame_title_bar_str =		{ 202, 89, 39, 38 },
+	
+	ingame_results_buttons_ang =	{202, 56, 14, 32 },
+	ingame_results_buttons_str =	{216, 56, 26, 32 },
+	
+	ingame_result_bar_ang =		{ 203, 1, 14, 40 },
+	ingame_result_bar_str =	{ 217, 1, 11, 40 },
+	
+	ingame_cam_player_ang =		{ 241, 1, 12, 32 },
+	ingame_cam_player_str =		{ 228, 1, 13, 32 },
+
+	multiplayer_str_18 =		{103, 1, 20, 18 },
+}

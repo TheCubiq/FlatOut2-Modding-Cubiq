@@ -1,0 +1,10 @@
+xbox_controller_size = { 256,256 }
+xbox_controller = {
+
+	xbox_pad = {  10, 5, 185, 141 },
+	xbox_top_left_shake = {  200, 6, 37, 45 },	
+	xbox_top_right_shake = {  200, 6, 37, 45 },	
+	xbox_bottom_left_shake = {  200, 5, 44, 44 },	
+	xbox_bottom_right_shake = {  200, 5, 44, 44 },	
+
+}

@@ -1,0 +1,11 @@
+car_shop_selection_elements1_size = { 512, 256 }
+car_shop_selection_elements1 = {
+
+
+	
+	carshop_derby_class_icon = 	{ 1, 1, 239, 66 },
+	carshop_race_class_icon = 	{ 1, 69, 239, 66 }, 
+	carshop_street_class_icon =	{ 0, 138, 239, 66 },  	
+	carshop_selection_glow =	{ 251, 69, 256, 84 },
+	
+}		

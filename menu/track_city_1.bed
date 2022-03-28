@@ -1,0 +1,9 @@
+track_city_1_size = { 512,512 }
+track_city_1 = {
+
+	track_city_1a = {  0, 0, 256, 256 },     -- track name
+	track_city_1b = {  256, 0, 256, 256 },   -- track name
+	track_city_1c = {  0, 256, 256, 256 },   -- track name
+	track_derby_1 = {  256, 256, 256, 256 }, -- arena name
+
+}

@@ -1,0 +1,7 @@
+single_player_track_images14_size = { 512,512 }
+single_player_track_images14 = {
+	
+	track_images_desert3_sp = {  0, 0, 332, 219 },
+	track_images_canals1_sp = {  0, 219, 332, 219 },
+
+}

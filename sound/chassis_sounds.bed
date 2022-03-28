@@ -1,0 +1,204 @@
+--SURFACESOUND_MUD			= 1
+--SURFACESOUND_WETMUD			= 2
+--SURFACESOUND_SAND			= 3
+--SURFACESOUND_GRAVEL			= 4
+--SURFACESOUND_TARMAC			= 5
+--SURFACESOUND_TARMAC_WET		= 6
+--SURFACESOUND_GRASS			= 7
+--SURFACESOUND_SNOW			= 8
+--SURFACESOUND_SNOW_DEEP		= 9
+--SURFACESOUND_ROCK			= 10
+--SURFACESOUND_WATER_LOW		= 11
+--SURFACESOUND_WATER_HIGH		= 12
+--SURFACESOUND_ICE			= 13
+
+MinDistance = 4.0
+
+ChassisResonance = {
+	Wave	= "Surface/chassisresonance_5.wav",
+	WaterWave = "Surface/waterloop.wav",
+	MaxSpeed = 80.00,
+}
+
+WaterImpact = {
+	Wave = "Surface/watercrash.wav",
+	MaxSpeed = 20.00,
+}
+
+TireImpulseSampleCount = 3
+
+TireImpulseSamples = {
+	[1] = {
+		Wave = "Surface/tyre_impact_hard_material_1.wav",
+	},		
+	[2] = {
+		Wave = "Surface/tyre_impact_soft_material_2.wav",
+	},		
+	[3] = {
+		Wave = "Surface/tyre_impact_metal_grid_2.wav",
+	},		
+}
+
+TireImpulseCount = 13
+ImpulseSyncSpeed = 20.0
+
+TireImpulse = {
+	[1] = {
+		SampleHandle = 2,
+		Hardness = 0.2,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[2] = {
+		SampleHandle = 2,
+		Hardness = 0.2,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[3] = {
+		SampleHandle = 2,
+		Hardness = 0.3,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[4] = {
+		SampleHandle = 1,
+		Hardness = 0.5,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[5] = {
+		SampleHandle = 1,
+		Hardness = 0.8,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[6] = {
+		SampleHandle = 1,
+		Hardness = 0.8,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[7] = {
+		SampleHandle = 2,
+		Hardness = 0.1,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[8] = {
+		SampleHandle = 3,
+		Hardness = 0.2,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[9] = {
+		SampleHandle = 2,
+		Hardness = 0.1,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[10] = {
+		SampleHandle = 1,
+		Hardness = 0.9,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 5,
+	},
+	[11] = {
+		SampleHandle = 2,
+		Hardness = 0.0,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[12] = {
+		SampleHandle = 2,
+		Hardness = 0.0,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+	[13] = {
+		SampleHandle = 1,
+		Hardness = 1.0,
+		PitchRandom = 0.2,
+		GainRandom = 0.2,
+		GainMulti = 1,
+	},
+}
+
+SurfaceRattleCount = 4
+
+SurfaceRattle = {
+	[1] = {
+		MinDistance = 10.0,
+		SampleCount = 4,
+		Wave01 = "Surface/stone_1.wav",
+		Wave02 = "Surface/stone_2.wav",
+		Wave03 = "Surface/stone_3.wav",
+		Wave04 = "Surface/stone_4.wav",
+		MaterialID = 4,
+		TimeInterval = 215,
+		TimeRandom = 0.8,
+		SyncSpeed = 95,
+		Gain = 0.090,
+		GainRandom = 0.7,
+		PitchRandom = 0.5,
+		SuspensionWeight = 0.0025,
+		DependsOnAngleSpeed = 1,
+	},
+	[2] = {
+		MinDistance = 10.0,
+		SampleCount = 1,
+		Wave01 = "Surface/ripple_strip_3.wav",
+		MaterialID = 13,
+		TimeInterval = 120,
+		TimeRandom = 0.05,
+		SyncSpeed = 15,
+		Gain = 6.5,
+		GainRandom = 0.3,
+		PitchRandom = 0.4,
+		SuspensionWeight = 0,
+		DependsOnAngleSpeed = 0,
+	},
+	[3] = {
+		MinDistance = 10.0,
+		SampleCount = 1,
+		Wave01 = "Surface/metal_grid_2.wav",
+		MaterialID = 8,
+		TimeInterval = 80,
+		TimeRandom = 0.2,
+		SyncSpeed = 5,
+		Gain = 0.8,
+		GainRandom = 0.3,
+		PitchRandom = 0.4,
+		SuspensionWeight = 0,
+		DependsOnAngleSpeed = 0,
+	},
+	[4] = {
+		MinDistance = 10.0,
+		SampleCount = 4,
+		Wave01 = "Surface/log_road_2.wav",
+		Wave02 = "Surface/log_road_6.wav",
+		Wave03 = "Surface/log_road_8.wav",
+		Wave04 = "Surface/log_road_7.wav",
+		MaterialID = 9,
+		TimeInterval = 100,
+		TimeRandom = 0.2,
+		SyncSpeed = 10,
+		Gain = 0.8,
+		GainRandom = 0.3,
+		PitchRandom = 0.4,
+		SuspensionWeight = 0,
+		DependsOnAngleSpeed = 0,
+	},
+}

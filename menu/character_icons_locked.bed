@@ -1,0 +1,14 @@
+character_icons_locked_size = { 512,256 }
+character_icons_locked = {
+	
+	ai_icon_1_locked = {  3, 3, 110, 70 },    -- Jack Benton
+	ai_icon_2_locked = {  342, 3, 110, 70 },  -- Katie Daggert
+	ai_icon_3_locked = {  229, 3, 110, 70 },  -- Valerio Vega
+	ai_icon_4_locked = {  116, 3, 110, 70 },  -- Sue O'Neill
+	ai_icon_5_locked = {  3, 76, 110, 70 },   -- Paul McGuire
+	ai_icon_6_locked = {  116, 76, 110, 70 }, -- Ray Smith
+	ai_icon_7_locked = {  229, 76, 110, 70 }, -- Frank Malcov
+	ai_icon_8_locked = {  342, 76, 110, 70 }, -- character name
+
+
+}

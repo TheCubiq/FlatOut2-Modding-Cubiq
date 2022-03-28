@@ -1,0 +1,8 @@
+track_unlocked_size = { 512, 512 }
+track_unlocked = {
+	
+	unlocked_track_card_2 = {  0, 0, 360, 256 },   -- track name
+	unlocked_track_card_3 = {  0, 256, 360, 256 }, -- track name
+
+
+}

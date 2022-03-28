@@ -1,0 +1,15 @@
+class_abc_roads_size = { 512,256 }
+class_abc_roads = {
+	
+	c_road_1 = {  0, 0, 192, 219 },
+	b_road_1 = {  0, 222, 7, 5 },
+	a_road_1 = {  193, 0, 191, 219 },
+
+	abc_road_generic = {  385, 0, 96, 165 },
+
+	c_b_road = {  386, 167, 5, 48 },
+	b_a_road = {  393, 167, 51, 45 },
+	a_x_road = {  447, 167, 34, 5 },
+	x_final_road = {  483, 167, 5, 79 },
+
+}

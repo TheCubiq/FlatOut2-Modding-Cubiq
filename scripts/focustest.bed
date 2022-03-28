@@ -1,0 +1,109 @@
+--///////////////////////////////////////////////////////////////////////////
+--// FocusTest.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 28.10.2005 12:18:45
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+menu_mainmenu = CreateMenuFromTemplate("template_basic")
+
+menu_mainmenu.options.title=L"MAIN MENU"
+
+FOCUS_TEST=TRUE
+
+local function focus_race(car,level)
+	local f=function()
+		local car=car
+		local level=level
+		PlayerProfile:SetActiveCar(car)
+		db.GameFlow.PreRace.Mode=GM_SINGLE_RACE
+		db.GameFlow.PreRace.Car=car
+		db.GameFlow.PreRace.Level=level
+		db.GameFlow.PreRace.Laps=4
+		Event:PostEvent(event(EVENT_RACE_BEGIN))
+	end
+
+	return f
+end
+
+
+function menu_mainmenu.create(self)
+
+	self.back=nil
+	if MenuState then
+		MenuState:reset()
+	end
+
+	self.parent:create(self)
+
+	self:addResource("title_logo",image("fo2_logo.tga"))
+
+	self:loadResources()
+
+	self.items={
+		MENUITEM(L"FWD CAR,TRACK 1",focus_race(9,6),ICON(self,"icon_profile_1")),
+		MENUITEM(L"FWD CAR,TRACK 2",focus_race(9,11),ICON(self,"icon_profile_1")),
+		MENUITEM(L"4WD CAR,TRACK 1",focus_race(12,6),ICON(self,"icon_profile_2")),
+		MENUITEM(L"4WD CAR,TRACK 2",focus_race(12,11),ICON(self,"icon_profile_2")),
+		MENUITEM(L"RWD CAR,TRACK 1",focus_race(24,6),ICON(self,"icon_profile_3")),
+		MENUITEM(L"RWD CAR,TRACK 2",focus_race(24,11),ICON(self,"icon_profile_3")),
+		MENUITEM(L"STUNT BASKETBALL",focus_race(24,83),ICON(self,"icon_stunts")),
+		MENUITEM(L"STUNT STONE-SKIPPING",focus_race(24,72),ICON(self,"icon_stunts")),
+
+	}
+
+end
+
+
+function menu_mainmenu.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+
+	local size=GetResourceSize(self:getResource("title_logo"))
+
+	local x=640/2-size[1]/2
+	local y=480/2-size[2]/2
+
+
+	local w=Frame{Name="logo",Position=POS(x,y),Size=size}:AttachResource(self:getResource("title_logo"))
+	
+	--//w:HideWindow()
+	
+	
+end
+
+function menu_mainmenu.update(self,time)
+	self.parent:update(self,time)
+end
+
+
+function menu_mainmenu.startshow(self)
+	self.parent:startshow(self)
+
+--//	GetWindow("logo"):ShowWindow()
+
+	GUI:SetStatusText(L"FOCUS GROUP TEST",TRUE)
+
+
+
+end
+
+function menu_mainmenu.starthide(self)
+	self.parent:starthide(self)
+
+--//	GetWindow("logo"):HideWindow()
+
+end
+
+function menu_mainmenu.deinit(self)
+	self.parent:deinit(self)
+
+	wm.SetGlobalAlpha(1.0)
+end
+

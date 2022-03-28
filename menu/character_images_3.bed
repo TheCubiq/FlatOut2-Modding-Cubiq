@@ -1,0 +1,7 @@
+character_images_3_size = { 512,512 }
+character_images_3 = {
+	
+	ai_portrait_5 = {  0, 0, 256, 345 },   -- Paul McGuire
+	ai_portrait_6 = {  256, 0, 256, 345 }, -- Ray Smith
+
+}

@@ -1,0 +1,68 @@
+--///////////////////////////////////////////////////////////////////////////
+--// testmenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 29.3.2005 14:19:32
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+
+menu_test = CreateMenuFromTemplate("template_basic")
+menu_test2 = CreateMenuFromTemplate("template_basic")
+
+
+function menu_test.create(self)
+	self.parent:create(self)  --//note: two parameters (parent and this)
+
+	self.options.title=L"menu_test"
+
+	self.items = {
+		{ L"HELLO", entermenu("menu_test2") },
+--//		{ L"WORLD", nofunction },
+		{ L"INSTANT ACTION", instantaction() },
+	}
+
+
+end
+
+
+function menu_test2.create(self)
+	self.parent:create(self)  --//note: two parameters (parent and this)
+
+	self.options.title=L"menu_test2"
+
+	self.items = {
+		{ L"GOODBYE",noimage(),entermenu("menu_test") },
+		{ L"WORLD", noimage(), nofunction },
+	}
+
+	self:loadResources()
+end
+
+
+--//create needed windows
+function menu_test.init(self)
+	self:loadResources()
+
+end
+
+
+
+function menu_test.deinit(self)
+
+
+end
+
+
+
+function menu_test.update(self,time)
+
+
+end
+
+

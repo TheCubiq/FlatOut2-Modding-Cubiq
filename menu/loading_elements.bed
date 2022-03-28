@@ -1,0 +1,8 @@
+loading_elements_size = { 256, 256 }
+loading_elements = {
+	
+	loading_balk_left_edge = 		{  1, 1, 46, 151 },
+	loading_balk_middle = 		{  64, 1, 116, 151 },
+	loading_balk_right_edge = 		{  162, 1, 46, 151 },
+
+}

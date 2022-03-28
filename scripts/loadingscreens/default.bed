@@ -1,0 +1,34 @@
+--dofile("data/language/languages.bed")
+ITEMTYPE_TEXT = 0
+ITEMTYPE_PICTURE = 1
+ITEMTYPE_RECTANGLE = 2
+
+Background = "data/menu/loading_default.tga"
+
+
+LoadingBar = {
+	Image = "data/menu/loading_bar.tga",
+	Position = { 70, 423 },
+	Width = 501,
+	Height = 32,
+	ScrollSpeed = 5000,	
+}
+
+--visuals
+
+ItemCount = 1
+
+Items = {
+
+			
+	[1] = {
+		ItemType = ITEMTYPE_TEXT, --loading text
+		Font = "FontSmall",
+		Identifier = 	LOADINGSCREEN_LOADING,
+		Position = { 225, 385 },
+		ColorId = 33,
+		Center = 1,
+		Width = 300,
+	},
+
+}

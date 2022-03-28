@@ -1,0 +1,707 @@
+--///////////////////////////////////////////////////////////////////////////
+--// SingleRaceMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 15.4.2005 11:46:09
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local RaceSelectionState
+
+local tracks
+
+dofile("data/menu/cup_final_results_elements1.bed")
+
+dofile("data/menu/event_type_icons.bed")
+
+--//dofile("data/menu/track_images.bed")
+--//dofile("data/menu/track_images2.bed")
+
+--//dofile("data/menu/track_images_big1.bed")
+--//dofile("data/menu/track_images_big2.bed")
+--//dofile("data/menu/track_images_big3.bed")
+--//dofile("data/menu/track_images_big4.bed")
+
+
+dofile("data/menu/backdrops2.bed")
+dofile("data/menu/backdrops3.bed")
+
+
+dofile("data/menu/race_type_images1.bed")
+dofile("data/menu/race_type_images2.bed")
+dofile("data/menu/race_type_images3.bed")
+--//dofile("data/menu/track_logos.bed")
+--//dofile("data/menu/track_logos2.bed")
+--//dofile("data/menu/track_logos3.bed")
+
+--//dofile("data/menu/track_arena.bed")
+--//dofile("data/menu/track_city_1.bed")
+--//dofile("data/menu/track_city_2.bed")
+--//dofile("data/menu/track_desert.bed")
+--//dofile("data/menu/track_canal.bed")
+--//dofile("data/menu/track_fields_1.bed")
+--//dofile("data/menu/track_fields_2.bed")
+--//dofile("data/menu/track_forest_1.bed")
+--//dofile("data/menu/track_forest_2.bed")
+--//dofile("data/menu/track_racing_1.bed")
+--//dofile("data/menu/track_racing_2.bed")
+
+dofile("data/menu/single_player_track_images1.bed")
+dofile("data/menu/single_player_track_images2.bed")
+dofile("data/menu/single_player_track_images3.bed")
+dofile("data/menu/single_player_track_images4.bed")
+dofile("data/menu/single_player_track_images5.bed")
+dofile("data/menu/single_player_track_images6.bed")
+dofile("data/menu/single_player_track_images7.bed")
+dofile("data/menu/single_player_track_images8.bed")
+dofile("data/menu/single_player_track_images9.bed")
+dofile("data/menu/single_player_track_images10.bed")
+dofile("data/menu/single_player_track_images11.bed")
+dofile("data/menu/single_player_track_images12.bed")
+dofile("data/menu/single_player_track_images13.bed")
+dofile("data/menu/single_player_track_images14.bed")
+dofile("data/menu/single_player_track_images15.bed")
+dofile("data/menu/single_player_track_images16.bed")
+dofile("data/menu/single_player_track_images17.bed")
+dofile("data/menu/single_player_track_images18.bed")
+dofile("data/menu/single_player_track_images19.bed")
+dofile("data/menu/single_player_track_images20.bed")
+dofile("data/menu/single_player_track_images21.bed")
+dofile("data/menu/single_player_track_images22.bed")
+dofile("data/menu/single_player_track_images23.bed")
+dofile("data/menu/single_player_track_images24.bed")
+dofile("data/menu/single_player_track_images25.bed")
+dofile("data/menu/single_player_track_images26.bed")
+dofile("data/menu/single_player_track_images27.bed")
+dofile("data/menu/single_player_track_images28.bed")
+dofile("data/menu/single_player_track_images29.bed")
+dofile("data/menu/single_player_track_images30.bed")
+
+
+
+local trackfiles = {
+	[TRACKTYPE_RACING] = { "single_player_track_images1","single_player_track_images2","single_player_track_images3" },
+	[TRACKTYPE_FIELDS] = { "single_player_track_images4","single_player_track_images5", "single_player_track_images6" },
+	[TRACKTYPE_FOREST] = { "single_player_track_images7","single_player_track_images8",	"single_player_track_images9" },
+	[TRACKTYPE_CITY] = { "single_player_track_images10", "single_player_track_images11", "single_player_track_images12" },
+	[TRACKTYPE_DESERT] = {"single_player_track_images13","single_player_track_images14" },
+	[TRACKTYPE_CANAL] = { "single_player_track_images14", "single_player_track_images15" },
+	[TRACKTYPE_STUNT] = { "single_player_track_images25", "single_player_track_images26", "single_player_track_images27",
+						  "single_player_track_images28", "single_player_track_images29", "single_player_track_images30", },
+	[TRACKTYPE_EVENT] = {  "single_player_track_images19", "single_player_track_images20", "single_player_track_images21",
+						  "single_player_track_images22", "single_player_track_images23", "single_player_track_images24", },
+	[TRACKTYPE_DERBY] = { "single_player_track_images16", "single_player_track_images17", "single_player_track_images18", },
+}						
+
+local tracktype_descriptions = {
+	[TRACKTYPE_RACING] = TRACK_DESCRIPTION_RACING,
+	[TRACKTYPE_FIELDS] = TRACK_DESCRIPTION_FIELDS,
+	[TRACKTYPE_FOREST] = TRACK_DESCRIPTION_FOREST,
+	[TRACKTYPE_CITY] = TRACK_DESCRIPTION_CITY,
+	[TRACKTYPE_DESERT] = TRACK_DESCRIPTION_DESERT,
+	[TRACKTYPE_CANAL] = TRACK_DESCRIPTION_CANAL,
+	[TRACKTYPE_STUNT] = TRACK_DESCRIPTION_STUNT,
+	[TRACKTYPE_EVENT] = TRACK_DESCRIPTION_ARENA,
+	[TRACKTYPE_DERBY] = TRACK_DESCRIPTION_DERBY,
+}
+
+local stunt_goals = {
+	[STUNT_CURLING] = TRACK_DESCRIPTION_CURLING_GOAL,
+	[STUNT_HIGHJUMP] = TRACK_DESCRIPTION_HIGHJUMP_GOAL,
+	[STUNT_STONESKIPPING] = TRACK_DESCRIPTION_STONESKIPPING_GOAL,
+	[STUNT_RINGOFFIRE] = TRACK_DESCRIPTION_RINGOFFIRE_GOAL,
+	[STUNT_DARTS] = TRACK_DESCRIPTION_DARTS_GOAL,
+	[STUNT_BLACKDANNY] = TRACK_DESCRIPTION_ROYALFLUSH_GOAL,
+	[STUNT_SKIJUMP] = TRACK_DESCRIPTION_SKIJUMP_GOAL,
+	[STUNT_FIELDGOAL] = TRACK_DESCRIPTION_FIELDGOAL_GOAL,
+	[STUNT_BOWLING] = TRACK_DESCRIPTION_BOWLING_GOAL,
+	[STUNT_BASKETBALL] = TRACK_DESCRIPTION_BASKETBALL_GOAL,
+	[STUNT_BASEBALL] = TRACK_DESCRIPTION_BASEBALL_GOAL,
+	[STUNT_SOCCER] = TRACK_DESCRIPTION_SOCCER_GOAL,
+}
+
+
+local singlerace_selected
+
+local function carselected(car,skin)
+	--//db.GameFlow.PreRace.Mode=RaceSelectionState.GameMode
+	GameFlow.ClearRace()
+	db.GameFlow.PreRace.Mode=GM_SINGLE_RACE
+	db.GameFlow.PreRace.Car=car
+	db.GameFlow.PreRace.CarSkin=skin or 1
+	db.GameFlow.PreRace.Level=RaceSelectionState.Level
+	--//db.GameFlow.PreRace.Laps=RaceSelectionState.Laps
+	--//RaceSelectionState=nil
+	Event:PostEvent(event(EVENT_RACE_BEGIN))
+end
+
+
+
+function EnterSingleRaceSelection(backfunction,type,okfunction)
+
+	--//db.GameFlow.PreRace.Mode=GM_SINGLE_RACE --//RaceSelectionState.GameMode
+
+	RaceSelectionState={} --//newTransaction()
+	RaceSelectionState.GameMode=GM_SINGLE_RACE
+	RaceSelectionState.RaceType=type
+	RaceSelectionState.backmenu=backfunction
+
+	singlerace_selected=okfunction
+	--//RaceSelectionState:nextPhase()
+
+	if type then
+		EnterMenu("menu_singleplayer_trackselection")
+	else
+		EnterMenu("menu_singleplayer_racetype")
+	end
+end
+
+
+
+
+
+local state
+
+local event_type_names = {
+	TRANSLATOR(EVENTSET_RACE),
+	TRANSLATOR(EVENTSET_DERBIESDIRTSOVALS),
+	TRANSLATOR(EVENTSET_STUNTS),
+}
+
+local race_type_names = {
+	{ name=TRANSLATOR(RACETRACKTYPE_FOREST), bg="bg_forest.tga", tracktype=TRACKTYPE_FOREST, },
+	{ name=TRANSLATOR(RACETRACKTYPE_FIELDS), bg="bg_field.tga", tracktype=TRACKTYPE_FIELDS, },
+	{ name=TRANSLATOR(RACETRACKTYPE_DESERT), bg="bg_desert.tga", tracktype=TRACKTYPE_DESERT, },
+	{ name=TRANSLATOR(RACETRACKTYPE_CANAL), bg="bg_canals.tga", tracktype=TRACKTYPE_CANAL, },
+	{ name=TRANSLATOR(RACETRACKTYPE_CITY), bg="bg_city.tga", tracktype=TRACKTYPE_CITY, },
+	{ name=TRANSLATOR(RACETRACKTYPE_RACING), bg="bg_racing.tga", tracktype=TRACKTYPE_RACING, },
+	{ name=TRANSLATOR(RACETRACKTYPE_STUNT), bg="bg_racing.tga", tracktype=TRACKTYPE_STUNT, },
+	{ name=TRANSLATOR(RACETRACKTYPE_EVENTS), bg="bg_racing.tga", tracktype=TRACKTYPE_EVENT, },
+	{ name=TRANSLATOR(RACETRACKTYPE_DERBY), bg="derby_cls_bg.tga", tracktype=TRACKTYPE_DERBY, },
+}
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// SINGLE RACE RACETYPE
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+local function SetBackground(id)
+	GUI:SetBackground("data/menu/"..race_type_names[id].bg)
+end
+
+
+menu_singleplayer_racetype = CreateMenuFromTemplate("template_basic")
+
+
+menu_singleplayer_racetype.options.title=TRANSLATOR(TITLE_RACETYPE)
+
+
+function menu_singleplayer_racetype.create(self)
+	self.parent:create(self)
+
+	self:addResource("event_type_icons.tga",event_type_icons,event_type_icons_size)
+
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:addResource("backdrops2.tga",backdrops2,backdrops2_size)
+
+	self:addResource("race_type_images1.tga",race_type_images1,race_type_images1_size)
+	self:addResource("race_type_images2.tga",race_type_images2,race_type_images2_size)
+	self:addResource("race_type_images3.tga",race_type_images3,race_type_images3_size)
+
+	self:loadResources()
+end
+
+
+function menu_singleplayer_racetype.init(self)
+	self.parent:init(self)
+
+	Frame{Name="garage_cars_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local bar=ButtonBar{ Slots=7,Name="races",Padding=0,SlotSize=SIZE(107,56),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+--//	local bar=ButtonBar{Slots=7,Name="races",Position=POS(-60,336),Padding=10,SelectedSlotSize=SIZE(110,70),SlotSize=SIZE(100,60),Size=SIZE(640+50,60)}
+
+
+	function bar.onBack(self)
+		playmenusound_back()
+		RaceSelectionState=nil
+		EnterMenu("menu_singleplayer")
+	end
+
+	state={}
+
+	bar.onButtonChange = function(self,id)
+		playmenusound_move()
+		RaceSelectionState.RaceType=id
+		W("type_name"):SetTitle(race_type_names[id].name)
+		W("type_description"):SetTitle(TRANSLATOR(tracktype_descriptions[id]))
+		W("type_description"):WordWrap()
+		W("track_image"):AttachResource(menu_singleplayer_racetype:getResource(string.format("race_type_image%d",id)))
+		GUI:SwitchButtonText(race_type_names[id].name)
+
+		--//SetBackground(id)
+	end
+
+	bar.onChildAction = function(self,id)
+		playmenusound_action()
+		--//RaceSelectionState:nextPhase()
+		EnterMenu("menu_singleplayer_trackselection")
+
+	end
+
+	bar:AddButton(self:getResource("race_type_1"))
+	bar:AddButton(self:getResource("race_type_2"))
+	bar:AddButton(self:getResource("race_type_3"))
+	bar:AddButton(self:getResource("race_type_4"))
+	bar:AddButton(self:getResource("race_type_5"))
+	bar:AddButton(self:getResource("race_type_6"))
+
+
+	bar:SetFocus()
+
+
+	Frame{Position=POS(284,72),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(342,72),Size=SIZE(298,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="type_name",Position=POS(441,79),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	Frame{Position=POS(295,109),Size=SIZE(49,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar_ang"))
+	Frame{Position=POS(344,109),Size=SIZE(296,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar"))
+
+	Frame{Position=POS(0,72),Size=SIZE(273,143)}:AttachResource(self:getResource("big_bottom"))
+	Frame{Position=POS(273,72),Size=SIZE(45,143)}:AttachResource(self:getResource("big_bottom_ang"))
+
+	Frame{Position=POS(0,215),Size=SIZE(313,101)}:AttachResource(self:getResource("big_bottom_race_sel"))
+	Frame{Position=POS(313,215),Size=SIZE(34,101)}:AttachResource(self:getResource("big_bottom_race_sel_ang"))
+
+	StaticText{Name="type_description",Position=POS(310,109),TextLineAdjust=7,Size=SIZE(280,110),Font=fontmedium(),Color=GetPaletteColor(34)}
+
+	Frame{Name="track_image",Position=POS(0,84),Size=SIZE(332,219)}
+
+
+
+	bar:onButtonChange(1)
+	GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_OK,TRANSLATOR(UI_SELECT))
+
+	--//GUI:SetBackground("data/menu/carshop_bg.tga")
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+end
+
+function menu_singleplayer_racetype.deinit(self)
+	self.parent:deinit(self)
+
+
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// SINGLE RACE TRACK SELECTION
+--// ---------------------------------------------------------------------------------------------------------------------------------
+function GetTracksByType(type)
+	local tracks={}
+
+	for k,v in ipairs(Levels) do
+		if v.TrackType and v.TrackType == type then
+			table.insert(tracks,{level_id=k,name=ConvertToWString(v.Name),image=v.TrackImage,logo=v.TrackLogo})
+		end
+	end
+
+	return tracks
+end
+
+
+
+local function kludge_gettracks(type)
+
+	local tracks={}
+	for k,v in ipairs(Levels) do
+
+		local path=string.lower(v.GfxSetPath)
+		local s,e,p=string.find(path,"data/tracks/(%w+)/")
+
+		if p and p == type then
+			table.insert(tracks,{ level_id=k,image=v.TrackImage,logo=v.TrackLogo,name=ConvertToWString(v.Name) })
+		end
+	end
+
+
+	return tracks
+end
+
+local DIRECTION_NONE = 0
+local DIRECTION_LEFT = 1
+local DIRECTION_RIGHT = 2
+
+local function UpdateHighScores()
+
+	local type=Levels[RaceSelectionState.Level].TrackType
+
+	local hs_title=TRANSLATOR(TITLE_TIME)
+
+	if type == TRACKTYPE_EVENT then
+		hs_title=TRANSLATOR(TITLE_TIME)
+	elseif type == TRACKTYPE_DERBY then
+		hs_title=TRANSLATOR(TITLE_POINTS)
+	elseif type == TRACKTYPE_STUNT then
+		hs_title=GameFlow.GetStuntScoreType(Levels[RaceSelectionState.Level].StuntType)
+	end
+
+	W("hs_title"):SetTitle(hs_title)
+
+	for i=1,10 do
+		local wname=string.format("hs_%d",i)
+
+		if i <= table.getn(state.highscores) and state.highscores[i].valid then
+			local w=W(wname.."_number")
+			w:ShowWindow()
+			w:SetTitle(ConvertToWString(string.format("%d.",i)))
+
+			w=W(wname.."_name")
+			w:ShowWindow()
+			w:SetTitle(state.highscores[i].name)
+
+			w=W(wname.."_score")
+			w:ShowWindow()
+			w:SetTitle(FormatHighScoreScore(state.highscores[i]))
+		else
+			W(wname.."_number"):HideWindow()
+			W(wname.."_name"):HideWindow()
+			W(wname.."_score"):HideWindow()
+		end
+	end
+
+end
+
+
+local function SwitchTrackInfo(self,direction,id)
+
+	local leveldata=Levels[tracks[id].level_id]
+
+	local w=W("track_name")
+	W("track_name"):SetTitle(ConvertToWString(leveldata.Name))
+
+	if W("lapcount") then
+		if W("stunt_goal") then W("stunt_goal"):HideWindow() end
+
+		if leveldata.Rules and leveldata.Rules == GR_DERBY then
+			W("lap_icon"):HideWindow()
+			W("lapcount"):HideWindow()
+			W("track_info_title"):HideWindow()
+		else
+			W("track_info_title"):ShowWindow()
+			W("lap_icon"):ShowWindow()
+			W("lapcount"):ShowWindow()
+			W("lapcount"):SetTitle(ConvertToWString(string.format("%d LAPS",leveldata.Laps or 0)))
+		end
+	end
+
+	if W("stunt_goal") and leveldata.StuntType then
+		if W("lap_icon") then W("lap_icon"):HideWindow() end
+		if W("lapcount") then W("lapcount"):HideWindow() end
+
+		W("track_info_title"):ShowWindow()
+		W("stunt_goal"):ShowWindow()
+		W("stunt_goal"):SetTitle(TRANSLATOR(stunt_goals[leveldata.StuntType]))
+	end
+
+
+
+	if W("highscore") then
+		local highscore=GetHighScore(tracks[id].level_id)
+		W("highscore"):SetTitle(FormatHighScore(highscore))
+	end
+
+
+	W("track_description"):SetTitle(TRANSLATOR(leveldata.Description))
+	W("track_description"):WordWrap()
+
+	local icon=leveldata.TrackIcon or ""
+	W("track_image"):AttachResource(self:getResource(icon.."_sp"))
+
+	state.highscores=GetLevelHighScores(tracks[id].level_id)
+
+	UpdateHighScores()
+end
+
+local function ToggleHighScores()
+	if state.show_highscores then
+		W("highscore_windows").handle=AnimateWindowPos(W("highscore_windows"),{ W("highscore_windows"):GetPosition() },POS(350,0),0.3,0.0,W("highscore_windows").handle)
+
+		W("info_windows").handle=AnimateWindowPos(W("info_windows"),{ W("info_windows"):GetPosition() },POS(0,0),0.3,0.3,W("info_windows").handle)
+
+		state.show_highscores=nil
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_INFO,TRANSLATOR(UI_HIGHSCORES))
+	else
+		W("info_windows").handle=AnimateWindowPos(W("info_windows"),{ W("info_windows"):GetPosition() },POS(350,0),0.3,0.0,W("info_windows").handle)
+
+		W("highscore_windows").handle=AnimateWindowPos(W("highscore_windows"),{ W("highscore_windows"):GetPosition() },POS(0,0),0.3,0.3,W("highscore_windows").handle)
+
+		state.show_highscores=true
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_INFO,TRANSLATOR(UI_DESCRIPTION))
+	end
+end
+
+
+menu_singleplayer_trackselection = CreateMenuFromTemplate("template_basic")
+
+
+menu_singleplayer_trackselection.options.title=TRANSLATOR(TITLE_SELECTRACE)
+
+
+function menu_singleplayer_trackselection.create(self)
+	
+	self:clearResources()
+
+	self.parent:create(self)
+
+
+	self.options.title=TRANSLATOR(TITLE_SELECTRACE)
+	
+	local racetype=race_type_names[RaceSelectionState.RaceType].tracktype
+
+	if racetype == TRACKTYPE_STUNT then
+		self.options.title=TRANSLATOR(TITLE_SELECTSTUNT)
+	elseif racetype == TRACKTYPE_EVENT then
+		self.options.title=TRANSLATOR(TITLE_SELECT_EVENT)
+	elseif racetype == TRACKTYPE_DERBY then
+		self.options.title=TRANSLATOR(TITLE_SELECT_DERBY)
+	end
+
+
+--//	self:addResource("track_icons.tga",track_icons,track_icons_size)
+--//	self:addResource("track_icons_2.tga",track_icons_2,track_icons_2_size)
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:addResource("track_images.tga",track_images,track_images_size)
+	self:addResource("track_images2.tga",track_images2,track_images2_size)
+
+	self:addResource("backdrops2.tga",backdrops2,backdrops2_size)
+	self:addResource("backdrops3.tga",backdrops3,backdrops3_size)
+
+
+	local files=trackfiles[racetype]
+
+	for k,v in ipairs(files) do
+		self:addResource(v..".tga",_G[v],_G[v.."_size"])
+	end
+--//	self:addResource("track_logos.tga",track_logos,track_logos_size)
+--//	self:addResource("track_logos2.tga",track_logos2,track_logos2_size)
+--//	self:addResource("track_logos3.tga",track_logos3,track_logos3_size)
+
+	self:loadResources()
+end
+
+
+function menu_singleplayer_trackselection.init(self)
+	self.parent:init(self)
+
+	Frame{Name="race_bar_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local bar=ButtonBar{ Slots=7,Name="race_bar",Padding=0,SlotSize=SIZE(107,56),ButtonSize=SIZE(93,43),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+	function bar.onBack(self)
+		if self.backpressed then return end
+		self.backpressed=true
+
+		playmenusound_back()
+
+		--//RaceSelectionState:prevPhase()
+		if RaceSelectionState.backmenu then
+			RaceSelectionState.backmenu()
+		else
+			EnterMenu("menu_singleplayer_racetype")
+		end
+	end
+
+	local infobutton=function(self,id)
+		playmenusound_move()
+		ToggleHighScores()
+	end
+
+	if XBOX then
+		bar.onButtonY = infobutton
+	else
+		bar.onButtonX = infobutton
+	end
+
+	state={}
+
+	tracks=GetTracksByType(race_type_names[RaceSelectionState.RaceType].tracktype) --//kludge_gettracks(track_types[RaceSelectionState.RaceType].name)
+
+	RaceSelectionState.Id=nil
+
+
+--//	Frame{Name="trackmap_1",Position=POS(80,57),Size=SIZE(290,270)}
+--//	Frame{Name="trackmap_2",Position=POS(641,57),Size=SIZE(290,270)}
+
+	
+--//	Frame{Name="track_logo",Position=POS(400,70),Size=SIZE(160,64)}
+	Frame{Position=POS(284,72),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(342,72),Size=SIZE(298,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="track_name",Position=POS(441,79),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	local p=Frame{Name="info_windows",Position=POS(0,0),Size=SIZE(640,480)}
+
+	Frame{Position=POS(295,109),Size=SIZE(49,130),Parent=p}:AttachResource(self:getResource("upshop_mid_infotxt_bar_ang"))
+	Frame{Position=POS(344,109),Size=SIZE(296,130),Parent=p}:AttachResource(self:getResource("upshop_mid_infotxt_bar"))
+
+	Frame{Position=POS(333,244),Size=SIZE(55,72),Parent=p}:AttachResource(self:getResource("info_box_detailed_tip"))
+	Frame{Position=POS(333+55,244),Size=SIZE(252,72),Parent=p}:AttachResource(self:getResource("info_box_detailed_strech"))
+
+	StaticText{Name="track_description",Position=POS(310,109),TextLineAdjust=7,Size=SIZE(270,110),Font=fontmedium(),Color=GetPaletteColor(34),Parent=p}
+
+	StaticText{Name="track_info_title",Title=TRANSLATOR(HEADER_TRACKINFORMATION),Position=POS(346,251),Font=fontmedium(),Color=GetPaletteColor(33),Parent=p}
+
+
+	local lap_size=GetResourceSize(self:getResource("lap"))
+	local clock_size=GetResourceSize(self:getResource("clock"))
+	
+	--//Frame{Name="clock_icon",Position=POS(358,273),Size=clock_size,Parent=p}:AttachResource(self:getResource("clock"))
+	Frame{Name="lap_icon",Position=POS(358,294),Size=lap_size,Parent=p}:AttachResource(self:getResource("lap"))
+
+	--//StaticText{Name="highscore",Title=L"0'00'00",Font=fontsmall(),Position=POS(358+clock_size[1]+4,275),Color=GetPaletteColor(34),Parent=p}
+	StaticText{Name="lapcount",Title=L"3 LAPS",Font=fontsmall(),Position=POS(358+lap_size[1]+4,295),Color=GetPaletteColor(34),Parent=p}
+	StaticText{Name="stunt_goal",Position=POS(358+lap_size[1]+4,294),Font=fontsmall(),Color=GetPaletteColor(33),Parent=p}:HideWindow()
+
+	--//highscores
+	p=Frame{Name="highscore_windows",Position=POS(350,0),Size=SIZE(640,480)}
+
+	StaticText{Title=L"#",Position=POS(324,111),Fontf=fontmedium(),Align=FONTF_RIGHT,Parent=p,Color=GetPaletteColor(33)}
+	StaticText{Title=TRANSLATOR(TITLE_NAME),Position=POS(330,111),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+
+	local hs_title=TRANSLATOR(TITLE_TIME)
+
+	StaticText{Name="hs_title",Title=hs_title,Position=POS(474,111),Parent=p,Font=fontmedium(),Color=GetPaletteColor(33)}
+
+
+	Frame{Position=POS(301,129),Size=SIZE(31,92),Parent=p}:AttachResource(self:getResource("sr_highscore_bar_ang"))
+	Frame{Position=POS(331,129),Size=SIZE(309,92),Parent=p}:AttachResource(self:getResource("sr_highscore_bar_str"))
+
+	Frame{Position=POS(328,224),Size=SIZE(31,92),Parent=p}:AttachResource(self:getResource("sr_highscore_bar_ang"))
+	Frame{Position=POS(358,224),Size=SIZE(282,92),Parent=p}:AttachResource(self:getResource("sr_highscore_bar_str"))
+
+	local hs_pos=POS(329,130)
+	for i=1,10 do
+		StaticText{Name=string.format("hs_%d_number",i),Position=POS(hs_pos[1],hs_pos[2]-1),Align=FONTF_RIGHT,Font=fontmedium(),Color=GetPaletteColor(34),Parent=p}
+		StaticText{Name=string.format("hs_%d_name",i),Position=POS(hs_pos[1]+6,hs_pos[2]-1),Font=fontmedium(),Color=GetPaletteColor(34),Parent=p}
+		StaticText{Name=string.format("hs_%d_score",i),Position=POS(hs_pos[1]+150,hs_pos[2]-1),Font=fontmedium(),Color=GetPaletteColor(34),Parent=p}
+
+		hs_pos[1] = hs_pos[1] + 5
+		hs_pos[2] = hs_pos[2] + 19
+	end
+
+	--//end highscores
+	Frame{Position=POS(0,72),Size=SIZE(273,143)}:AttachResource(self:getResource("big_bottom"))
+	Frame{Position=POS(273,72),Size=SIZE(45,143)}:AttachResource(self:getResource("big_bottom_ang"))
+
+	Frame{Position=POS(0,215),Size=SIZE(313,101)}:AttachResource(self:getResource("big_bottom_race_sel"))
+	Frame{Position=POS(313,215),Size=SIZE(34,101)}:AttachResource(self:getResource("big_bottom_race_sel_ang"))
+
+	Frame{Name="track_image",Position=POS(0,84),Size=SIZE(332,219)}
+
+	bar.onButtonChange = function(self,id)
+		if self.pressed or self.backpressed then return end
+
+		playmenusound_move()
+		local old_id=RaceSelectionState.Id
+		RaceSelectionState.Id=id
+		--//db.GameFlow.PreRace.Level=tracks[id].level_id
+		RaceSelectionState.Level=tracks[id].level_id
+		RaceSelectionState.Laps=Levels[RaceSelectionState.Level].Laps or 1
+		local menu=menu_singleplayer_trackselection
+
+		GUI:SwitchButtonText(tracks[id].name)
+
+		if not old_id then
+			SwitchTrackInfo(menu,DIRECTION_NONE,id)
+		elseif id > old_id then
+			if old_id == 1 and id == table.getn(tracks) then
+				SwitchTrackInfo(menu,DIRECTION_NONE,id)
+			else
+				SwitchTrackInfo(menu,DIRECTION_LEFT,id)
+			end
+		elseif id < old_id then
+			if old_id == table.getn(tracks) and id == 1 then
+				SwitchTrackInfo(menu,DIRECTION_NONE,id)
+			else
+				SwitchTrackInfo(menu,DIRECTION_RIGHT,id)
+			end
+		end
+
+	end
+
+	bar.onChildAction = function(self,id)
+		if self.pressed then return end
+		self.pressed=true
+
+		playmenusound_action()
+
+		
+		if singlerace_selected then
+			local selection=CopyTable(RaceSelectionState)
+			singlerace_selected(selection)
+			RaceSelectionState=nil
+		else
+			local carlist
+			local bg
+			local description=false
+			if RaceSelectionState.RaceType == TRACKTYPE_STUNT then
+				carlist=CarlistStuntCars()
+				bg="data/menu/stunt_car_selection_bg.tga"
+				description=true
+			else
+				carlist=CarlistAllUnlocked()
+			end
+
+				EnterCarSelection(carselected,
+					  function()
+							--//RaceSelectionState:prevPhase()
+							EnterMenu("menu_singleplayer_trackselection")
+					  end,carlist,false,true,description,false,bg,nil,true,TRANSLATOR(TITLE_SELECTCAR))
+		end
+	end
+
+
+	for k,v in ipairs(tracks) do
+		local data=Levels[v.level_id]
+		bar:AddButton(self:getResource(data.TrackIcon or ""))
+	end
+
+
+
+	bar:SetFocus()
+	
+	bar:onButtonChange(1)
+
+	
+	--//GUI:SetBackground("data/menu/menu_background.tga")
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_INFO,TRANSLATOR(UI_HIGHSCORES))
+
+end
+
+function menu_singleplayer_trackselection.deinit(self)
+	self.parent:deinit(self)
+
+
+
+end

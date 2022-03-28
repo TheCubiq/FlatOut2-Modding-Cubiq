@@ -1,0 +1,273 @@
+--///////////////////////////////////////////////////////////////////////////
+--// WindowAnimate.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 11.4.2005 15:22:21
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+local objectlist = {}
+
+local function findObjectParams(object,timer_id)
+	local timerlist=objectlist[object]
+
+	if not timerlist then return end
+
+	return timerlist[timerlist[timer_id]]
+end
+
+local function RemoveValueAnimated(object,timer_id)
+	local timerlist=objectlist[object]
+	if not timerlist then return end
+
+	if timerlist[timer_id] then
+		local name=timerlist[timer_id]
+		Event:RemoveTimer(timer_id)
+		timerlist[timer_id]=nil
+		timerlist[name]=nil
+	end
+
+	if table.getn(objectlist[object]) == 0 then
+		objectlist[object]=nil
+	end
+end
+
+
+function animateWindowOnDestroy(self)
+	if objectlist[self] then
+		local k,v
+		local objlist=CopyTable(objectlist[self])
+		for k,v in ipairs(objlist) do
+			RemoveValueAnimated(self,v.timer_id)
+		end
+	end
+
+	if self.onDestroyOld then
+		self:onDestroyOld()
+	end
+end
+
+
+local function _interpolator(data,t)
+	local point_a=data[1]
+	local point_b=data[2]
+	local point_cur
+	local stop
+
+	if type(point_a) == "table" then
+		point_cur={}
+		local k,v
+		for k,v in ipairs(point_a) do
+			point_cur[k]=point_a[k] + (point_b[k] - point_a[k])*t
+		end
+	elseif type(point_a) == "number" then
+		point_cur = point_a + (point_b - point_a)*t
+	else
+		point_cur=CopyValue(point_b)
+		stop=true
+	end
+
+
+	return point_cur,stop
+end
+
+
+local function ValueAnimatedUpdate(object,tot_ms,timer_id)
+	local dt=tot_ms/1000
+	local params=findObjectParams(object,timer_id)
+
+	if not params then
+		Event:RemoveTimer(timer_id)
+		return
+	end
+
+	local point_cur
+
+	params.curtime=params.curtime + dt
+
+	local t
+	local stop=false
+	t=params.curtime/params.totaltime
+
+	if t > 1.0 then
+		t=1.0
+		stop=true
+	end
+
+
+
+
+	if params.use_pow then
+		t=1.0-math.pow(1.0-t,2.0)
+	end
+
+	local point_cur,isend=params.interpolator(params.data,t)
+	if isend then
+		stop=true
+	end
+
+	if params.set_value then
+		object[params.set_value]=point_cur
+	end
+
+	if params.updatefunc then
+		local f
+		if type(params.updatefunc) == "string" then
+			f=object[params.updatefunc]
+		else
+			f=params.updatefunc
+		end
+
+		if type(f) ~= "function" then
+			stop=true
+		else
+			if params.need_unpack then
+				f(object,unpack(point_cur))
+			else
+				f(object,point_cur)
+			end
+		end
+	end
+	
+	if stop then
+
+		local f
+		if type(params.end_func) == "string" then
+			f=object[params.end_func]			
+		else
+			f=params.end_func
+		end
+
+		if type(f) == "function" then
+			f(object)
+		end
+		RemoveValueAnimated(object,timer_id)
+	end
+end
+
+local function valueAnimatedEventHandler(udata,event)
+	if event.id == EVENT_TIMER then
+		ValueAnimatedUpdate(udata,event.data,event.arg)
+	end
+end
+
+local function AddValueAnimated(object,params,name)
+
+	params.curtime=0
+	params.object=object
+
+	if not objectlist[object] then
+		objectlist[object]={}
+	end
+	local timer_id
+	params.name=name
+
+	if objectlist[object][name] then
+		params.timer=objectlist[object][name].timer
+		timer_id=objectlist[object][name].timer_id
+		Event:RemoveTimer(timer_id)
+		timer_id=Event:AddTimer(valueAnimatedEventHandler,0,object,false)
+	else
+		timer_id=Event:AddTimer(valueAnimatedEventHandler,0,object,false)
+	end
+	params.timer_id=timer_id
+
+	objectlist[object][name]=params
+	objectlist[object][timer_id]=name
+end
+
+
+
+
+function AnimateValue(object,name,update_function,set_value,start_value,end_value,unpack_value,time,usepow,end_function,interp,context)
+
+	local t
+
+	if name == "value" or name == "value2" then
+		local set_func=update_function
+
+		if type(update_function) == "string" then
+			set_func=object[update_function]
+		end
+
+		local interptype=INTERP_LINEAR
+
+		if usepow then
+			interptype=INTERP_POW
+		end
+
+		t=AddAnimatedValue(object,nil,set_func,interptype,start_value,end_value,time)
+
+	else
+		t={
+				updatefunc=update_function,
+				set_value=set_value,
+				totaltime=time,
+				use_pow=usepow,
+				interpolator = interp or _interpolator,
+				need_unpack=unpack_value,
+				end_func=end_function,
+				data={ start_value,end_value },
+				curtime=0,
+				context=context,
+		}
+
+		AddValueAnimated(object,t,name)
+	end
+
+	return t
+end
+
+
+
+function AnimateWindowPos(win,start_pos,end_pos,time,start_delay,old_handle)
+
+	if not win then return end
+
+	return AddAnimatedWindow(win,ANIM_POSITION,INTERP_POW,start_pos,end_pos,time,start_delay,old_handle)
+
+--[[--/*
+
+	local params=AnimateValue(win,"pos","SetPosition",false,start_pos,end_pos,true,time,true,end_func,nil)
+
+	win.onDestroyOld=win.onDestroy
+
+	win.onDestroy=function(self)
+		if objectlist[self] then
+			local k,v
+			local objlist=CopyTable(objectlist[self])
+			for k,v in ipairs(objlist) do
+				RemoveValueAnimated(self,v.timer_id)
+			end
+		end
+
+		if self.onDestroyOld then
+			self:onDestroyOld()
+		end
+	end
+
+--]]--*/
+end
+
+function AnimateWindowAlpha(win,start_color,end_color,time,start_delay,old_handle)
+
+	if not win then return end
+
+	return AddAnimatedWindow(win,ANIM_ALPHA,INTERP_LINEAR,start_color,end_color,time,start_delay,old_handle)
+--[[---/*
+	win.SetAlpha=function(self,alpha)
+		local c=self:GetColor(true)
+		c[4]=alpha
+		self:SetColor(c,true)
+	end
+
+	AnimateValue(win,"alpha","SetAlpha",false,start_color,end_color,false,time,false,nil,nil)
+--]]--*/
+end
+
+

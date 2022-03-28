@@ -1,0 +1,124 @@
+---@diagnostic disable: duplicate-index
+menu_icons_glow_size = { 512,512 }
+menu_icons_glow = {
+	
+	icon_single_player_s = {  0, 0, 51, 51 },
+	icon_party_mode_s = {  51, 0, 51, 51 },
+	icon_instant_action_s = {  102, 0, 51, 51 },
+	icon_quickmatch_s = {  102, 0, 51, 51 },
+	icon_highscores_s = {  153, 0, 51, 51 },
+	icon_options_s = {  204, 0, 51, 51 },
+	icon_change_profiles_s = {  255, 0, 51, 51 }, 
+	icon_extras_s = {  306, 0, 51, 51 },
+	icon_multiplayer_s = {  357, 0, 51, 51 },
+	icon_sp_career_s = {  408, 0, 51, 51 },
+	icon_sp_time_attack_s = {  459, 0, 51, 51 },
+
+	icon_sp_single_race_s = {  0, 51, 51, 51 },
+	icon_sp_crash_td_s = {  51, 51, 51, 51 },
+	icon_garage_s = {  102, 51, 51, 51 },
+	icon_upgrades_s = {  153, 51, 51, 51 },
+	icon_statistics_s = {  204, 51, 51, 51 },
+	icon_rankings_s = {  204, 51, 51, 51 },
+	icon_car_shop_s = {  255, 51, 51, 51 }, 
+	icon_retire_cup_s = {  306, 51, 51, 51 },
+	icon_exit_career_mode_s = {  357, 51, 51, 51 },
+	icon_change_car_s = {  408, 51, 51, 51 },
+	icon_change_track_s = {  459, 51, 51, 51 },
+
+	icon_change_upgrade_level_s = {  0, 102, 51, 51 },
+	icon_upgrade_0_s = {  51, 102, 51, 51 },
+	icon_upgrade_50_s = {  102, 102, 51, 51 },
+	icon_upgrade_100_s = {  153, 102, 51, 51 },
+	icon_xbl_optimatch_s = {  204, 102, 51, 51 },
+	icon_xbl_create_game_s = {  255, 102, 51, 51 },
+	icon_xbl_friends_s = {  306, 102, 51, 51 },
+	icon_show_friends_s = {  306, 102, 51, 51 },
+	icon_xbl_recent_players_s = {  357, 102, 51, 51 },
+	icon_xbl_logout_s = {  408, 102, 51, 51 },
+	icon_tournaments_s = {  459, 102, 51, 51 },
+	
+	icon_tracks_s = {  0, 153, 51, 51 },
+	icon_derbies_s = {  51, 153, 51, 51 },
+	icon_dirts_ovals_s = {  102, 153, 51, 51 },
+	icon_stunts_s = {  153, 153, 51, 51 },
+	icon_preset_1_s = {  204, 153, 51, 51 }, -- ps2/xbox controller options
+	icon_preset_2_s = {  255, 153, 51, 51 },
+	icon_preset_3_s = {  306, 153, 51, 51 },
+	icon_preset_4_s = {  357, 153, 51, 51 },
+	icon_tutorials_s = {  408, 153, 51, 51 }, -- extras
+	icon_unlocks_s = {  459, 153, 51, 51 },
+	
+	icon_profile_1_s = {  0, 204, 51, 51 },
+	icon_profile_2_s = {  51, 204, 51, 51 },
+	icon_profile_3_s = {  102, 204, 51, 51 },
+	icon_profile_4_s = {  153, 204, 51, 51 },
+	icon_profile_5_s = {  204, 204, 51, 51 },
+	icon_profile_6_s = {  255, 204, 51, 51 },
+	icon_profile_7_s = {  306, 204, 51, 51 },
+	icon_profile_8_s = {  357, 204, 51, 51 },
+	icon_profile_x_s = {  408, 204, 51, 51 },
+	icon_empty_s = {  459, 204, 51, 51 },
+	
+	icon_ai_profiles_s = {  0, 255, 51, 51 },  -- extras
+	icon_credits_s = {  51, 255, 51, 51 },
+	icon_get_in_s = {  102, 255, 51, 51 }, -- garage
+	icon_sell_car_s = {  153, 255, 51, 51 },
+	icon_car_stats_s = {  204, 255, 51, 51 },
+	icon_scoreboards_s = {  204, 255, 51, 51 },
+	icon_tune_suspension_s = {  255, 255, 51, 51 },
+	icon_game_options_s = {  306, 255, 51, 51 }, -- options
+	icon_sound_options_s = {  357, 255, 51, 51 },
+	icon_controller_options_s = {  408, 255, 51, 51 },
+	icon_presets_s = {  459, 255, 51, 51 },  -- party mode
+	
+	icon_add_stunts_s = {  0, 306, 51, 51 },
+	icon_edit_events_s = {  51, 306, 51, 51 },
+	icon_edit_queue_s = {  51, 306, 51, 51 },
+	icon_continue_s = {  102, 306, 51, 51 },
+	icon_player_1_s = {  153, 306, 51, 51 },
+	icon_player_2_s = {  204, 306, 51, 51 },
+	icon_player_3_s = {  255, 306, 51, 51 },
+	icon_player_4_s = {  306, 306, 51, 51 },
+	icon_add_player_s = {  357, 306, 51, 51 },
+	icon_remove_player_s = {  408, 306, 51, 51 },
+	icon_soft_suspension_s = {  459, 306, 51, 51 }, -- tune suspension
+
+	icon_add_track_s = {  0, 357, 51, 51 },
+	icon_xbox_live_s = {  51, 357, 51, 51 },
+	icon_general_options_s = {  102, 357, 51, 51 }, -- xbox create game
+	icon_create_game_s = {  153, 357, 51, 51 },
+	icon_select_player_s = {  204, 357, 51, 51 }, -- xbox live friends
+	icon_add_friend_s = {  255, 357, 51, 51 },
+	icon_player_profile_s = {  306, 357, 51, 51 }, -- xbox live friends options
+	icon_cancel_friend_request_s = {  357, 357, 51, 51 },
+	icon_join_friend_s = {  408, 357, 51, 51 },
+	icon_remove_friend_s = {  459, 357, 51, 51 },
+	
+	icon_send_game_invite_with_voice_message_s = {  0, 408, 51, 51 },
+	icon_accept_game_invite_s = {  51, 408, 51, 51 },
+	icon_decline_game_invite_s = {  102, 408, 51, 51 },
+	icon_cancel_game_invite_s = {  102, 408, 51, 51 },
+	icon_decline_friend_request_s = {  153, 408, 51, 51 },
+	icon_block_friend_request_s = {  204, 408, 51, 51 },
+	icon_mute_player_s = {  255, 408, 51, 51 },
+	icon_unmute_player_s = {  306, 408, 51, 51 },
+	icon_send_game_invite_s = {  357, 408, 51, 51 },
+	icon_send_friend_request_with_voice_message_s = {  408, 408, 51, 51 },
+	icon_send_feedback_s = {  459, 408, 51, 51 },
+	
+	icon_change_car_s = {  0, 459, 51, 51 }, --xbox live game lobby
+	icon_session_details_s = {  51, 459, 51, 51 },
+	icon_career_statistics_s = {  51, 459, 51, 51 },
+	icon_event_queue_s = {   459, 255, 51, 51 },
+	icon_online_options_s = {  102, 459, 51, 51 },
+	icon_ready_s = {  153, 459, 51, 51 },
+	icon_unready_s = {  204, 459, 51, 51 },
+	icon_player_details_s = {  255, 459, 51, 51 },
+	icon_change_track_s = {  306, 459, 51, 51 },
+	icon_new_tournament_s = {  357, 459, 51, 51 },
+	icon_players_s = {  408, 459, 51, 51 }, -- xbox live online options
+	icon_show_all_players_s = {  408, 459, 51, 51 },
+	icon_appear_offline_s = {  459, 459, 51, 51 },
+
+}

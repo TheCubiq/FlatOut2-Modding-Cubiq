@@ -1,0 +1,592 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MultiplayerRaceMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2006 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 13.3.2005 11:46:09
+--// 
+--// @Author Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local tracks
+
+dofile("data/menu/cup_final_results_elements1.bed")
+dofile("data/menu/garage_elements1.bed")
+dofile("data/menu/race_type_images1.bed")
+dofile("data/menu/race_type_images2.bed")
+dofile("data/menu/race_type_images3.bed")
+dofile("data/menu/single_player_track_images19.bed")
+dofile("data/menu/single_player_images2.bed")
+dofile("data/menu/single_player_images3.bed")
+
+
+local mprace_selected
+local mprace_back
+local mprace_ok
+local mprace_rules
+local mprace_numplayers
+local mprace_event
+
+local SelectedRow
+
+function EnterMultiplayerRaceSelection(rules, okaction, backaction, numplayers)
+	mprace_rules = rules
+	mprace_ok = okaction
+	mprace_back = backaction
+	mprace_numplayers = numplayers
+	mprace_edit = false
+	EnterMenu("menu_multiplayer_trackselection")
+end
+
+function EnterMultiplayerRaceEdit(rules, event, okaction, backaction, numplayers)
+	mprace_rules = rules
+	mprace_event = event
+	mprace_ok = okaction
+	mprace_back = backaction
+	mprace_numplayers = numplayers
+	mprace_edit = true
+	EnterMenu("menu_multiplayer_trackselection")
+end
+
+GameModeNames = {
+	[ReplicatedSession.GAMETYPE_TOURNAMENT]			= MULTIPLAYER_GAMETYPE_MIXED,
+	[ReplicatedSession.GAMETYPE_TOURNAMENT_RACE]	= MULTIPLAYER_GAMETYPE_RACE,
+	[ReplicatedSession.GAMETYPE_TOURNAMENT_DERBY]	= MULTIPLAYER_GAMETYPE_DERBY,
+	[ReplicatedSession.GAMETYPE_RACE]				= MULTIPLAYER_GAMEMODE_RACE,
+	[ReplicatedSession.GAMETYPE_DERBY_WRECKING]		= MULTIPLAYER_GAMEMODE_WRECKINGDERBY,
+	[ReplicatedSession.GAMETYPE_STUNT]				= MULTIPLAYER_GAMETYPE_STUNT,
+}
+
+local TrackTypeImages = {
+	[TRACKTYPE_STUNT] = "singleplayer_image_stunt",
+	[TRACKTYPE_DERBY] = "singleplayer_image_derby",
+	[TRACKTYPE_EVENT] = "singleplayer_image_event",
+	[TRACKTYPE_FOREST] = "race_type_image1",
+	[TRACKTYPE_FIELDS] = "race_type_image2",
+	[TRACKTYPE_DESERT] = "race_type_image3",
+	[TRACKTYPE_CANAL] = "race_type_image4",
+	[TRACKTYPE_CITY] = "race_type_image5",
+	[TRACKTYPE_RACING] = "race_type_image6",
+}
+
+local SelectedTrack
+
+menu_multiplayer_trackselection = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_trackselection.options.title=TRANSLATOR(TITLE_SELECTRACE)
+
+function menu_multiplayer_trackselection.create(self)
+	self.parent:create(self)
+
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+	self:addResource("race_type_images1.tga",race_type_images1,race_type_images1_size)
+	self:addResource("race_type_images2.tga",race_type_images2,race_type_images2_size)
+	self:addResource("race_type_images3.tga",race_type_images3,race_type_images3_size)
+	self:addResource("single_player_images2.tga",single_player_images2,single_player_images2_size)
+	self:addResource("single_player_images3.tga",single_player_images3,single_player_images3_size)
+	self:addResource("single_player_track_images19.tga",single_player_track_images19,single_player_track_images19_size)	
+
+	self:loadResources()
+end
+
+local OnGameTypeChanged, OnTrackTypeChanged
+
+local EmptyOption = {
+	L"",
+	{nil},
+	{-1000},
+	1,
+	false,
+}
+
+local TimeLimitDerbyOption =
+{
+	MULTIPLAYER_TIMELIMIT,
+	{L"6",L"9",L"12",L"15"},
+	{6,9,12,15},
+	1,
+	true
+}
+
+local LapsOption = 
+{
+	MULTIPLAYER_LAPS,
+	{L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", L"10" },
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+	4,
+	true,
+}
+
+local TrackTypeRaces = 
+{
+	MULTIPLAYER_TRACKTYPE,
+	{RACETRACKTYPE_FOREST, RACETRACKTYPE_FIELDS, RACETRACKTYPE_CANAL, RACETRACKTYPE_CITY, RACETRACKTYPE_DESERT, RACETRACKTYPE_RACING, RACETRACKTYPE_ARENA },
+	{TRACKTYPE_FOREST, TRACKTYPE_FIELDS, TRACKTYPE_CANAL, TRACKTYPE_CITY, TRACKTYPE_DESERT, TRACKTYPE_RACING, TRACKTYPE_EVENT},
+	1,
+	true,
+	function()OnTrackTypeChanged()end,
+}
+
+local TrackTypeDerby = 
+{
+	MULTIPLAYER_TRACKTYPE,
+	{RACETRACKTYPE_DERBY, RACETRACKTYPE_ARENA, },
+	{TRACKTYPE_DERBY, TRACKTYPE_EVENT},
+	1,
+	true,
+	function()OnTrackTypeChanged()end,
+}
+
+local Options = {
+	{
+		MULTIPLAYER_GAMETYPE,
+		{MULTIPLAYER_GAMETYPE_RACE, MULTIPLAYER_GAMETYPE_STUNT, MULTIPLAYER_GAMETYPE_DERBY },
+		{1, 2, 3},
+		1,
+		true,
+		function()OnGameTypeChanged()end,
+		{MULTIPLAYER_GAMETYPE_RACE_DESCRIPTION, MULTIPLAYER_GAMETYPE_STUNT_DESCRIPTION, MULTIPLAYER_GAMETYPE_DERBY_DESCRIPTION }
+	},
+
+	{
+		-- Track type
+	},
+
+	{
+		-- Values set in OnTrackTypeChanged
+		MULTIPLAYER_TRACK,
+		{L""},
+		{1},
+		1,
+		true,
+	},
+	{
+		MULTIPLAYER_LAPS,
+		{L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", L"10" },
+		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		4,
+		true,
+	},
+}
+
+local GameType = 1
+local TrackType = 2
+local Track = 3
+local Laps = 4
+
+local Label=1
+local ItemLabels=2
+local ItemValues=3
+local SelectedItem=4
+local Enabled=5
+local OnChanged=6
+local Descriptions=7
+
+local NumOptions = 4
+
+local function GetSelectedItem(Items, RowNr)
+	return Items[RowNr][SelectedItem]
+end
+
+local function SetSelectedItem(Items, RowNr, Item)
+	Items[RowNr][SelectedItem]=Item
+end
+
+local function GetSelectedItemValue(Items, rowNr)
+	return Items[rowNr][ItemValues][Items[rowNr][SelectedItem] ]
+end
+
+local function GetSelectedItemLabel(Items, rowNr)
+	return Items[rowNr][ItemLabels][Items[rowNr][SelectedItem] ]
+end
+
+local function GetNumItems(Items, RowNr)
+	return table.getn(Items[RowNr][ItemValues])
+end
+
+OnGameTypeChanged = function()
+	local gameType = GetSelectedItemValue(Options, GameType)
+	if gameType == 1 then -- Race
+		Options[TrackType] = TrackTypeRaces
+		SetSelectedItem(Options, TrackType, 1)
+		Options[Laps] = LapsOption
+		Options[Laps][Label] = MULTIPLAYER_LAPS
+		OnTrackTypeChanged()
+	elseif gameType == 3 then -- Derby
+		Options[TrackType] = TrackTypeDerby
+		SetSelectedItem(Options, TrackType, 1)
+		Options[Laps] = TimeLimitDerbyOption
+		Options[Laps][Label] = MULTIPLAYER_MINUTES
+		OnTrackTypeChanged()
+	elseif gameType == 2 then -- Stunt
+		Options[TrackType] = EmptyOption
+		Options[Laps] = EmptyOption
+		ValidTracks = { }
+		SelectedTrack = 1
+		for i,l in ipairs(Levels) do
+			if l and l.TrackType == TRACKTYPE_STUNT then
+				table.insert(ValidTracks, i)
+			end
+		end
+	end
+end
+
+OnTrackTypeChanged = function()
+	local tt = GetSelectedItemValue(Options, TrackType)
+	ValidTracks = { }
+	SelectedTrack = 1
+	
+	for i,l in ipairs(Levels) do
+		if l.TrackType and l.TrackType == tt then
+			table.insert(ValidTracks, i)
+		end
+	end
+end
+
+local function UpdateArrows(self)
+	local leftarrow = wm.GetWindow("leftarrow")
+	local rightarrow = wm.GetWindow("rightarrow")
+	
+	local leftArrowSize = wm.GetResourceSize(self:getResource("selection_arrow_r"))
+	local rightArrowSize = wm.GetResourceSize(self:getResource("selection_arrow_l"))
+
+	local value = wm.GetWindow("optionvalue_row"..SelectedRow)
+	local xpos,ypos = value:GetPosition()
+	leftarrow:SetPosition(xpos - 5 - leftArrowSize[1], ypos + 3)
+
+	local w,_ = wm.GetTextExtents(value:GetTitle(), fontmedium())
+	rightarrow:SetPosition(xpos + w + 9, ypos + 3)
+end
+
+local function RefreshInfo(self)
+	for i = 1, NumOptions do
+		local labelwin = wm.GetWindow("optionlabel_row"..i)
+		
+		labelwin:SetTitle(Options[i][Label])
+		local x,y = labelwin:GetPosition()
+		local w,h = wm.GetTextExtents(labelwin:GetTitle(), fontmedium())
+		
+		local valuewin = wm.GetWindow("optionvalue_row"..i)
+		valuewin:SetPosition(x+w+20,y)
+
+		local value = nil
+		if i == Track then
+			value = L(Levels[ValidTracks[SelectedTrack]].Name)
+		else
+			value = GetSelectedItemLabel(Options, i)
+		end
+
+		if value ~= nil then
+			valuewin:SetTitle(value)
+		else
+			valuewin:SetTitle(L"")
+		end
+		
+		if Options[i][Enabled] then
+			labelwin:SetLayer(4)
+			valuewin:SetLayer(4)
+		else
+			labelwin:SetLayer(2)
+			valuewin:SetLayer(2)
+		end
+	end
+	
+	if SelectedTrack then
+		local leveldata = Levels[ValidTracks[SelectedTrack]]
+
+		W("track_name"):SetTitle(L(leveldata.Name))
+
+		local tracktype
+		local gametype = GetSelectedItemValue(Options, GameType)
+		if gametype == 1 or gametype == 3 then
+			tracktype = GetSelectedItemValue(Options, TrackType)
+		elseif gametype == 2 then
+			tracktype = TRACKTYPE_STUNT
+		end
+
+		W("track_image"):AttachResource(self:getResource(TrackTypeImages[tracktype]))
+	end
+
+	if SelectedRow == Track then
+		if SelectedTrack then
+			local leveldata = Levels[ValidTracks[SelectedTrack]]
+			local desc = W("infotext")
+			desc:SetTitle(TRANSLATOR(leveldata.Description))
+			desc:WordWrap()
+			local w,h = wm.GetTextExtents(desc:GetTitle(), fontmedium())
+			local w2,h2 = desc:GetParent():GetSize()
+			desc:SetPosition(320, (h2-h)/2)
+		end
+	else
+		local descs = Options[SelectedRow][Descriptions]
+		local desc
+		if descs ~= nil then
+			if type(descs) == "table" then
+				desc = descs[GetSelectedItem(Options, SelectedRow)]
+			else
+				desc = descs
+			end
+		end
+		
+		local infotext = wm.GetWindow("infotext")
+		if desc then
+			infotext:SetTitle(desc)
+			infotext:WordWrap()
+			local w,h = wm.GetTextExtents(infotext:GetTitle(), fontmedium())
+			local w2,h2 = infotext:GetParent():GetSize()
+			infotext:SetPosition(320, (h2-h)/2)
+		else
+			infotext:SetTitle(L"")
+		end
+	end
+end
+
+function menu_multiplayer_trackselection.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+
+	if menu_multiplayer_buildtournament.partymode then
+		wm.GetWindow("menubar_gamespy_logo"):HideWindow()
+	end
+
+	if not XBOX then
+		Options[GameType][Descriptions] = {PS2ONLINE_GAMETYPE_RACE_DESCRIPTION, PS2ONLINE_GAMETYPE_STUNT_DESCRIPTION, PS2ONLINE_GAMETYPE_DERBY_DESCRIPTION }
+	end
+	
+	Frame{Name="race_bar_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+
+	Frame{Position=POS(284,72),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(342,72),Size=SIZE(298,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="track_name",Position=POS(441,79),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	local x=301
+	local y=131
+	local black50={0,0,0,0.58*MAX_VERTEXCOLOR_A}
+	
+	for i = 1, NumOptions do
+		Frame { Name="optionbg_left_row"..i, Position=POS(x,y), Size=SIZE(20,26), Color={0,0,0,MAX_VERTEXCOLOR_A}, Layer=3 }:AttachResource(self:getResource("multip_add_track_ang"))
+		Frame { Name="optionbg_row"..i, Position=POS(x+20,PS2 and y + 1 or y), Size=SIZE(319,26), Layer=3, Color=black50, DrawBackgroundColor=TRUE }
+		
+		local win = StaticText { Name="optionlabel_row"..i, Position=POS(x+11,y+5), Size=SIZE(100,16), Font=fontmedium(), Color=GetPaletteColor(33) }
+		win:SetTitle(Options[i][Label])
+		
+		local w,h = wm.GetTextExtents(win:GetTitle(), fontmedium())
+		StaticText { Name="optionvalue_row"..i, Position=POS(x+w+20,y+5), Size=SIZE(100,16), Font=fontmedium(), Color=GetPaletteColor(34) }
+		
+		y = y + 32
+		x = x + 9
+	end
+
+	local arrowSize = GetResourceSize(self:getResource("selection_arrow_r"))
+	Frame { Name="leftarrow", Position=POS(0,0), Size=arrowSize, Layer=4 }:AttachResource(self:getResource("selection_arrow_r"))
+	arrowSize = GetResourceSize(self:getResource("selection_arrow_l"))
+	Frame { Name="rightarrow", Position=POS(0,0), Size=arrowSize, Layer=4 }:AttachResource(self:getResource("selection_arrow_l"))
+
+	Frame{Position=POS(0,72),Size=SIZE(273,143)}:AttachResource(self:getResource("big_bottom"))
+	Frame{Position=POS(273,72),Size=SIZE(45,143)}:AttachResource(self:getResource("big_bottom_ang"))
+
+	Frame{Position=POS(0,215),Size=SIZE(313,101)}:AttachResource(self:getResource("big_bottom_race_sel"))
+	Frame{Position=POS(313,215),Size=SIZE(34,101)}:AttachResource(self:getResource("big_bottom_race_sel_ang"))
+
+	Frame{Name="track_image",Position=POS(0,84),Size=SIZE(332,219)}
+
+	local descframe = Frame{Position=POS(0,333),Size=SIZE(640,64)}:AttachResource(self:getResource("darker_selection_bg"))
+	StaticText { Name="infotext",Position=POS(320,0),Size=SIZE(640-2*TITLESAFE_X,64),Font=fontmedium(),Color=GetPaletteColor(34),Align=FONTF_CENTER, Parent=descframe }
+
+	if not mprace_edit and (mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT or mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT_RACE or mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT_DERBY) then
+		-- "Add race" with tournament types that have multiple game modes to choose from
+		if mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT or mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT_RACE then
+			SetSelectedItem(Options, GameType, 1)
+		elseif mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT_DERBY then
+			SetSelectedItem(Options, GameType, 3)
+		end
+		OnGameTypeChanged()
+		Options[GameType][Enabled] = (mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT)
+	else
+		-- "Add race" with a specific game mode or "Edit event"
+		local etype
+		if mprace_edit then
+			etype = mprace_event.rules
+		else
+			etype = mprace_rules
+		end	
+	
+		if etype == ReplicatedSession.GAMETYPE_TOURNAMENT then
+			SetSelectedItem(Options, GameType, 1)
+		elseif etype == ReplicatedSession.GAMETYPE_RACE or etype == ReplicatedSession.GAMETYPE_PONGRACE then
+			SetSelectedItem(Options, GameType, 1)
+		elseif etype == ReplicatedSession.GAMETYPE_STUNT then
+			SetSelectedItem(Options, GameType, 2)
+		else
+			SetSelectedItem(Options, GameType, 3)
+		end
+		OnGameTypeChanged()
+
+		if mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT or mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT_DERBY then
+			Options[GameType][Enabled] = (mprace_rules == ReplicatedSession.GAMETYPE_TOURNAMENT)
+		else
+			Options[GameType][Enabled] = false
+		end
+
+		if mprace_event then
+			if etype == ReplicatedSession.GAMETYPE_RACE then
+				local tracktype = Levels[mprace_event.trackid].TrackType
+				local level = Levels[mprace_event.trackid]
+				local tracktype = level.TrackType
+
+				for i = 1, table.getn(Options[TrackType][ItemValues]) do
+					if Options[TrackType][ItemValues][i] == tracktype then
+						SetSelectedItem(Options, TrackType, i)
+						break
+					end
+				end
+				OnTrackTypeChanged()
+			end
+		
+			if etype == ReplicatedSession.GAMETYPE_RACE or etype == ReplicatedSession.GAMETYPE_DERBY_WRECKING then
+				for i = 1, table.getn(Options[Laps][ItemValues]) do
+					if Options[Laps][ItemValues][i] == mprace_event.lapsOrTimeLimit then
+						SetSelectedItem(Options, Laps, i)
+						break
+					end
+				end
+			end
+			
+			if etype == ReplicatedSession.GAMETYPE_DERBY_WRECKING then
+				local level = Levels[mprace_event.trackid]
+				for i = 1, table.getn(Options[TrackType][ItemValues]) do
+					if Options[TrackType][ItemValues][i] == level.TrackType then
+						SetSelectedItem(Options, TrackType, i)
+						break
+					end
+				end
+				OnTrackTypeChanged()
+			end
+			
+			for i,v in ipairs(ValidTracks) do
+				if mprace_event.trackid == v then
+					SelectedTrack = i
+				end
+			end
+		end
+	end
+
+	SelectedRow = 1
+	while Options[SelectedRow][Enabled] == false do
+		SelectedRow = SelectedRow + 1
+	end
+
+	RefreshInfo(self)
+	UpdateArrows(self)
+	
+	local handler = InputHandler { Name="handler" }
+	handler.onKeyPressed = function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey == KeyCodes["BUTTON_START"] then
+			local newrules
+			local gametype = GetSelectedItemValue(Options, GameType)
+			if gametype == 1 then
+				newrules = ReplicatedSession.GAMETYPE_RACE
+			elseif gametype == 2 then
+				newrules = ReplicatedSession.GAMETYPE_STUNT
+			else
+				newrules = ReplicatedSession.GAMETYPE_DERBY_WRECKING
+			end
+			
+			local event = {
+				rules = newrules,
+				trackid = ValidTracks[SelectedTrack],
+				lapsOrTimeLimit = GetSelectedItemValue(Options, Laps),
+			}
+			
+			if mprace_edit then
+				event.num = mprace_event.num
+			end
+			
+			playmenusound_action()
+			
+			mprace_ok(event)
+		elseif VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			playmenusound_back()
+			mprace_back(mprace_event)
+		elseif VirtualKey == KeyCodes["BUTTON_LEFT"] then
+			playmenusound_move()
+			local oldsel = nil
+			if SelectedRow == Track then
+				local numtracks = table.getn(ValidTracks)
+				oldsel = SelectedTrack
+				SelectedTrack = math.mod(SelectedTrack - 2 + numtracks, numtracks) + 1
+			else
+				local selectedItem = GetSelectedItem(Options, SelectedRow) - 1
+				local numItems = GetNumItems(Options, SelectedRow)
+				if selectedItem < 1 then
+					selectedItem = numItems
+				end
+				SetSelectedItem(Options, SelectedRow, selectedItem)
+			end
+			if Options[SelectedRow][OnChanged] then
+				Options[SelectedRow][OnChanged]()
+			end
+			RefreshInfo(self)
+			UpdateArrows(self)
+		elseif VirtualKey == KeyCodes["BUTTON_RIGHT"] then
+			playmenusound_move()
+			local oldsel = nil
+			if SelectedRow == Track then
+				SelectedTrack = math.mod(SelectedTrack, table.getn(ValidTracks)) + 1
+			else
+				local selectedItem = GetSelectedItem(Options, SelectedRow) + 1
+				local numItems = GetNumItems(Options, SelectedRow)
+				if selectedItem > numItems then
+					selectedItem = 1
+				end
+				SetSelectedItem(Options, SelectedRow, selectedItem)
+			end
+			if Options[SelectedRow][OnChanged] then
+				Options[SelectedRow][OnChanged]()
+			end
+			RefreshInfo(self)
+			UpdateArrows(self)
+		elseif VirtualKey == KeyCodes["BUTTON_DOWN"] then
+			playmenusound_move()
+			local prevsel = SelectedRow
+			repeat
+				SelectedRow = SelectedRow + 1
+				if SelectedRow == NumOptions + 1 then
+					SelectedRow = NumOptions
+				end
+			until SelectedRow == NumOptions or Options[SelectedRow][Enabled] == true
+			if SelectedRow == NumOptions and Options[SelectedRow][Enabled] == false then
+				SelectedRow = prevsel
+			end
+			RefreshInfo(self)
+			UpdateArrows(self)
+		elseif VirtualKey == KeyCodes["BUTTON_UP"] then
+			playmenusound_move()
+			local prevsel = SelectedRow
+			repeat
+				SelectedRow = SelectedRow - 1
+				if SelectedRow == 0 then
+					SelectedRow = 1
+				end
+			until SelectedRow == 1 or Options[SelectedRow][Enabled] == true
+			if SelectedRow == 1 and Options[SelectedRow][Enabled] == false then
+				SelectedRow = prevsel
+			end
+			RefreshInfo(self)
+			UpdateArrows(self)
+		end
+	end
+	
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+end
+
+function menu_multiplayer_trackselection.deinit(self)
+	self.parent:deinit(self)
+end
+
+function menu_multiplayer_trackselection.update(self,time)
+	self.parent:update(self,time)
+end

@@ -1,0 +1,7 @@
+single_player_images2_size = { 512,512 }
+single_player_images2 = {
+	
+	singleplayer_image_stunt = {  0, 0, 332, 219 },
+	singleplayer_image_derby = {  0, 219, 332, 219 },
+
+}

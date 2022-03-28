@@ -1,0 +1,20 @@
+backdrops2_size = { 256,256 }
+backdrops2 = {
+	
+	class_info_box_tip = {  0, 1, 84, 137 },
+	class_info_box_strech = {  84, 1, 149, 137 },
+	
+	selected_car_info_tip = {  11, 36, 70, 67 },
+	selected_car_info_strech = {  81, 36, 152, 67 },
+
+	info_box_detailed_tip = {  11, 34, 55, 72 },
+	info_box_detailed_strech = { 66, 34, 168, 72 },
+
+	unlocked_stunt_backdrop = { 7, 139, 238, 63 },
+
+	track_images1_empty_box = { 1, 206, 76, 36 },
+	track_imagesl_selection_glow = { 85, 205, 85, 49 },  
+
+	unlock_event_tip = { 7, 139, 60, 63 },
+	unlock_event_str = { 48, 139, 40, 63 },
+}

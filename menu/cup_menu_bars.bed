@@ -1,0 +1,9 @@
+cup_menu_bars_size = { 512,128 }
+cup_menu_bars = {
+	
+	normal_bar_fade = {  3, 3, 506, 25 },
+	thick_bar_fade = {  3, 31, 506, 50 },
+	normal_bar_fade_2 = {  3, 85, 506, 25 },
+
+
+}

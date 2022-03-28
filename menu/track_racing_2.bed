@@ -1,0 +1,8 @@
+track_racing_2_size = { 512,256 }
+track_racing_2 = {
+
+	track_racing_2b = {  0, 0, 256, 256 },     -- track name
+	track_racing_2c = {  256, 0, 256, 256 },   -- track name
+
+
+}

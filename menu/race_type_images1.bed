@@ -1,0 +1,7 @@
+race_type_images1_size = { 512,512 }
+race_type_images1 = {
+	
+	race_type_image1 = {  0, 0, 332, 219 },
+	race_type_image2 = {  0, 219, 332, 219 },
+
+}

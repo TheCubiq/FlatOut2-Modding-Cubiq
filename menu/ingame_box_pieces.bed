@@ -1,0 +1,18 @@
+ingame_box_pieces_size = { 128,64 }
+ingame_box_pieces = {
+	
+	ingame_top_left_solid = {  3, 3, 16, 50 },
+	ingame_top_solid = {  20, 3, 16, 50 },
+	ingame_top_right_solid = {  38, 3, 16, 50 },
+	ingame_left = {  57, 4, 16, 16 },
+	ingame_right = {  57, 25, 16, 16 },
+	ingame_bottom = {  58, 45, 16, 16 },
+	ingame_bottom_right = {  76, 3, 16, 16 },
+	ingame_bottom_left = {  76, 22, 16, 16 },
+	ingame_centre = {  80, 43, 16, 16 },
+	
+	ingame_top_left = { 94, 3, 16, 16 },
+	ingame_top_right = { 112, 3, 16, 16 },
+	ingame_centre_top = { 94, 22, 18, 16 },
+
+}

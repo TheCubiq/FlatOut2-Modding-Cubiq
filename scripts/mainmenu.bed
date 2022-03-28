@@ -1,0 +1,138 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MainMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 1.4.2005 14:07:05
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+menu_mainmenu = CreateMenuFromTemplate("template_basic")
+
+menu_mainmenu.options.title=TRANSLATOR(TITLE_MAINMENU)
+
+
+local function quit_confirm()
+	local ok=function(value)
+		if value == TRUE then
+			Event:PostEvent(event(EVENT_QUIT))
+		else
+			GUI:ShowMenuButtons()
+		end
+	end
+
+	GUI:HideMenuButtons()
+	MessageBox(TRANSLATOR(PC_QUIT_CONFIRMATION),MESSAGEBOX_YESNO,ok)
+
+end
+
+
+function menu_mainmenu.create(self)
+
+	--//slight kludge: set profilemenu back here
+	menu_profiles.back=entermenu("menu_mainmenu")
+
+	self.back=nil
+	if MenuState then
+		MenuState:reset()
+	end
+
+	self.parent:create(self)
+
+	self:addResource("title_logo",image("fo2_logo.tga"))
+
+	self:loadResources()
+
+	self.items={
+		MENUITEM(TRANSLATOR(ICON_MAIN_SINGLEPLAYER),	function() EnterSinglePlayer() end,	ICON(self,"icon_single_player")),
+		MENUITEM(TRANSLATOR(ICON_MAIN_MULTIPLAYER),	entermenu("menu_multiplayer"),	ICON(self,"icon_multiplayer")),
+		{ },--//placeholder for multiplayer
+		--//uncomment next line to get instant action game mode
+		--//MENUITEM(TRANSLATOR(ICON_MAIN_INSTANTACTION), instantaction(),	ICON(self,"icon_instant_action")),
+		MENUITEM(TRANSLATOR(ICON_MAIN_CHANGEPROFILE), entermenu("menu_profiles"),     ICON(self,"icon_change_profiles")),
+		MENUITEM(TRANSLATOR(ICON_MAIN_OPTIONS),		entermenu("menu_options"),		ICON(self,"icon_options")),
+		MENUITEM(TRANSLATOR(ICON_MAIN_EXTRAS), entermenu("menu_extras"), ICON(self,"icon_extras")),
+	}
+
+	if XBOX then
+		self.items[3]={ TRANSLATOR(ICON_MULTIPLAYER_XBOXLIVE), function() MultiplayerMode = MPMODE_XBOXLIVE; enter_xboxlive()(); end, ICON(self,"icon_xbox_live") }
+	elseif PS2 then
+		if VERSION_US then
+			self.items[3]={ TRANSLATOR(ICON_MULTIPLAYER_PS2ONLINE),	function() MultiplayerMode = MPMODE_GAMESPY; EnterGameSpy(); end, ICON(self,"icon_online") }
+		else
+			table.remove(self.items,3)
+		end
+	else
+		table.remove(self.items,3)
+	end
+
+--//	if PRESSBUILD then
+--//		self.items[7]=MENUITEM(L"PRESS MENU",entermenu("pressmenu_tracks"),ICON(self,"icon_extras"))
+--//	end
+
+--//	if DEV then
+--//		table.insert(self.items,MENUITEM(L"DEV MENU",entermenu("menu_dev"),ICON(self)))
+--//	end
+
+	if PC then
+		table.insert(self.items,MENUITEM(TRANSLATOR(ICON_MAIN_QUITGAME),function() quit_confirm() end,ICON(self,"icon_pc_quit_game")))
+	end
+
+
+end
+
+
+function menu_mainmenu.init(self)
+	self.parent:init(self)
+
+	--//GUI:SetBackground("data/menu/menu_background.tga")
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+	local size=SIZE(188,75) --//GetResourceSize(self:getResource("title_logo"))
+
+	local w=Frame{Name="logo",Position=POS(404,31),Size=size,Layer=5}:AttachResource(self:getResource("title_logo"))
+	
+	--//w:HideWindow()
+
+end
+
+function menu_mainmenu.update(self,time)
+	self.parent:update(self,time)
+end
+
+
+function menu_mainmenu.startshow(self)
+	self.parent:startshow(self)
+
+--//	GetWindow("logo"):ShowWindow()
+
+	if XBOX then
+		GUI:AllowOnlineOptionsMenu(true)
+		if Network ~= nil then
+			GUI:EnableOnlineOptionsMenu(true)
+		end		
+		XBoxLiveUpdateStatus()
+		XBoxLiveCheckGameInvite()
+	end
+	--GUI:SetStatusText(TRANSLATOR(AUTH_NOTSIGNEDIN),TRUE)
+
+
+
+end
+
+function menu_mainmenu.starthide(self)
+	self.parent:starthide(self)
+
+--//	GetWindow("logo"):HideWindow()
+
+end
+
+function menu_mainmenu.deinit(self)
+	self.parent:deinit(self)
+
+	wm.SetGlobalAlpha(1.0)
+end

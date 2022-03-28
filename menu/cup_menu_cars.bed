@@ -1,0 +1,7 @@
+cup_menu_cars_size = { 512,512 }
+cup_menu_cars = {
+	
+	cup_menu_car_1 = {  3, 3, 360, 240 },   -- car name
+--	cup_menu_car_2 = {  3, 359, 360, 240 }, -- car name
+
+}

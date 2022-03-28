@@ -1,0 +1,37 @@
+track_icons_locked_size = { 512,512 }
+track_icons_locked = {
+	
+	track_icon_1_locked = {  3, 3, 110, 70 },     -- forest 1a
+	track_icon_2_locked = {  116, 3, 110, 70 },   -- forest 1b
+	track_icon_3_locked = {  229, 3, 110, 70 },   -- forest 1c
+	track_icon_4_locked = {  342, 3, 110, 70 },   -- forest 2a
+	track_icon_5_locked = {  3, 76, 110, 70 },    -- forest 2b
+	track_icon_6_locked = {  116, 76, 110, 70 },  -- forest 2c
+
+	track_icon_7_locked = {  229, 76, 110, 70 },   -- field 1a
+	track_icon_8_locked = {  342, 76, 110, 70 },   -- field 1b
+	track_icon_9_locked = {  3, 149, 110, 70 },    -- field 1c
+	track_icon_10_locked = {  116, 149, 110, 70 }, -- field 2a
+	track_icon_11_locked = {  229, 149, 110, 70 }, -- field 2b
+	track_icon_12_locked = {  342, 149, 110, 70 }, -- field 2c
+
+	track_icon_13_locked = {  3, 222, 110, 70 },   -- desert 1a
+	track_icon_14_locked = {  116, 222, 110, 70 }, -- desert 1b
+	track_icon_15_locked = {  229, 222, 110, 70 }, -- desert 1c
+
+	track_icon_16_locked = {  342, 222, 110, 70 }, -- canals 1a
+	track_icon_17_locked = {  3, 295, 110, 70 },   -- canals 1b
+	track_icon_18_locked = {  116, 295, 110, 70 }, -- canals 1c
+	
+	track_icon_19_locked = {  229, 295, 110, 70 }, -- racing 1a
+	track_icon_20_locked = {  342, 295, 110, 70 }, -- racing 1b
+	track_icon_21_locked = {  3, 368, 110, 70 },   -- racing 1c
+	track_icon_22_locked = {  116, 368, 110, 70 }, -- racing 2a
+	track_icon_23_locked = {  229, 368, 110, 70 }, -- racing 2b
+	track_icon_24_locked = {  342, 368, 110, 70 }, -- racing 2c
+
+	track_icon_25_locked = {  3, 441, 110, 70 },   -- arena 1
+	track_icon_26_locked = {  116, 441, 110, 70 }, -- arena 2
+	track_icon_27_locked = {  229, 441, 110, 70 }, -- arena 3
+
+}

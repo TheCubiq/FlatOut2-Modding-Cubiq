@@ -1,0 +1,12 @@
+ai_signatures_size = { 256,512 }
+ai_signatures = {
+	
+	ai1_signature = {  1, 1, 152, 76 },
+	ai4_signature = {  153, 1, 102, 43 },
+	ai3_signature = {  154, 45, 63, 97 },
+	ai2_signature = {  96, 181, 155, 72 },
+	ai5_signature = {  1, 256, 143, 72 },
+	ai6_signature = {  0, 78, 114, 95 },
+	ai7_signature = {  1, 194, 86, 61 },
+
+}

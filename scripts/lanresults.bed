@@ -1,0 +1,305 @@
+--///////////////////////////////////////////////////////////////////////////
+--// LANResults.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 20.6.2004 3:27:03
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--//          Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local Layout=
+{
+	ListPos=POS(0, 107),
+	ListWidth=290,
+	ListRowHeight=24,
+	ListRowPadding=0,
+	ListFont=fontsmall(),
+	ListFontColor={255, 255, 255, 255},
+	ListBackgroundColor={0, 0, 0, 127},
+	
+	MatchNrPos=POS(3, 3),
+	MatchNrWidth=30,
+	MatchNrFont=fontsmall(),
+	MatchNrFontColor={255, 200, 0, 255},
+	
+	MatchNamePos=POS(0, 3),
+	MatchNameWidth=215,
+
+	PlayersPos=POS(220, 3),
+	PlayersWidth=50,
+	
+	InfoBoxPos=POS(315, 65),
+	InfoBoxSize=SIZE(210, 285),
+	
+	
+	GameTitlePos=POS(3, 75),
+	PlayersTitlePos=POS(220, 75),
+	TitleSize=SIZE(100, 16),
+	TitleFont=fontsmall(),
+	TitleFontColor={255, 200, 0, 255},
+}
+
+
+local State=nil
+local RefreshingQuality=false
+local EventListener
+
+local function JoinSelectedSession()
+	local sessionNum=wm.GetWindow("sessionlist"):GetSelectedRow()
+	if sessionNum>=1 and sessionNum<=SessionList:GetNumSessions() then
+--		Session:Reset()
+		ShowThinkingWindow()
+		SessionList:SetSessionNum(sessionNum)
+--[[			for i=1, XBoxLive.Auth.GetNumSignedInUsers() do
+				local userId=XBoxLive.Auth.GetSignedInUserId(i)
+				local userPort=XBoxLive.Auth.GetSignedInUserPort(i)
+				Session:AddLocalPlayer(userId, userPort)
+				local player=Session:GetLocalPlayer(i)
+				player.Name=XBoxLive.Auth.GetSignedInUserName(i)
+			end--]]
+		SessionList:JoinSession()				
+		State="JOINING"
+	end
+end
+
+local function NetworkEvents(event)
+	if event.id == EVENT_NETWORK_REQUEST_PLAYERUPDATE then
+		local player=Session:GetLocalPlayer(1)
+		player:GenerateUserId()
+		player.Name=PlayerProfile:GetName(1)
+		player.CarSkin=1
+		player.Score = 0
+
+		if info.CarClass > 4 then
+			player.Car = info.CarClass - 5
+		elseif info.CarClass ~= SessionInfo.CarClass.Any then
+			local classCars = CarlistFromClass(info.CarClass - 1, false, true)
+			player.Car = classCars[0]
+		else
+			player.Car = 0
+		end
+
+		if info.CarUpgrades ~= SessionInfo.CarUpgrades.Any then
+			player.UpgradeLevel = info.CarUpgrades
+		else
+			player.UpgradeLevel = SessionInfo.CarUpgrades.Full
+		end
+
+	elseif event.id == EVENT_NETWORK_JOIN_RESULT then
+		if event.data == 0 then
+			HideThinkingWindow()
+			ShowMessageBox(SAFEPOS(154, 70), nil,
+						OPTIRESULTS_NOTJOIN,
+						OPTIRESULTS_TRY,
+						function()JoinSelectedSession()end,
+						OPTIRESULTS_ANOTHER,
+						function()State="DISPLAYING"end
+						)
+			State="ERROR"
+		elseif event.data == 1 then
+			HideThinkingWindow()
+			--XBoxLiveSelectCar(function()Network:StopXBoxLive()EnterMenu("menu_xboxlive")end,entermenu("menu_xboxlive_lobby"))
+			menu_multiplayer_lobby.backmenu = "menu_lan_modeselect"
+			ShowLobby()
+		end
+--[[	elseif event.id==EVENT_FIND_SESSIONS_COMPLETED then
+		HideThinkingWindow()
+		if SessionList:GetNumSessions()==0 then
+			State="ERROR"
+			ShowMessageBox(SAFEPOS(154, 70),
+						QUICK_NOGAMES,
+						QUICK_SEARCH,
+						entermenu("menu_xboxlive_quickmatch"),
+						QUICK_BACK,
+						menu_xboxlive_quickmatch.back,
+						QUICK_CREATE, 
+						entermenu("menu_xboxlive_creategame")
+						)
+		else
+			SessionList:SetSessionNum(1)
+			SessionList:JoinSession()
+			State="JOINING"
+		end--]]
+	end
+end
+
+menu_lan_results = CreateMenuFromTemplate("template_basic")
+menu_lan_results.options.title = OPTIRESULTS_TITLE
+menu_lan_results.back = function()
+							EnterMenu("menu_lan_modeselect")
+						end
+
+function menu_lan_results.create(self)
+	self.parent:create(self)
+	self:addResource("big_box",image("big_box.tga"))
+
+	self:loadResources()
+
+	self.items = {
+	}
+end
+
+function menu_lan_results.init(self)
+	self.parent:init(self)
+--	StartNetwork()
+	EventListener = Event:AddListener(NetworkEvents, EVENTTYPE_NETWORK)
+	Network:StartMultiplayer()
+	Network:StartSearchLanSessions()
+	
+--	GameFlow.SetGameMode("JOIN")
+--		StandardUpperBalk()
+--		XBoxLiveLowerBalk(OPTIRESULTS_JOIN, OPTIRESULTS_BACK, OPTIRESULTS_REFRESH)
+--		GUI:LoadBackground("data/menu/bg/game_background.tga")
+	
+	local listboxParams={
+	ListBoxTemplate={Name="sessionlist", ShowBorders=FALSE},
+	Left=Layout.ListPos[1],
+	Top=Layout.ListPos[2],
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=Layout.ListWidth,
+	RowHeight=Layout.ListRowHeight,
+	RowPadding=Layout.ListRowPadding,
+	RowTemplate={Font=Layout.ListFont, DrawBackgroundColor=TRUE, TitleCentering=TITLE_CENTER_NONE},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+		Row:SetColor({0, 0, 0, 0}, false)
+		Row:SetActiveColor(Layout.ListBackgroundColor, false)
+		Row:SetInactiveColor({0, 0, 0, 0}, false)
+	end,
+	NumRows=9,
+	Coloumns={
+			[1]={
+			Name="matchnr", -- _row# is added
+			ColoumnTemplate={Position=Layout.MatchNrPos, Font=Layout.MatchNrFont, Size=SIZE(Layout.ListRowHeight,Layout.MatchNrWidth), ShowBorders=FALSE},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.MatchNrFontColor, false)
+			end
+			},		
+			[2]={
+			Name="matchname", -- _row# is added
+			ColoumnTemplate={Position=Layout.MatchNamePos, Size=SIZE(Layout.ListRowHeight,Layout.MatchNameWidth), Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_NONE},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.ListFontColor, false)
+			end
+			},		
+			[3]={
+			Name="players", -- _row# is added
+			ColoumnTemplate={Position=Layout.PlayersPos, Size=SIZE(Layout.ListRowHeight,Layout.PlayersWidth), Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_NONE},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.ListFontColor, false)
+			end
+			},
+		}
+	}
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local matchnr=wm.GetWindow(string.format("matchnr_row%i", ControlRowNr))
+		local matchname=wm.GetWindow(string.format("matchname_row%i", ControlRowNr))
+		local players=wm.GetWindow(string.format("players_row%i", ControlRowNr))
+		if State=="DISPLAYING" and RowNr <=SessionList:GetNumSessions() then
+			LOG("%d %d", RowNr, SessionList:GetNumSessions())
+			SessionList:SetSessionNum(RowNr)
+			local sessionInfo=SessionList:GetSessionInfo()
+			--matchnr:SetTitle(ConvertToWString(string.format("%02i", RowNr)))
+			matchname:SetTitle(sessionInfo.SessionName)
+			--matchname:SetTitle(ConvertToWString("WWWWWWWWWWWWWWW"))
+			local playersTitle=string.format("%i/%i", sessionInfo.FilledPublicSlots+sessionInfo.FilledPrivateSlots, sessionInfo.MaxPublicSlots+sessionInfo.MaxPrivateSlots)
+			playersTitle=ConvertToWString(playersTitle)
+			players:SetTitle(playersTitle)
+		end
+	end
+	
+	list:SetNumRows(0)
+	
+	list.onSelectedRowChanged=function(Self, RowNr)
+		--RefreshGameInfoBox()
+	end
+	
+	
+	
+	local win=StaticText{Position=MakeSafePos(Layout.GameTitlePos), Size=Layout.TitleSize, Font=Layout.TitleFont, ShowBorders=FALSE}
+	win:SetColor(Layout.TitleFontColor, false)
+	win:SetTitle(OPTIRESULTS_GAME)
+
+	local win=StaticText{Position=MakeSafePos(Layout.PlayersTitlePos), Size=Layout.TitleSize, Font=Layout.TitleFont, ShowBorders=FALSE}
+	win:SetColor(Layout.TitleFontColor, false)
+	win:SetTitle(OPTIRESULTS_PLAYERS)
+	
+	--CreateGameInfoBox(Layout.InfoBoxPos, Layout.InfoBoxSize, true, true)
+	
+	local handler=InputHandler{Name="inputhandler"}
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey==KeyCodes["BUTTON_START"] then
+			JoinSelectedSession()
+		elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+			menu_lan_results.back()
+		elseif VirtualKey==KeyCodes["BUTTON_X"] and State=="DISPLAYING" then
+			SessionList:Refresh()
+			ShowThinkingWindow()
+			State="SEARCHING"	
+		elseif VirtualKey==KeyCodes["BUTTON_UP"] then
+			list:MovePrev()
+		elseif VirtualKey==KeyCodes["BUTTON_DOWN"] then
+			list:MoveNext()
+		elseif VirtualKey==KeyCodes["BUTTON_LEFT"] then
+--			PrevInfoPage()
+		elseif VirtualKey==KeyCodes["BUTTON_RIGHT"] then
+--			NextInfoPage()
+		end
+	end
+	handler:SetFocus()
+		
+	SessionList:Refresh()
+	RefreshingQuality=false
+	ShowThinkingWindow()
+	State="SEARCHING"
+end
+
+function menu_lan_results.deinit(self)
+	self.parent:deinit(self)
+	Event:RemoveListener(EventListener)
+end
+
+function menu_lan_results.update(self, time)
+	self.parent:update(self, time)
+	if CheckSystemLinkErrors() then
+		return
+	end
+	if State=="SEARCHING" and SessionList:IsRefreshCompleted() then
+		State="REFRESHINGQUALITY"
+	elseif State=="REFRESHINGQUALITY" then
+		HideThinkingWindow()
+		if SessionList:GetNumSessions()==0 then
+			State="ERROR"
+			ShowMessageBox(SAFEPOS(154, 70), nil,
+						OPTIRESULTS_NOGAME,
+						OPTIRESULTS_SEARCH,
+						function()
+--							Network:StopSystemLink()
+--							Network:StartSystemLink()
+							SessionList:Refresh()
+							ShowThinkingWindow()
+							State="SEARCHING"
+						end,
+						OPTIRESULTS_BACK,
+						menu_lan_results.back,
+						OPTIRESULTS_CREATE, 
+						entermenu("menu_lan_creategame")
+						)
+		else
+			State="DISPLAYING"
+			wm.GetWindow("sessionlist"):SetNumRows(SessionList:GetNumSessions())
+			wm.GetWindow("inputhandler"):SetFocus()
+			--RefreshGameInfoBox()
+		end
+	end
+end

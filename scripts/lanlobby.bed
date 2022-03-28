@@ -1,0 +1,752 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MultiplayerLobby.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 11.6.2004 18:47:10
+--// 
+--// Authors: Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local Layout={
+	LabelTop=123,
+	LabelHeight=12,
+	LabelWidth=10,
+
+	LabelFont=fontsmall(),
+	LabelColor=GetPaletteColor(1),
+	
+	ReadyLeft=77,
+	ReadyTop=4,
+	VoiceLeft=95,
+	FlagLeft=117,
+	FlagTop=3,
+	NameLeft=149,
+	CarLeft=306,
+	UpgradesCenter=450,
+	ScoreCenter=500,
+	
+	ListLeft=0-TITLESAFE_X,
+	ListTop=142-TITLESAFE_Y,
+	RowHeight=19,
+	RowPadding=3,
+	
+	ListFont=fontsmall(),
+	ListFontColor=GetPaletteColor(4),
+	CarChangingFontColor=GetPaletteColor(5),
+}
+
+local CurrentTime=nil
+local CarSelected=false
+local NameCarTime=0
+--local NameCarTime=1
+
+local Error=false
+local GameTypeWin=nil
+--local TrackWin=nil
+local LapsWin=nil
+
+
+local ShouldEnterLobbyMenu=false
+local EnterLobbyMenuFunction=nil
+
+
+function ShowLobby()
+	CarSelected=false
+	
+	EnterMenu("menu_multiplayer_lobby")
+end
+
+local function SetNumRows(NumRows)
+	wm.GetWindow("list"):SetNumRows(NumRows)
+end
+
+local function GetCarName(CarNum)
+	if CarNum==256 then
+		return LIVELOBBY_NOCAR
+	else
+		local table=cardealer_data.car_data
+		for i,j in pairs(table) do
+			if j.car==CarNum then
+				return ConvertToWString(j.name)
+			end
+		end
+		return ConvertToWString("")
+	end
+end
+
+local function GetGameType()
+--	local sessionInfo=Session:GetSessionInfo()
+--	if sessionInfo.EventType==EventType.RACE and sessionInfo.SubEventType==SubEventType.RACE_NORMAL then
+		return LIVELOBBY_QUICK
+--	elseif sessionInfo.EventType==EventType.RACE and sessionInfo.SubEventType==SubEventType.RACE_DOUBLESMASH then
+--		return LIVELOBBY_DOUBLE
+--	elseif sessionInfo.EventType==EventType.DERBY and sessionInfo.SubEventType==SubEventType.DERBY_LASTMANSTANDING then
+--		return LIVELOBBY_DERBY
+--	elseif sessionInfo.EventType==EventType.RACE and sessionInfo.SubEventType==SubEventType.RACE_TAG then	
+--		return LIVELOBBY_TAG
+--	end
+end
+
+local function GetTrackName()
+--	local info=Session:GetSessionInfo()
+--	return ConvertToWString(Levels[info.StageNr].Name)
+	return L"Alastaro"
+end
+
+local function GetNumLapsText()
+--	local sessionInfo=Session:GetSessionInfo()
+--	local numLaps=string.format("%i", sessionInfo.Laps)
+--	return ConvertToWString(numLaps)
+	return L"3"
+end
+
+local function StartRace()
+	local i
+	local allReady = true
+	if Session:IsHost() then
+		Session:GetLocalPlayer(1).Ready = true
+	end
+
+	local numPlayers = Session:GetNumPlayers()
+	for i = 1, numPlayers do
+		local player = Session:GetPlayer(i)
+		if player.Ready == false then
+			allReady = false
+			break
+		end
+	end
+	
+	if not allReady then
+		ShowMessageBox(
+			POS(0,85), nil, L"ALL PLAYERS ARE NOT READY. ARE YOU SURE YOU WANT TO START THE RACE?",
+			L"YES",	function() StartGameWithoutReadyPlayers() end,
+			L"NO", function()end
+		)
+	else
+		Session:StartRace()
+	end
+		
+--	local isReady=function()
+--		local prog=Session:GetProgress()
+--		return prog~="STARTING"
+--	end
+--	local emptyFunc=function()end
+end
+
+local function StartGameWithoutReadyPlayers()
+	local numPlayers = Session:GetNumPlayers()
+	for i = numPlayers, 1, -1 do
+		local player = Session:GetPlayer(i)
+		if player.Ready == false then
+			Session:DeletePlayer(player)
+		end
+	end
+	Session:StartRace()
+end
+
+local function GetTrackIcon()
+--[[	local info=Session:GetSessionInfo()
+	if info then
+		local level=info.StageNr
+		local class
+		local course
+		local track
+		for class=1, 4 do
+			local numCourses=table.getn(Classes[class].Courses)
+			for course=1, numCourses do
+				local numTracks=table.getn(Classes[class].Courses[course])
+				for track=1, numTracks do
+					if Classes[class].Courses[course][track].Level==level then
+						for i,j in pairs(trackselection_layout[class][track]) do
+							if j[3][1]==course then
+								return track_icons[j[2] ]
+							end
+						end
+					end
+				end
+			end
+		end
+	end--]]
+	return noimage()
+end
+
+
+
+local function GetFlagByNr(FlagNr)
+	local nr=1
+	for i,j in flagicons do
+		if nr==FlagNr then
+			return i
+		end
+		nr=nr+1
+	end
+	return nil
+end
+
+local function EnterLobbyMenu(Func)
+	ShouldEnterLobbyMenu=true
+	LobbyMenuFunction=Func
+end
+
+function ToggleReady()
+	local player=Session:GetLocalPlayer(1)
+	player.Ready = not player.Ready
+	if player.Ready then
+		-- FIXME Disable all other menu icons except ready!
+	end
+end
+
+--- LOBBY ----------------------------------------------------
+
+local function ChangeOptions()
+	EnterChangeOptions(L"LAN GAME OPTIONS", "menu_multiplayer_lobby")
+end
+
+local function ChangeCar()
+	Session:GetLocalPlayer(1).Status = 1 -- TODO: CHANGING_CAR
+	EnterCarSelection(
+		function(car)
+			player = Session:GetLocalPlayer(1)
+			player.Status = 0 -- TODO: IDLE tms
+			player.Car = car
+			player.Ready = true
+			CarSelected = true
+			EnterMenu("menu_multiplayer_lobby")
+		end,
+		entermenu("menu_multiplayer_lobby")
+	)
+end
+
+local function ChangeTrack()
+	EnterSingleRaceSelection(
+		function(levelid, numlaps)
+			Session:GetInfo().StageNr = levelid
+			Session:GetInfo().LapsOrTimeLimit = numlaps
+			EnterMenu("menu_multiplayer_lobby")
+		end,
+		entermenu("menu_multiplayer_lobby")
+	)
+end
+
+local function SessionDetails()
+	EnterSessionDetails(L"SESSION DETAILS", "menu_multiplayer_lobby")
+end
+
+local function PlayerDetails()
+end
+
+local upgradetexts = { L"0%", L"50%", L"100%" }
+
+local function ChangeUpgrades()
+	GUI:HideMenuButtons()
+	local upgradelevel = Session:GetLocalPlayer(1).UpgradeLevel
+	wm.GetWindow("change_upgrades_buttonbar"):SetSelectedButton(upgradelevel)
+	wm.GetWindow("change_upgrades_bg"):ShowWindow()
+	wm.GetWindow("change_upgrades_buttonbar"):SetFocus()
+	GUI:SwitchButtonText(upgradetexts[upgradelevel+1])
+end
+
+local LobbyEventListener
+local function LobbyEventListenerFunc(Event)
+	if Event.id==EVENT_NETWORK_HOST_MIGRATION_END then
+		local player=Session:GetLocalPlayer(1)
+		if player.PeerId==Event.arg then
+			--KLUDGE enter the menu again to display the correct items
+			EnterMenu("menu_multiplayer_lobby")
+		end
+	elseif Event.id==EVENT_RACE_ABOUT_TO_BEGIN then
+		if not XBOX then
+			Session:GetLocalPlayer(1):GetVoiceManagerPlayer():SetMode(ReplicatedVoiceInfo.MODE_INACTIVE)
+		end
+	end
+end
+
+menu_multiplayer_lobby = CreateMenuFromTemplate("template_basic")
+menu_multiplayer_lobby.options.title = LIVELOBBY_TITLE
+menu_multiplayer_lobby.back = function()
+								--No voice for xbox system link
+								if not XBOX then
+									Session:GetLocalPlayer(1):GetVoiceManagerPlayer():SetMode(ReplicatedVoiceInfo.MODE_INACTIVE)
+								end
+--								Network:StopMultiplayer()
+--								StopNetwork()
+								EnterMenu("menu_lan_modeselect")
+							end
+
+function menu_multiplayer_lobby.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	
+	self.items = {
+		{ L"CHANGE CAR", function() ChangeCar() end, ICON(self,"icon_change_car") },
+		-- TODO Disable change upgrades if host selected a fixed upgrade level
+		{ L"CHANGE UPGRADES", function() ChangeUpgrades() end, ICON(self,"icon_change_upgrade_level") },
+		{ L"PLAYER DETAILS", function() PlayerDetails() end, ICON(self,"icon_multiplayer") },
+	}
+	
+	if Session:IsHost() then
+		table.insert(self.items, { L"CHANGE GAME OPTIONS", function() ChangeOptions() end, ICON(self,"icon_game_options") } )
+		-- FIXME Replace pseudocode with real code!
+		-- if gamemode == tournament and not tournament_in_progress then
+		--	table.insert(self.items, { L"BUILD TOURNAMENT", function() BuildTournament() end, ICON(self,"icon_new_tournament") } )
+		-- else
+		table.insert(self.items, { L"CHANGE TRACK", function() ChangeTrack() end, ICON(self,"icon_change_track") } )
+		-- end
+		table.insert(self.items, { L"START RACE", function() StartRace() end, ICON(self,"icon_multiplayer") } )
+	else
+		table.insert(self.items, { L"SESSION DETAILS", function() SessionDetails() end, ICON(self,"icon_session_details") } )	
+		table.insert(self.items, { L"TOGGLE READY", function() ToggleReady() end, ICON(self,"icon_ready") } )	
+	end
+end
+
+function menu_multiplayer_lobby.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+	-- No voice for xbox systemlink
+	if not XBOX then
+		Session:GetLocalPlayer(1):GetVoiceManagerPlayer():SetMode(ReplicatedVoiceInfo.MODE_VOICE_CHAT)
+	end
+	LobbyEventListener=Event:AddListener(LobbyEventListenerFunc, EVENTTYPE_ALL)
+
+	Session:RefreshPoints()
+
+	local bgframe = Frame { Name="change_upgrades_bg", Position=POS(0,0), Size=SIZE(640,480), DrawBackgroundColor=FALSE }
+	bgframe:AttachResource(wm.GetResource("wide_black_bar_50"))
+	bgframe:HideWindow()
+	
+	local buttonbar = ButtonBar { Slots=7, Name="change_upgrades_buttonbar", Position=POS(-60,356), Size=SIZE(640+50,60), SelectedSlotSize=wm.GetResourceSize("icon_multiplayer"), SlotSize=wm.GetResourceSize("icon_multiplayer"), Parent=bgframe }
+	buttonbar:AddButton(ICON(self, "icon_upgrade_0"))
+	buttonbar:AddButton(ICON(self, "icon_upgrade_50"))
+	buttonbar:AddButton(ICON(self, "icon_upgrade_100"))
+	
+	buttonbar.onBack = function(self)
+		bgframe:HideWindow()
+		GUI:ShowMenuButtons()
+		GUI:SetActiveItem(2)
+	end	
+	
+	buttonbar.onChildAction = function(self,id)
+		Session:GetLocalPlayer(1).UpgradeLevel = id - 1
+		bgframe:HideWindow()
+		GUI:ShowMenuButtons()
+		GUI:SetActiveItem(2)
+		GUI:SwitchButtonText(menu_multiplayer_lobby.items[2][1])
+		wm.GetWindow("list"):Refresh()
+	end
+
+	buttonbar.onButtonChange = function(self,id)
+		GUI:SwitchButtonText(upgradetexts[id])
+	end
+
+	local titleframe = Frame { Position=POS(0,74), Size=SIZE(640,34), DrawBackgroundColor=FALSE }:AttachResource(wm.GetResource("wide_black_bar_50"))
+	local trackname = StaticText { Name="trackname", Font=fontsmall(), Color=GetPaletteColor(3), Position=POS(80,3), Size=SIZE(560, 12), Parent=titleframe }
+	local gametype = StaticText { Name="gametype", Font=fontsmall(), Color=GetPaletteColor(1), Position=POS(80,19), Size=SIZE(560, 12), Parent=titleframe }
+	trackname:SetTitle(L"BOB'S BUSHWHACK JAMBING KABLOOM")
+	gametype:SetTitle(L"SINGLE RACE")
+	
+	local labelTemplate={
+		Font=Layout.LabelFont,
+		Position=POS(0, Layout.LabelTop), 
+		Size=SIZE(Layout.LabelWidth, Layout.LabelHeight),
+		ShowBorders=FALSE,
+		TitleCentering=TITLE_CENTER_Y,
+	}
+
+	labelTemplate.Title=LIVELOBBY_NAME
+	labelTemplate.Name="namelabel"
+	labelTemplate.Position=POS(Layout.NameLeft, Layout.LabelTop)
+	StaticText(labelTemplate):SetColor(Layout.LabelColor, false)
+
+	labelTemplate.Title=LIVELOBBY_CAR
+	labelTemplate.Name="carlabel"
+	labelTemplate.Position=POS(Layout.CarLeft, Layout.LabelTop)
+	StaticText(labelTemplate):SetColor(Layout.LabelColor, false)
+
+	labelTemplate.Title=L"UPGRADES"
+	labelTemplate.Align=FONTF_CENTER
+	labelTemplate.Position=POS(Layout.UpgradesCenter, Layout.LabelTop)
+	StaticText(labelTemplate):SetColor(Layout.LabelColor, false)
+
+	labelTemplate.Title=L"SCORE"
+	labelTemplate.Name="scorelabel"
+	labelTemplate.Position=POS(Layout.ScoreCenter, Layout.LabelTop)
+	StaticText(labelTemplate):SetColor(Layout.LabelColor, false)
+
+	labelTemplate.Title=L"RANK"
+	labelTemplate.Name="ranklabel"
+	labelTemplate.Position=POS(Layout.ScoreCenter, Layout.LabelTop)
+	StaticText(labelTemplate):SetColor(Layout.LabelColor, false)
+
+	local listboxParams={
+	ListBoxTemplate={Name="list", ShowBorders=FALSE},
+	Left=Layout.ListLeft,
+	Top=Layout.ListTop,
+	LeftPadding=0,
+	RightPadding=0,
+	TopPadding=0,
+	BottomPadding=0,
+	RowWidth=640,
+	RowHeight=Layout.RowHeight,
+	RowPadding=Layout.RowPadding,
+	RowTemplate={Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_NONE},
+	RowTemplateType="Button",
+	RowTemplateCust=function(Row, RowNr)
+		Row:SetColor(Layout.ListFontColor, false)
+		Row:AttachResource(wm.GetResource("narrow_black_bar_50"))
+	end,
+	NumRows=8,
+	Coloumns={
+			[1]={
+			Name="readyicon", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.ReadyLeft, Layout.ReadyTop), Size=wm.GetResourceSize("check_mark"), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:AttachResource(nil)
+			end
+			},
+			
+			[2]={
+			Name="voiceicon", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.VoiceLeft, 0), Size=wm.GetResourceSize("xbox_voice_communicator"), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:AttachResource(self:getResource("xbox_voice_communicator"))
+			end
+			},
+			
+			[3]={
+			Name="flagicon", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.FlagLeft, Layout.FlagTop), Size=SIZE(32, 16), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				--Coloumn:AttachResource(flagicons.bugbear)
+			end
+			},
+					
+			[4]={
+			Name="playername", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.NameLeft, 0), Size=SIZE(Layout.LabelWidth, Layout.RowHeight), Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_Y},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.ListFontColor, false)
+			end
+			},		
+
+			[5]={
+			Name="car", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.CarLeft, 0), Size=SIZE(Layout.LabelWidth, Layout.RowHeight), Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_Y},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.ListFontColor, false)
+			end
+			},
+			
+			[6]={
+			Name="upgrades", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.UpgradesCenter - wm.GetResourceSize("upgrade_level_100")[1] / 2, 4), Size=wm.GetResourceSize("upgrade_level_100"), DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_Y},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+--				Coloumn:AttachResource(wm.GetResource("upgrade_level_100"))
+			end
+			},	
+				
+			[7]={
+			Name="score", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.ScoreCenter, 0), Size=SIZE(50, Layout.RowHeight), Font=Layout.ListFont, DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_Y, Align=FONTF_CENTER},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:SetColor(Layout.ListFontColor, false)
+			end
+			},	
+				
+			[8]={
+			Name="rank", -- _row# is added
+			ColoumnTemplate={Position=POS(Layout.ScoreCenter - wm.GetResourceSize("rank_icon_1")[1] / 2, 0), Size=wm.GetResourceSize("rank_icon_1"), DrawBackgroundColor=FALSE, TitleCentering=TITLE_CENTER_Y},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:AttachResource(wm.GetResource("rank_icon_1"))
+			end
+			},
+		}
+	}
+
+	local list=CreateMultiColoumnListBox(listboxParams)
+	list.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local player=Session:GetPlayer(RowNr)
+		local userId=player.UId
+		local headsetConnected=false
+		local isTalking=false
+		local voiceThroughSpeakers=false
+--		local isGuest=XBoxLive.UserIsGuest(userId)
+--		if isGuest==false then
+--[[			local voiceManagerPlayer=XBoxLive.GetVoiceManager():GetPlayer(userId)
+			headsetConnected=voiceManagerPlayer:GetHeadsetConnected()
+			voiceThroughSpeakers=voiceManagerPlayer:GetVoiceThroughSpeakers()
+			isTalking=voiceManagerPlayer:IsTalking()--]]
+--		end
+			
+		local ready=wm.GetWindow(string.format("readyicon_row%i", RowNr))
+		local voice=wm.GetWindow(string.format("voiceicon_row%i", RowNr))
+		local flag=wm.GetWindow(string.format("flagicon_row%i", RowNr))
+		local name=wm.GetWindow(string.format("playername_row%i", RowNr))
+		local car=wm.GetWindow(string.format("car_row%i", RowNr))
+		local upgrades=wm.GetWindow(string.format("upgrades_row%i", RowNr))
+		local score=wm.GetWindow(string.format("score_row%i", RowNr))
+		local rank=wm.GetWindow(string.format("rank_row%i", RowNr))
+		
+--[[		if isGuest then
+			local guestNum=XBoxLive.GetGuestNum(userId)
+			local guestString=string.format(" ( GUEST %i )", guestNum)
+			name:SetTitle(WStringConcat(player.Name, ConvertToWString(guestString)))
+		else--]]
+			name:SetTitle(player.Name)
+--		end
+
+		if player.Name ~= L"Connecting..." then
+		if player.UId == Session:GetInfo().HostUId then
+			ready:AttachResource(wm.GetResource("yellow_star"))
+			ready:ShowWindow()
+		elseif player.IngameStatus == 2 then -- TODO INGAME_STATUS_RACING
+			ready:AttachResource(wm.GetResource("steering_wheel"))
+			ready:ShowWindow()
+		elseif player.Ready then
+			ready:AttachResource(wm.GetResource("check_mark"))
+			ready:ShowWindow()
+		else
+			ready:HideWindow()
+		end
+
+		if player.HeadsetConnected then
+			local voiceIcon
+			if player.VoiceInfo.Mode == MODE_INACTIVE then
+				voiceIcon = "xbox_voice_muted"
+			elseif player.VoiceThroughSpeakers then
+				voiceIcon = "xbox_voice_tv"
+			else
+				voiceIcon = "xbox_voice_communicator"
+			end
+			voice:SetSize(wm.GetResourceSize(voiceIcon))
+			voice:AttachResource(wm.GetResource(voiceIcon))
+			voice:ShowWindow()
+		else
+			voice:HideWindow()
+		end
+--[[		local numLocalPlayers=XBoxLive.Auth.GetNumSignedInUsers()
+		local muted=false
+		for i=1, numLocalPlayers do
+			local localUserId=XBoxLive.Auth.GetSignedInUserId(i)
+			if localUserId~=userId and XBoxLive.UserIsGuest(localUserId)==false then
+				local localVoicePlayer=XBoxLive.GetVoiceManager():GetPlayer(localUserId)
+				if localVoicePlayer:PlayerIsMuted(userId) then
+					muted=true
+				end
+			end
+		end--]]
+		
+--		local flagNr=XBoxLive.GetCountry(player.UId)
+--		flag:AttachResource(flagicons[flagnames[flagNr] ])
+		if player.Status == 1 then -- TODO: CHANGING_CAR
+			car:SetTitle(L"CHANGING...")
+			car:SetColor(Layout.CarChangingFontColor, false)
+		else
+			local cardata = db.FlatOut2.Cars:GetProperty("Car", player.Car)
+			car:SetTitle(L(cardata.Name))
+			car:SetColor(Layout.ListFontColor, false)
+		end
+		
+		if player.UpgradeLevel == 0 then
+			upgrades:AttachResource(wm.GetResource("upgrade_level_0"))
+		elseif player.UpgradeLevel == 1 then
+			upgrades:AttachResource(wm.GetResource("upgrade_level_50"))
+		else
+			upgrades:AttachResource(wm.GetResource("upgrade_level_100"))
+		end
+				
+		score:SetTitle(ConvertToWString(player.Points))
+		end
+	end
+	
+	list:SetNumRows(0)
+	
+--	for i=1, 1 do
+	--XBoxLive.Auth.GetNumSignedInUsers() do
+		local player=Session:GetLocalPlayer(1)
+--		player.Name = XBoxLive.Auth.GetSignedInUserName(i)
+		player.Name=PlayerProfile:GetName(1)
+		if CarSelected then
+			player.Ready = true
+		else
+			player.Ready = false
+		end	
+--	end
+	Error=false
+	ShouldEnterLobbyMenu=false
+	LobbyMenuFunction=nil
+
+	local stage = Session:GetInfo().StageNr
+	trackname:SetTitle(ConvertToWString(Levels[stage].Name))
+	
+	if Session:GetInfo().GameType == SessionInfo.GameType.SingleRace then
+		gametype:SetTitle(L"SINGLE RACE")
+	elseif Session:GetInfo().GameType == SessionInfo.GameType.HunterPrey then
+		gametype:SetTitle(L"HUNTER PREY")
+	elseif Session:GetInfo().GameType == SessionInfo.GameType.Tournament then
+		gametype:SetTitle(L"TOURNAMENT")
+	else
+		gametype:SetTitle(L("GAME TYPE "..Session:GetInfo().GameType.." NOT HANDLED!"))
+	end
+
+end
+
+function menu_multiplayer_lobby.deinit(self)
+	self.parent:deinit(self)
+	
+	Event:RemoveListener(LobbyEventListener)
+	
+	if Session then
+		for i=1, Session:GetNumLocalPlayers() do
+			Session:GetLocalPlayer(i).Ready = false
+		end
+	end
+	HideThinkingWindow()
+end
+
+local CurrentTime=nil
+
+function menu_multiplayer_lobby.update(self, time)
+	self.parent:update(self, time)
+
+	if CheckSystemLinkErrors() then
+		return
+	end
+	
+	if ShouldEnterLobbyMenu then
+		ShowThinkingWindow()
+		ShouldEnterLobbyMenu=false
+	end
+	
+	if LobbyMenuFunction~=nil then
+		local allUnReady=true
+		for i=1, Session:GetNumLocalPlayers() do
+			if Session:GetLocalPlayer(i):GetReady()==true then
+				allUnReady=false
+			end
+		end
+		if allUnReady then
+			HideThinkingWindow()
+			LobbyMenuFunction()
+			LobbyMenuFunction=nil
+			return
+		end
+	end
+	
+	local dt=0
+	if CurrentTime==nil then
+		CurrentTime=time
+	else
+		dt=time-CurrentTime
+		CurrentTime=time
+	end
+	
+	--Slow down time when entering the lobby
+	if NameCarTime < 1 then
+		NameCarTime=NameCarTime+0.5*dt
+	else
+		NameCarTime=NameCarTime+dt
+	end		
+	
+	SetNumRows(Session:GetNumPlayers())
+--	if Session:HostIsConnected() then
+--		SetNumRows(Session:GetNumPlayers())
+		
+		--GameTypeWin:SetTitle(GetGameType())
+		--TrackWin:SetTitle(GetTrackName())
+--		local trackIconWin=wm.GetWindow("trackicon2")
+--		local trackIcon=GetTrackIcon()
+--		if trackIcon and ShowInfoBox==false then
+--			trackIconWin:AttachResource(trackIcon)
+--			trackIconWin:ShowWindow()
+--		else
+--			trackIconWin:HideWindow()
+--		end
+		--RefreshGameInfoBox()
+		--local sessionInfo=Session:GetSessionInfo()
+		--if sessionInfo.EventType==EventType.RACE and sessionInfo.SubEventType==SubEventType.RACE_NORMAL then
+		--	LapsWin:SetTitle(GetNumLapsText())
+		--	LapsWin:ShowWindow()
+		--	wm.GetWindow("lapslabel"):ShowWindow()
+		--else
+		--	LapsWin:HideWindow()
+		--	wm.GetWindow("lapslabel"):HideWindow()
+		--end	
+		
+		--menu_multiplayer_lobby.playerlistbuttons:SetNumButtons(Session:GetNumPlayers())
+		--for i=1, Session:GetNumPlayers() do
+	--		local player=Session:GetPlayer(i)
+	--		menu_multiplayer_lobby.playerlistbuttons:SetTitle(i, player:GetName())
+	--	end
+--	elseif Error==false then
+--		ShowMessageBox(SAFEPOS(154, 70), LIVELOBBY_LOST, LIVELOBBY_OK, function()menu_multiplayer_lobby.options.back_action()end)
+--		Error=true
+		--//wm.DeactivateWindow(menu_multiplayer_lobby.playerlist)
+		--menu_multiplayer_lobby.playerlist:HideWindow()
+		--menu_multiplayer_lobby.errormessage:SetTitle(LIVELOBBY_LOST_2)
+		--menu_multiplayer_lobby.errormessage:ShowWindow()
+		--//wm.ActivateWindow(menu_multiplayer_lobby.errormessage)
+--	end
+	
+--	local infoMes=wm.GetWindow("infomessage")
+--	if CarSelected then
+--		infoMes:SetTitle(ConvertToWString(""))
+--	else
+--		infoMes:SetTitle(LIVELOBBY_SELECT_CAR)
+--	end
+	
+	--if CarShowing and ShowInfoBox then
+	--	wm.GetWindow("namelabel"):SetTitle(LIVELOBBY_CAR)
+	--else
+	--	wm.GetWindow("namelabel"):SetTitle(LIVELOBBY_NAME)
+	--end
+	
+	local stateTime=5000
+	local fadeTime=NameCarTime*1000
+	local PI=3.14
+	fadeTime = stateTime * 4 - math.mod(fadeTime, stateTime * 4)
+	local alpha1
+	local alpha2
+	if fadeTime < stateTime then
+		alpha1 = 1
+		alpha2 = 0
+	elseif fadeTime >= stateTime and fadeTime<stateTime*2 then
+		alpha1 = 0.5 + 0.5*math.cos( (fadeTime-stateTime) * (PI/stateTime) )
+		alpha2 = 0.5 + 0.5*math.cos( PI + (fadeTime-stateTime) * PI/stateTime )
+	elseif fadeTime >= stateTime*2 and fadeTime<stateTime*3 then
+		alpha1 = 0
+		alpha2 = 1
+	else
+		alpha1 = 0.5 + 0.5*math.cos( PI + (fadeTime-3*stateTime) * PI/stateTime )
+		alpha2 = 0.5 + 0.5*math.cos( (fadeTime-3*stateTime) * (PI/stateTime) )
+	end
+	alpha1=alpha1*255
+	alpha2=alpha2*255
+	
+	--NOTE the color table has to be copied becasuse of some strange script bug
+	local color={Layout.LabelColor[1], Layout.LabelColor[2], Layout.LabelColor[3], alpha1} 
+	wm.GetWindow("scorelabel"):SetColor(color, false)
+	color[4]=alpha2
+	wm.GetWindow("ranklabel"):SetColor(color, false)
+	
+	--NOTE the color table has to be copied becasuse of some strange script bug
+	color={Layout.ListFontColor[1], Layout.ListFontColor[2], Layout.ListFontColor[3], alpha1}
+	for i=1, 8 do
+		color[4]=alpha1
+		wm.GetWindow(string.format("score_row%i", i)):SetColor(color, false)
+--		wm.GetWindow(string.format("score_row%i", i)):SetAlpha(alpha1)
+		color[4]=alpha2
+--		wm.GetWindow(string.format("score_row%i", i)):SetColor(color, false)
+		wm.GetWindow(string.format("rank_row%i", i)):SetAlpha(alpha2)
+	end
+end

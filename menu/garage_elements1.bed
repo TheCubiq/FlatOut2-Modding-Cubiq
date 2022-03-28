@@ -1,0 +1,40 @@
+ garage_elements1_size = { 256,256 }
+garage_elements1 = {
+
+
+	
+	stats_bottom_bar = 	{ 1, 1, 132, 17 },
+	drive_bottom_bar = 	{ 1, 19, 132, 22 },
+	selection_window = 	{ 1, 42, 107, 56 },
+	buttonbar_select_glow = { 0, 110, 115, 64 },
+	selection_bg = 	  	{ 109, 42, 19, 64 },
+	darker_selection_bg =	{ 197, 191, 19, 64 },
+
+	upgrade_bar_glow = 			{ 136, 1, 36, 23 },
+	upgrade_bar_decrease =			{ 135, 26, 29, 15},
+	confirmation_bar = 			{ 217, 191, 17 , 64 },
+	upshop_confirm_left_slider_bar_ang =    { 129, 51, 62, 204 },
+	upshop_confirm_left_slider_bar =        { 129, 51, 3, 204 },
+	single_player_backdrop1_ang =		{ 129, 51, 61, 198 },
+	upshop_mid_infotxt_bar_ang =		{ 188, 38, 48, 130 },
+	upshop_mid_infotxt_bar =		{ 225, 38, 10, 130 },
+	upshop_mid_infotxt_bar_ang2 =		{ 188, 38, 48, 77 },
+	upshop_mid_infotxt_bar2 =		{ 225, 38, 10, 77 },
+	upshop_top_n_bottom_infotxt_bar_ang =	{ 178, 1, 58, 32 },
+	upshop_top_n_bottom_infotxt_bar	=	{ 188, 1,  40, 32 },
+	car_shop_confirmation_bg_bar =		{ 237, 1, 16, 221 },
+ 	
+	unlock_bar_glow =			{ 1, 174, 31, 82 },		
+	
+	highscores_bar =			{ 1, 190, 46, 21 },
+	
+	multip_add_track_ang =			{ 33, 175, 20, 26 },
+	
+	ang_l_64 =				{ 55, 176, 23, 64 },
+	
+	purchase_bar =				{ 83, 190, 27, 66 },
+	purchase_car_glow =			{ 1, 174, 31, 16 },
+	candy_bar_tile =			{ 0, 243, 47, 13 },
+
+	online_lobby_bg =			{ 189, 38, 20, 48 },
+}

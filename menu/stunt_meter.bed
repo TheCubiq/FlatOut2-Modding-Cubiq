@@ -1,0 +1,14 @@
+stunt_meter_size = { 512, 128 }
+stunt_meter = {
+	
+	speed_bar_empty = {  3, 3, 18, 100 },
+	speed_bar_full = {  24, 3, 18, 100 },
+
+	angle_meter = {  45, 3, 103, 100 },
+	angle_meter_frame = {  151, 3, 103, 100 },
+
+	angle_meter_needle = {  260, 3, 8, 92 },
+	
+	metal_plate = {  274, 3, 102, 100 },
+
+}

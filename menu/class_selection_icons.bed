@@ -1,0 +1,12 @@
+class_selection_icons_size = { 512, 256 }
+class_selection_icons = {
+
+
+	
+	derby_class_icon = 	{ 1, 1, 239, 66 },
+	race_class_icon = 	{ 1, 69, 239, 66 }, 
+	street_class_icon =	{ 0, 138, 239, 66 },  	
+	finals_class_icon =	{ 245, 1, 239, 66 },  	
+	class_slc_glow =	{ 251, 69, 256, 84 },
+	
+}		

@@ -1,0 +1,44 @@
+track_icons_2_size = { 512,512 }
+track_icons_2 = {
+	
+	track_icon_28 = {  3, 3, 110, 70 },     -- city 1a
+	track_icon_29 = {  116, 3, 110, 70 },   -- city 1b
+	track_icon_30 = {  229, 3, 110, 70 },   -- city 1c
+	track_icon_31 = {  342, 3, 110, 70 },   -- city 2a
+	track_icon_32 = {  3, 76, 110, 70 },    -- city 2b
+	track_icon_33 = {  116, 76, 110, 70 },  -- city 2c
+
+	track_icon_34 = {  229, 76, 110, 70 },  -- derby 1
+	track_icon_35 = {  342, 76, 110, 70 },  -- derby 2
+	track_icon_36 = {  3, 149, 110, 70 },   -- derby 3
+	track_icon_37 = {  116, 149, 110, 70 }, -- derby 4
+	track_icon_38 = {  229, 149, 110, 70 }, -- derby 5
+	track_icon_39 = {  342, 149, 110, 70 }, -- derby 6
+	
+	track_icon_40 = {  3, 222, 110, 70 },   -- oval 1
+	track_icon_41 = {  116, 222, 110, 70 }, -- oval 2
+	
+	track_icon_42 = {  229, 222, 110, 70 }, -- stunt a1 - curling
+	track_icon_43 = {  342, 222, 110, 70 }, -- stunt a2 - highjump
+	
+	track_icon_44 = {  3, 295, 110, 70 },   -- stunt a3 - stone skipping
+	track_icon_45 = {  116, 295, 110, 70 }, -- stunt a4 - breakdown
+	track_icon_46 = {  229, 295, 110, 70 }, -- stunt a5 - ring of fire 
+	track_icon_47 = {  342, 295, 110, 70 }, -- stunt a6 - blackjack
+	
+	track_icon_48 = {  3, 368, 110, 70 },   -- stunt b1 - ski jump
+	track_icon_49 = {  116, 368, 110, 70 }, -- stunt b2 - 
+	track_icon_50 = {  229, 368, 110, 70 }, -- stunt b3 - 
+	track_icon_51 = {  342, 368, 110, 70 }, -- stunt b4 -
+
+	track_icon_52 = {  3, 441, 110, 70 },   -- stunt b5 -
+	track_icon_53 = {  116, 441, 110, 70 }, -- stunt b6 -
+
+	exit_stunts_icon = {  342, 441, 57, 37 },
+
+	a_set_selected = {  343, 481, 23, 23 },
+	b_set_selected = {  369, 481, 23, 23 },
+	a_set_not_selected = {  396, 485, 18, 18 },
+	b_set_not_selected = {  417, 485, 18, 18 },
+
+}

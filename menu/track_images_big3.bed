@@ -1,0 +1,22 @@
+track_images_big3_size = { 512,512 }
+track_images_big3 = {
+	
+	track_images_dirt1_big = {  0, 0, 197, 51 },
+	track_images_dirt2_big = {  199, 0, 197, 51 },
+	track_images_dirt3_big = {  0, 52, 197, 51 },
+	track_images_dirt4_big = {  199, 52, 197, 51 },
+	track_images_dirt5_big = {  0, 104, 197, 51 },
+	track_images_dirt6_big = {  199, 104, 197, 51 },
+
+	track_images_oval1_big = {  0, 157, 197, 51 },
+	track_images_oval2_big = {  199, 157, 197, 51 },
+	track_images_oval3_big = {  0, 209, 197, 51 },
+	track_images_oval4_big = {  199, 209, 197, 51 },
+	track_images_oval5_big = {  0, 261, 197, 51 },
+	track_images_oval6_big = {  199, 261, 197, 51 },
+
+	track_images_active_big = {  0, 313, 193, 47 },
+
+	track_images_shade_big = {  199, 315, 193, 47 },
+
+}

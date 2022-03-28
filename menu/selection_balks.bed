@@ -1,0 +1,18 @@
+selection_balks_size = { 64, 64 }
+selection_balks = {
+	
+	big_balk_front = {  0, 1, 10, 41 },
+	big_balk_front_selected = { 36, 1, 10, 41 },
+	big_balk_end = {  11, 1, 10, 41 },
+	big_balk_end_selected = {  47, 1, 10, 41 },
+	big_balk_middle = {  23, 1, 4, 41 },
+	big_balk_middle_selected = {  30, 1, 4, 41 },
+
+	small_balk_front = {  4, 43, 6, 21 },
+	small_balk_front_selected = {  40, 43, 6, 21 },
+	small_balk_middle = {  23, 43, 4, 21 },
+	small_balk_middle_selected = {  41, 43, 4, 41 },
+	small_balk_end = {  29, 43, 6, 21 },
+	small_balk_end_selected = {  47, 43, 6, 21 },
+	
+}

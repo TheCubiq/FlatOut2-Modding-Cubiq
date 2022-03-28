@@ -1,0 +1,7 @@
+character_images_locked_2_size = { 512,512 }
+character_images_locked_2 = {
+	
+	ai_portrait_locked_3 = {  0, 0, 256, 345 },   -- Valerio Vega
+	ai_portrait_locked_2 = {  256, 0, 256, 345 }, -- Sue O'Neill
+
+}

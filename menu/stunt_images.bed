@@ -1,0 +1,9 @@
+stunt_1_image_size = { 512,512 }
+stunt_1_image = {
+	
+	stunt_A1_image = {  3, 3, 250, 250 },      -- curling
+	stunt_A2_image = {  259, 3, 250, 250 },    -- high jump
+	stunt_A3_image = {  3, 259, 250, 250 },    -- stone skipping
+	stunt_A4_image = {  259, 259, 250, 250 },  -- breakdown
+
+}

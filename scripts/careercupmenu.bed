@@ -1,0 +1,334 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CareerCupMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 24.8.2005 15:08:19
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+TYPE_STUNT = 1
+TYPE_CUP = 2
+TYPE_EVENT = 3
+
+dofile("data/menu/character_images.bed")
+dofile("data/menu/character_images_2.bed")
+dofile("data/menu/character_images_3.bed")
+dofile("data/menu/character_images_4.bed")
+dofile("data/menu/cup_menu_bars.bed")
+dofile("data/menu/cup_menu_bg.bed")
+dofile("data/menu/cup_menu_cars.bed")
+--//dofile("data/menu/shop_ad_1.bed")
+--//dofile("data/menu/trophy_gold.bed")
+dofile("data/menu/placement.bed")
+dofile("data/menu/cup_final_results_elements1.bed")
+
+local classnames = {
+	"ClassC",
+	"ClassB",
+	"ClassA",
+	"Finals",
+	"Extra",
+}
+
+
+local function RaceCup()
+		--//db.GameFlow.PreRace.Mode=GM_CAREER
+		--//Event:PostEvent(event("EVENT_RACE_BEGIN"))
+
+		local selection={
+			class_id=db.GameFlow.PreRace.Class,
+			event_id=db.GameFlow.PreRace.Cup,
+			event_type=TYPE_CUP,
+			classname=classnames[db.GameFlow.PreRace.Class],
+			cupmode=true,
+		}
+		EnterRaceSelection(selection)
+end
+
+
+
+
+menu_career_cup = CreateMenuFromTemplate("template_career")
+
+
+menu_career_cup.options.title=TRANSLATOR(TITLE_CUPMENU)
+
+
+local function resign_cup_confirmation()
+	local function confirmation_end(value)
+		if value==TRUE then
+			GameFlow.ClearCup(); 
+			PlayerProfile:ResetActiveCup(); 
+			EnterMenu("menu_career");
+		else
+			GUI:ShowMenuButtons()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT))
+		end
+	end
+	GUI:HideMenuButtons()
+	GUI:SetHelpButtons()
+	MessageBox(TRANSLATOR(MESSAGE_RESIGNCUP),MESSAGEBOX_YESNO,confirmation_end)
+end
+
+
+
+
+
+function menu_career_cup.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images.tga",character_images,character_images_size)
+	self:addResource("character_images_2.tga",character_images_2,character_images_2_size)
+	self:addResource("character_images_3.tga",character_images_3,character_images_3_size)
+	self:addResource("character_images_4.tga",character_images_4,character_images_4_size)
+	self:addResource("cup_menu_bars.tga",cup_menu_bars,cup_menu_bars_size)
+	self:addResource("cup_menu_bg.tga",cup_menu_bg,cup_menu_bg_size)
+	self:addResource("cup_menu_cars.tga",cup_menu_cars,cup_menu_cars_size)
+
+	self:loadResources()
+
+	self.items={
+		MENUITEM(TRANSLATOR(ICON_CAREER_GORACE),RaceCup,ICON(self,"icon_sp_single_race")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_UPGRADESHOP),entermenu("menu_upgrade_categories"),ICON(self,"icon_upgrades")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_STATISTICS),entermenu("menu_career_statistics"),ICON(self,"icon_statistics")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_RESIGNCUP),resign_cup_confirmation,ICON(self,"icon_retire_cup")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_QUITCAREER),entermenu("menu_career_quit"),ICON(self,"icon_exit_career_mode")),
+	}
+
+	if GameFlow.IsCupFinished() then
+		self.items[1] = MENUITEM(L"CAREER",function() GameFlow.ClearCup(); PlayerProfile:ResetActiveCup(); EnterMenu("menu_career"); end,ICON(self,"icon_sp_career"))
+	end
+
+end
+
+
+function menu_career_cup.init(self)
+	self.parent:init(self)
+
+	
+	local portrait = string.format("ai_portrait_%d",1+math.random(6))
+		
+
+	Frame{Name="cup_bg",Position=POS(0,57),Size=SIZE(640,350)}:AttachResource(self:getResource("cup_menu_bg"))
+	Frame{Name="cup_car",Position=POS(-70,136),Size=SIZE(360,240)}:AttachResource(self:getResource("cup_menu_car_1"))
+	Frame{Name="cup_bars",Position=POS(134,107),Size=SIZE(506,221)}:AttachResource(self:getResource("cup_menu_bars"))
+	Frame{Name="cup_character",Position=POS(61,61),Size=SIZE(256,345)}:AttachResource(self:getResource(portrait))
+
+
+	StaticText{Title=TRANSLATOR(TITLE_CROSSHATCH),Align=FONTF_CENTER,Position=POS(336,88),Font=fontmedium()}
+	StaticText{Title=TRANSLATOR(TITLE_NAME),Align=FONTF_LEFT,Position=POS(353,88),Font=fontmedium()}
+	StaticText{Title=TRANSLATOR(TITLE_POINTS),Align=FONTF_CENTER,Position=POS(558,88),Font=fontmedium()}
+
+
+	local y=111
+	local i
+	for i=1,GameFlow.GetNumResults() do
+
+		local id=GameFlow.GetPlayerIdByPosition(i)
+
+		if CupManager:IsCupPositionVisible(i) then
+			StaticText{Title=ConvertToWString(string.format("%d.",i)),Position=POS(336,y+5),Align=FONTF_CENTER,Font=fontmedium()}
+		end
+		StaticText{Title=GameFlow.GetPlayerName(id),Position=POS(353,y),Align=FONTF_LEFT,Font=fontlarge()}
+		StaticText{Title=ConvertToWString(GameFlow.GetPlayerCupPoints(id)),Position=POS(558,y),Align=FONTF_CENTER,Font=fontlarge()}
+
+		y=y+28
+	end
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+
+end
+
+function menu_career_cup.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--//  CUP RESULTS
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_career_cup_results = CreateMenuFromTemplate("template_career")
+
+
+menu_career_cup_results.options.title=TRANSLATOR(TITLE_FINALRESULTS)
+
+function menu_career_cup_results.create(self)
+	self.parent:create(self)
+
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("placement.tga",placement,placement_size)
+
+	self:loadResources()
+
+end
+
+local classnames = { "ClassC", "ClassB", "ClassA", "Finals", "Extra" }
+local reward_images = { 
+	{ image="first_prize_tr", pos=POS(67,105) },
+	{ image="second_prize_tr", pos=POS(67,105) },
+	{ image="third_prize_tr", pos=POS(67,105) },
+	{ image="fourth_place", pos=POS(99,179) },
+	{ image="fifth_place", pos=POS(105,179) },
+	{ image="sixth_place", pos=POS(109,179) },
+	{ image="seventh_place", pos=POS(122,177) },
+	{ image="eighth_place", pos=POS(106,177) },
+}
+
+function menu_career_cup_results.init(self)
+	self.parent:init(self)
+
+	local current_class=db.GameFlow.PreRace.Class
+	local current_cup=db.GameFlow.PreRace.Cup
+	local position = CupManager:GetCupPosition(0) or 1 --//PlayerProfile:GetCupPosition(current_class,current_cup) or 1
+	local awards = db.GameFlow.Awards
+	local money_reward = awards:GetProperty("CupWinnings",position-1)
+	
+
+
+	Frame{Position=POS(0,87),Size=SIZE(312,143)}:AttachResource(self:getResource("big_bottom"))
+	Frame{Position=POS(312,87),Size=SIZE(45,143)}:AttachResource(self:getResource("big_bottom_ang"))
+	Frame{Position=POS(0,230),Size=SIZE(352,143)}:AttachResource(self:getResource("big_bottom"))
+	Frame{Position=POS(352,230),Size=SIZE(45,143)}:AttachResource(self:getResource("big_bottom_ang"))
+
+
+	Frame{Position=POS(326,87),Size=SIZE(13,31)}:AttachResource(self:getResource("cup_title_bot_ang"))
+	Frame{Position=POS(326+13,87),Size=SIZE(302,31)}:AttachResource(self:getResource("cup_title_bot"))
+
+	Frame{Position=POS(335,122),Size=SIZE(28,82)}:AttachResource(self:getResource("congrats_bottom_ang"))
+	Frame{Position=POS(363,122),Size=SIZE(277,82)}:AttachResource(self:getResource("congrats_bottom"))
+
+	Frame{Position=POS(366,233),Size=SIZE(15,22)}:AttachResource(self:getResource("cup_troph_bot_ang"))
+	Frame{Position=POS(381,233),Size=SIZE(259,22)}:AttachResource(self:getResource("cup_troph_bot"))
+
+	Frame{Position=POS(374,259),Size=SIZE(144,36)}:AttachResource(self:getResource("first_two_troph_bot"))
+	Frame{Position=POS(513,259),Size=SIZE(15,36)}:AttachResource(self:getResource("last_troph_bot_ang"))
+	Frame{Position=POS(528,259),Size=SIZE(112,36)}:AttachResource(self:getResource("last_troph_bot"))
+
+
+	Frame{Position=POS(395,337),Size=SIZE(32,36)}:AttachResource(self:getResource("reward_bot_ang"))
+	Frame{Position=POS(427,337),Size=SIZE(213,36)}:AttachResource(self:getResource("reward_bot"))
+
+
+
+
+
+
+
+	LOG("class=%d, cup=%d,reward=%d",current_class,current_cup,money_reward)
+
+
+	local places = { TRANSLATOR(HEADER_1ST), TRANSLATOR(HEADER_2ND), TRANSLATOR(HEADER_3RD), TRANSLATOR(HEADER_TH) }
+
+	if position == 0 then
+		position=1
+	end
+
+	local position_text
+	local suffix = position
+	if suffix >= 4 then
+		suffix=4
+		position_text=WStringConcat(ConvertToWString(string.format("%d",position)),places[4])
+
+	else
+		position_text=places[position]
+	end
+
+	local cup_data = _G[classnames[current_class]].Cups[current_cup]
+
+	StaticText{Title=ConvertToWString(cup_data.Name),Position=POS(342,90),Font=fontlarge(),Color=GetPaletteColor(33)}
+
+	local place_text
+
+	if position > 3 then
+		place_text=WStringConcat(TRANSLATOR(CAREER_CUP_SUCK_MESSAGE),L" ")   --//string.format("YOU PLACED %s\nBETTER LUCK NEXT TIME!",position_text)
+		place_text=WStringConcat(place_text,position_text)
+		place_text=WStringConcat(place_text,L"\n")
+		place_text=WStringConcat(place_text,TRANSLATOR(CAREER_CUP_SUCK_MESSAGE2))
+	else
+		place_text=WStringConcat(TRANSLATOR(CAREER_CUP_COMPLETION_MESSAGE),L" ")
+		place_text=WStringConcat(place_text,position_text)
+		place_text=WStringConcat(place_text,L" ")
+		place_text=WStringConcat(place_text,TRANSLATOR(CAREER_CUP_COMPLETION_MESSAGE2))
+	end
+
+	StaticText{Title=place_text,Position=POS(343,138),TextLineAdjust=7,Font=fontsmall(),Color=GetPaletteColor(34)}
+
+	StaticText{Title=TRANSLATOR(TITLE_CUPTROPHIES),Position=POS(372,236),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+	local num_gold=0
+	local num_silver=0
+	local num_bronze=0
+
+	for k,v in pairs(cup_data.Races) do
+		local pos=CupManager:GetRacePosition(0,k) or 0
+		if pos == 1 then
+			num_gold = num_gold + 1
+		elseif pos == 2 then
+			num_silver = num_silver + 1
+		elseif pos == 3 then
+			num_bronze = num_bronze + 1
+		end
+	end
+		
+	Frame{Position=POS(381,263),Size=GetResourceSize(self:getResource("small_trophy_gold"))}:AttachResource(self:getResource("small_trophy_gold"))
+	Frame{Position=POS(451,263),Size=GetResourceSize(self:getResource("small_trophy_silver"))}:AttachResource(self:getResource("small_trophy_silver"))
+	Frame{Position=POS(520,263),Size=GetResourceSize(self:getResource("small_trophy_bronze"))}:AttachResource(self:getResource("small_trophy_bronze"))
+	StaticText{Title=ConvertToWString("x"),Position=POS(408,272),Font=fontmedium(),Color=GetPaletteColor(34)}
+	StaticText{Title=ConvertToWString("x"),Position=POS(478,272),Font=fontmedium(),Color=GetPaletteColor(34)}
+	StaticText{Title=ConvertToWString("x"),Position=POS(548,272),Font=fontmedium(),Color=GetPaletteColor(34)}
+	StaticText{Title=ConvertToWString(string.format("%d",num_gold)),Position=POS(422,269),Font=fontlarge(),Color=GetPaletteColor(34)}
+	StaticText{Title=ConvertToWString(string.format("%d",num_silver)),Position=POS(492,269),Font=fontlarge(),Color=GetPaletteColor(34)}
+	StaticText{Title=ConvertToWString(string.format("%d",num_bronze)),Position=POS(560,269),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+	StaticText{Title=TRANSLATOR(TITLE_CUPREWARD),Position=POS(397,320),Font=fontsmall(),Color=GetPaletteColor(33)}
+	StaticText{Title=MONEY(money_reward),Position=POS(425,344),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+	local reward_img=reward_images[position]
+
+
+	Frame{Position=reward_img.pos,Size=GetResourceSize(self:getResource(reward_img.image))}:AttachResource(self:getResource(reward_img.image))
+
+	if position > 3 then
+		Frame{Position=POS(179,199),Size=SIZE(82,82)}:AttachResource(self:getResource("th_txt_icon"))
+	end
+
+	local input=InputHandler{Name="inputhandler"}
+
+	function input.onKeyPressed(character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_START or virtualkey == KeyCodes.BUTTON_A then
+			GameFlow.ClearCup()
+			PlayerProfile:ResetActiveCup()
+
+			NextRewardMenu()
+		end
+	end
+
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_CONTINUE))
+	GUI:SetBackgroundVideo("data/video/flag")
+	--//GUI:SetBackground("data/menu/cup_results_bg.tga")
+
+	PlayerProfile:AddMoney(money_reward)
+end
+
+
+function menu_career_cup_results.deinit(self)
+	self.parent:deinit(self)
+
+
+end
+
+
+
+
+
+

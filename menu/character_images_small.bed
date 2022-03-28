@@ -1,0 +1,19 @@
+character_images_small_size = { 512,128 }
+character_images_small = {
+
+	ai_portrait_6_small = { 0, 0, 94, 58 },   -- Ray Smith
+	ai_portrait_2_small = { 95, 0, 94, 58 },  -- Katie Daggert
+	ai_portrait_1_small = { 190, 0, 94, 58 }, -- Jack Benton
+	ai_portrait_4_small = { 285, 0, 94, 58 }, -- Sue O'Neill
+	ai_portrait_5_small = { 380, 0, 94, 58 }, -- Paul McQuire
+	ai_portrait_3_small = { 0, 59, 94, 58 }, -- Valeria Vega
+	ai_portrait_7_small = { 95, 59, 94, 58 }, -- Frank Malkov
+	player_portrait_male = { 190, 59, 94, 58 },
+	player_portrait_female = { 285, 59, 94, 58 },
+	portrait_empty = { 380, 59, 94, 58 },
+
+	end_round = { 475, 59, 9, 64 },
+
+
+
+}

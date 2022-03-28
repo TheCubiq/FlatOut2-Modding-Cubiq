@@ -1,0 +1,9 @@
+time_attack_tracks_2_size = { 512,512 }
+time_attack_tracks_2 = {
+
+	time_attack_track_5 = {  0, 0, 256, 256 },     -- track name
+	time_attack_track_6 = {  256, 0, 256, 256 },   -- track name
+	time_attack_track_7 = {  0, 256, 256, 256 },   -- track name
+	time_attack_track_8 = {  256, 256, 256, 256 }, -- track name
+
+}

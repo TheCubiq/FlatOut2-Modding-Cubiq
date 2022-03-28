@@ -1,0 +1,8 @@
+track_desert_size = { 512,512 }
+track_desert = {
+
+	track_desert_1a = {  0, 0, 256, 256 },     -- track name
+	track_desert_1b = {  256, 0, 256, 256 },   -- track name
+	track_desert_1c = {  0, 256, 256, 256 },   -- track name
+
+}

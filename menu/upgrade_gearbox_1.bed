@@ -1,0 +1,22 @@
+upgrade_gearbox_1_size = { 512,512 }
+upgrade_gearbox_1 = {
+
+	
+	gearbox_flywheel_stock = 	{ 0, 0, 170, 110 },
+	gearbox_flywheel_racing = 	{ 0, 170, 170, 110 },
+	gearbox_flywheel_pro =        	{ 0, 342, 170, 110 },
+	
+	gearbox_clutch_racing 	=	{ 0, 110, 154, 106 },
+	gearbox_clutch_pro 	= 	{ 154, 110, 158, 108  },
+		
+	
+	gearbox_gearbox_stock	 =	{ 0, 218, 205, 148 },
+	gearbox_gearbox_racing	 = 	{ 209, 363, 205, 148 },
+	gearbox_gearbox_pro	 = 	{  3, 365, 205, 147 },
+	
+	exhaust_exhaust_stock	= 	{ 337, 238, 175, 121 },
+
+}
+
+
+	

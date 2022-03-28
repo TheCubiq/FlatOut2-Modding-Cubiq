@@ -1,0 +1,19 @@
+upgrade_engine_2_size = { 512,512 }
+upgrade_engine_2 = {
+
+
+	engine_nitro_kit_1 =        	{  0, 0, 183, 92 },
+	engine_nitro_kit_2 =        	{  186, 0, 175, 90 },
+	engine_nitro_kit_3 = 		{ 0, 92, 181, 89 },
+	
+	engine_supercharger = 		{0, 162, 151, 125 },
+	
+	engine_turbo_kit_stock = 	{ 330, 200, 183, 102 },
+	engine_turbo_kit_racing = 	{ 203, 300, 183, 107},
+ 	engine_turbo_kit_pro = 		{ 326, 406, 187, 106 },
+
+	engine_tuning_kit_stock = 	{  198, 98, 189, 120},
+	engine_tuning_kit_racing = 	{ 0, 190, 199, 119 },
+	engine_tuning_kit_pro  =	{ 0, 317, 204, 166 },
+	
+}

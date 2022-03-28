@@ -1,0 +1,639 @@
+--mother of all loading screens
+
+Default = "data/scripts/LoadingScreens/Default.bed"
+
+--Ai profiles
+Generic = {
+	Count = 7,
+	
+	Files = {
+		[1] = { 
+		Name = "data/scripts/LoadingScreens/ai1.bed", 
+		},
+
+		[2] = { 
+		Name = "data/scripts/LoadingScreens/ai2.bed", 
+		},
+		
+		[3] = { 
+		Name = "data/scripts/LoadingScreens/ai3.bed", 
+		},
+	
+		[4] = { 
+		Name = "data/scripts/LoadingScreens/ai4.bed", 
+		},
+		
+		[5] = { 
+		Name = "data/scripts/LoadingScreens/ai5.bed", 
+		},
+		
+		[6] = { 
+		Name = "data/scripts/LoadingScreens/ai6.bed", 
+		},
+		
+		[7] = { 
+		Name = "data/scripts/LoadingScreens/ai7.bed", 
+		},
+		
+	},
+}
+
+--Driving tips
+Race = {
+	Count = 21,
+
+	Files = {
+		
+		[1] = { 
+		Name = "data/scripts/LoadingScreens/Changingcrashcam.bed", 
+		},
+		
+		[2] = { 
+		Name = "data/scripts/LoadingScreens/Superflip.bed", 
+		},
+		
+		[3] = { 
+		Name = "data/scripts/LoadingScreens/Powerhit.bed", 
+		},
+		
+		[4] = { 
+		Name = "data/scripts/LoadingScreens/Crashout.bed", 
+		},
+		
+		[5] = { 
+		Name = "data/scripts/LoadingScreens/Wrecked.bed", 
+		},
+		
+		[6] = { 
+		Name = "data/scripts/LoadingScreens/Bestwrecker.bed", 
+		},
+		
+		[7] = { 
+		Name = "data/scripts/LoadingScreens/Blastmaster.bed", 
+		},
+		
+		[8] = { 
+		Name = "data/scripts/LoadingScreens/Fastestlap.bed", 
+		},
+		
+		[9] = { 
+		Name = "data/scripts/LoadingScreens/Daredevil.bed", 
+		},
+		
+		[10] = { 
+		Name = "data/scripts/LoadingScreens/Nitrofromobjects.bed", 
+		},
+		
+		[11] = { 
+		Name = "data/scripts/LoadingScreens/NitroCrashout.bed", 
+		},
+		
+		[12] = { 
+		Name = "data/scripts/LoadingScreens/NitroBigair.bed", 
+		},
+	
+		[13] = { 
+		Name = "data/scripts/LoadingScreens/Resetbutton.bed", 
+		},
+		
+		[14] = { 
+		Name = "data/scripts/LoadingScreens/Ragdolling.bed", 
+		},
+		
+		[15] = { 
+		Name = "data/scripts/LoadingScreens/Powerslide.bed", 
+		},
+		
+		[16] = { 
+		Name = "data/scripts/LoadingScreens/Nitroslide.bed", 
+		},
+		
+		[17] = { 
+		Name = "data/scripts/LoadingScreens/Huggingcorners.bed", 
+		},
+		
+		[18] = { 
+		Name = "data/scripts/LoadingScreens/Usethebrakeluke.bed", 
+		},
+	
+		[19] = { 
+		Name = "data/scripts/LoadingScreens/Faststart.bed", 
+		},
+		
+		[20] = { 
+		Name = "data/scripts/LoadingScreens/Hitemhigh.bed", 
+		},
+		
+		[21] = { 
+		Name = "data/scripts/LoadingScreens/Somebodytoleanon.bed", 
+		},
+		
+	},
+}
+
+--Stunt tips
+Stunt = {
+	Count = 31,
+
+	Files = {
+		[1] = { 
+		Name = "data/scripts/LoadingScreens/Stuntaerobatics.bed", 
+		},
+		
+		[2] = { 
+		Name = "data/scripts/LoadingScreens/Stuntnudge.bed", 
+		},
+
+-- curling
+
+		[3] = { 
+		Name = "data/scripts/LoadingScreens/Curlingknocks.bed", 
+		Level = 73,
+		},
+		
+		[4] = { 
+		Name = "data/scripts/LoadingScreens/Curlingaerobaticsfriend.bed", 
+		Level = 73,
+		},
+
+		[5] = { 
+		Name = "data/scripts/LoadingScreens/Curlingsmartdrivin.bed", 
+		Level = 73,
+		},
+
+-- highjump
+
+		[6] = { 
+		Name = "data/scripts/LoadingScreens/Highjumpsmartdrivin.bed", 
+		Level = 70,
+		},
+		
+		[7] = { 
+		Name = "data/scripts/LoadingScreens/Highjumpjustalittlehigher.bed", 
+		Level = 70,
+		},
+		
+		[8] = { 
+		Name = "data/scripts/LoadingScreens/Highjumpavoidaerobatics.bed", 
+		Level = 70,
+		},
+
+-- ring of fire
+
+		[9] = { 
+		Name = "data/scripts/LoadingScreens/Ringoffire-onemorering.bed", 
+		Level = 75,
+		},
+
+		[10] = { 
+		Name = "data/scripts/LoadingScreens/Ringoffire-aerobatics.bed", 
+		Level = 75,
+		},
+
+		[11] = { 
+		Name = "data/scripts/LoadingScreens/Ringoffire-launchearly.bed", 
+		Level = 75,
+		},
+
+-- darts
+
+		[12] = { 
+		Name = "data/scripts/LoadingScreens/Darts-fromabove.bed", 
+		Level = 83,
+		},
+		
+		[13] = { 
+		Name = "data/scripts/LoadingScreens/Darts-centerline.bed", 
+		Level = 83,
+		},
+
+-- royalflush
+
+		[14] = { 
+		Name = "data/scripts/LoadingScreens/royalflush-bealert.bed", 
+		Level = 81,
+		},
+	
+		[15] = { 
+		Name = "data/scripts/LoadingScreens/royalflush-detailsdetails.bed", 
+		Level = 81,
+		},
+	
+		[16] = { 
+		Name = "data/scripts/LoadingScreens/royalflush-desperate.bed", 
+		Level = 81,
+		},
+		
+		[17] = { 
+		Name = "data/scripts/LoadingScreens/royalflush-connections.bed", 
+		Level = 81,
+		},
+		
+-- skijump
+
+		[18] = { 
+		Name = "data/scripts/LoadingScreens/skijump-fastercloser.bed", 
+		Level = 72,
+		},
+		
+		[19] = { 
+		Name = "data/scripts/LoadingScreens/skijump-noskis.bed", 
+		Level = 72,
+		},
+
+-- fieldgoal
+
+		[20] = { 
+		Name = "data/scripts/LoadingScreens/fieldgoal-essence.bed", 
+		Level = 80,
+		},
+		
+		[21] = { 
+		Name = "data/scripts/LoadingScreens/fieldgoal-riskvsreward.bed", 
+		Level = 80,
+		},
+		
+		[22] = { 
+		Name = "data/scripts/LoadingScreens/fieldgoal-madskillz.bed", 
+		Level = 80,
+		},
+
+-- bowling
+
+		[23] = { 
+		Name = "data/scripts/LoadingScreens/bowling-bouncearound.bed", 
+		Level = 71,
+		},
+
+-- basketball
+
+		[24] = { 
+		Name = "data/scripts/LoadingScreens/basketball-fastercloser.bed", 
+		Level = 82,
+		},
+
+		[25] = { 
+		Name = "data/scripts/LoadingScreens/basketball-playsmart.bed", 
+		Level = 82,
+		},
+
+-- baseball
+
+		[26] = { 
+		Name = "data/scripts/LoadingScreens/baseball-flyhighflylow.bed", 
+		Level = 84,
+		},
+
+-- soccer
+		
+		[27] = { 
+		Name = "data/scripts/LoadingScreens/soccer-goalkeeper.bed", 
+		Level = 85,
+		},
+		
+		[28] = { 
+		Name = "data/scripts/LoadingScreens/soccer-400points.bed", 
+		Level = 85,
+		},
+	
+		[29] = { 
+		Name = "data/scripts/LoadingScreens/soccer-aerobatics.bed", 
+		Level = 85,
+		},
+	
+-- stoneskipping
+	
+		[30] = { 
+		Name = "data/scripts/LoadingScreens/stoneskip-launchearly.bed", 
+		Level = 74,
+		},
+
+-- not applicable anymore
+--		
+--		[31] = { 
+--		Name = "data/scripts/LoadingScreens/stoneskip-launchlate.bed", 
+--		Level = 74,
+--		},
+
+		[31] = { 
+		Name = "data/scripts/LoadingScreens/stoneskip-tuneskip.bed", 
+		Level = 74,
+		},
+		
+	},
+}
+
+--Derby tips
+Derby = {
+	Count = 3,
+
+	Files = {
+		[1] = { 
+		Name = "data/scripts/LoadingScreens/derby-damage.bed", 
+		},
+		
+		[2] = { 
+		Name = "data/scripts/LoadingScreens/derby-hits.bed", 
+		},
+
+		[3] = { 
+		Name = "data/scripts/LoadingScreens/derby-wrecking.bed", 
+		},
+
+		[3] = { 
+		Name = "data/scripts/LoadingScreens/derby-tactics.bed", 
+		},
+		
+	},
+}
+
+
+BackgroundCount = 57
+
+Backgrounds = {
+		[1] = {
+		Image = "data/menu/loading_bg_arena1.tga",
+		Level = 59,
+	},
+	
+		[2] = {
+		Image = "data/menu/loading_bg_arena2.tga",
+		Level = 60,
+	},
+	
+		[3] = {
+		Image = "data/menu/loading_bg_arena3.tga",
+		Level = 61,
+	},
+	
+		[4] = {
+		Image = "data/menu/loading_bg_arena4.tga",
+		Level = 62,
+	},
+	
+		[5] = {
+		Image = "data/menu/loading_bg_arena5.tga",
+		Level = 63,
+	},
+	
+		[6] = {
+		Image = "data/menu/loading_bg_arena6.tga",
+		Level = 64,
+	},
+	
+		[7] = {
+		Image = "data/menu/loading_bg_canal1a.tga",
+		Level = 16,
+	},
+	
+		[8] = {
+		Image = "data/menu/loading_bg_canal1b.tga",
+		Level = 17,
+	},
+	
+		[9] = {
+		Image = "data/menu/loading_bg_canal1c.tga",
+		Level = 18,
+	},
+	
+		[10] = {
+		Image = "data/menu/loading_bg_city1a.tga",
+		Level = 10,
+	},
+	
+		[11] = {
+		Image = "data/menu/loading_bg_city1b.tga",
+		Level = 11,
+	},
+	
+		[12] = {
+		Image = "data/menu/loading_bg_city1c.tga",
+		Level = 12,
+	},
+	
+		[13] = {
+		Image = "data/menu/loading_bg_city2a.tga",
+		Level = 13,
+	},
+	
+		[14] = {
+		Image = "data/menu/loading_bg_city2b.tga",
+		Level = 14,
+	},
+	
+		[15] = {
+		Image = "data/menu/loading_bg_city2c.tga",
+		Level = 15,
+	},
+	
+		[16] = {
+		Image = "data/menu/loading_bg_derby1.tga",
+		Level = 52,
+	},
+	
+		[17] = {
+		Image = "data/menu/loading_bg_derby2.tga",
+		Level = 53,
+	},
+	
+		[18] = {
+		Image = "data/menu/loading_bg_derby3.tga",
+		Level = 54,
+	},
+	
+		[19] = {
+		Image = "data/menu/loading_bg_derby4.tga",
+		Level = 55,
+	},
+	
+		[20] = {
+		Image = "data/menu/loading_bg_derby5.tga",
+		Level = 56,
+	},
+	
+		[21] = {
+		Image = "data/menu/loading_bg_derby6.tga",
+		Level = 57,
+	},
+	
+		[22] = {
+		Image = "data/menu/loading_bg_desert1a.tga",
+		Level = 22,
+	},
+	
+		[23] = {
+		Image = "data/menu/loading_bg_desert1b.tga",
+		Level = 23,
+	},
+	
+		[24] = {
+		Image = "data/menu/loading_bg_desert1c.tga",
+		Level = 24,
+	},
+	
+		[25] = {
+		Image = "data/menu/loading_bg_fields1a.tga",
+		Level = 28,
+	},
+	
+		[26] = {
+		Image = "data/menu/loading_bg_fields1b.tga",
+		Level = 29,
+	},
+	
+		[27] = {
+		Image = "data/menu/loading_bg_fields1c.tga",
+		Level = 30,
+	},
+	
+		[28] = {
+		Image = "data/menu/loading_bg_fields2a.tga",
+		Level = 31,
+	},
+	
+		[29] = {
+		Image = "data/menu/loading_bg_fields2b.tga",
+		Level = 32,
+	},
+	
+		[30] = {
+		Image = "data/menu/loading_bg_fields2c.tga",
+		Level = 33,
+	},
+	
+		[31] = {
+		Image = "data/menu/loading_bg_forest1a.tga",
+		Level = 1,
+	},
+	
+		[32] = {
+		Image = "data/menu/loading_bg_forest1b.tga",
+		Level = 2,
+	},
+	
+		[33] = {
+		Image = "data/menu/loading_bg_forest1c.tga",
+		Level = 3,
+	},
+	
+		[34] = {
+		Image = "data/menu/loading_bg_forest2a.tga",
+		Level = 4,
+	},
+	
+		[35] = {
+		Image = "data/menu/loading_bg_forest2b.tga",
+		Level = 5,
+	},
+	
+		[36] = {
+		Image = "data/menu/loading_bg_forest2c.tga",
+		Level = 6,
+	},
+	
+		[37] = {
+		Image = "data/menu/loading_bg_oval1a.tga",
+		Level = 65,
+	},
+	
+		[38] = {
+		Image = "data/menu/loading_bg_oval1b.tga",
+		Level = 66,
+	},
+	
+		[39] = {
+		Image = "data/menu/loading_bg_oval1c.tga",
+		Level = 67,
+	},
+	
+		[40] = {
+		Image = "data/menu/loading_bg_racing2a.tga",
+		Level = 43,
+	},
+	
+		[41] = {
+		Image = "data/menu/loading_bg_racing2b.tga",
+		Level = 44,
+	},
+	
+		[42] = {
+		Image = "data/menu/loading_bg_racing2c.tga",
+		Level = 45,
+	},
+	
+		[43] = {
+		Image = "data/menu/loading_bg_racing1a.tga",
+		Level = 40,
+	},
+	
+		[44] = {
+		Image = "data/menu/loading_bg_racing1b.tga",
+		Level = 41,
+	},
+	
+		[45] = {
+		Image = "data/menu/loading_bg_racing1c.tga",
+		Level = 42,
+	},
+	
+		[46] = {
+		Image = "data/menu/loading_bg_ringoffire.tga",
+		Level = 75,
+	},
+	
+		[47] = {
+		Image = "data/menu/loading_bg_royalflush.tga",
+		Level = 81,
+	},
+	
+		[48] = {
+		Image = "data/menu/loading_bg_skijump.tga",
+		Level = 72,
+	},
+	
+		[49] = {
+		Image = "data/menu/loading_bg_soccer.tga",
+		Level = 85,
+	},
+	
+		[50] = {
+		Image = "data/menu/loading_bg_stoneskipping.tga",
+		Level = 74,
+	},
+	
+		[51] = {
+		Image = "data/menu/loading_bg_highjump.tga",
+		Level = 70,
+	},
+	
+		[52] = {
+		Image = "data/menu/loading_bg_fieldgoal.tga",
+		Level = 80,
+	},
+	
+		[53] = {
+		Image = "data/menu/loading_bg_darts.tga",
+		Level = 83,
+	},
+	
+		[54] = {
+		Image = "data/menu/loading_bg_curling.tga",
+		Level = 73,
+	},
+	
+		[55] = {
+		Image = "data/menu/loading_bg_bowling.tga",
+		Level = 71,
+	},
+	
+		[56] = {
+		Image = "data/menu/loading_bg_basketball.tga",
+		Level = 82,
+	},
+	
+		[57] = {
+		Image = "data/menu/loading_bg_baseball.tga",
+		Level = 84,
+	},
+	
+}

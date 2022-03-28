@@ -1,0 +1,443 @@
+--///////////////////////////////////////////////////////////////////////////
+--// Friends.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 11.2.2004 18:34:52
+--// 
+--// Authors: Fred Sundvik (fred.sundvik@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local Layout = {
+	TitlePos=POS(77,86),
+	TitleFont=fontlarge(),
+	TitleColor=GetPaletteColor(3),
+	
+	InfoBoxPos=POS(364,120),
+	InfoBoxSize=SIZE(276, 88),
+	
+	ListPos=POS(0, 120),
+	ListWidth=353,
+	ListRowHeight=19,
+	ListRowPadding=3,
+	ListFont=fontsmall(),
+	ListFontColor=GetPaletteColor(4),
+	ListSelectedFontColor=GetPaletteColor(5),
+	ListNumPos			= POS(85, 3),
+	ListStatusIconPos	= POS(100, 1),
+	ListVoiceIconPos	= POS(120, 4),
+	ListFlagIconPos		= POS(146, 3),
+	ListNamePos			= POS(178, 3),
+
+	ListNumSize			= SIZE(30, 13),
+	ListPlayerNameSize	= SIZE(158, 13),
+	
+	ListNumRows=10,
+	
+	ScrollUpArrowPos	= POS(336, 126),
+	ScrollDownArrowPos	= POS(336, 325),
+
+	StatusBoxLeft=364,	
+	StatusBoxTop=120,
+	StatusRowSize=SIZE(276, 19),
+	
+	StatusLabelPos=POS(377,123),
+	StatusFont=fontsmall(),
+	StatusLabelFontColor=GetPaletteColor(1),
+	StatusLabelSize=SIZE(263, 13),
+	StatusTextFontColor=GetPaletteColor(4),
+}
+
+GameInvitesEnabled=false
+ControllerId=nil
+local FirstUpdate=true
+local Error=false
+
+--function AddOptionsWindow(win)
+--	table.insert(OptionWindows, win)
+--	return win
+--end
+
+function ShowFriendsList(ControllerIdIn, EnableGameInvites, BackAction)
+	ControllerId=ControllerIdIn
+	--Friends.EndEnumrate()
+
+	GameInvitesEnabled=EnableGameInvites
+	Friends.SetUserIndex(ControllerId)
+	Friends.Enumrate()
+	XBoxLive.GetMessageManager():EnableEnumrate(ControllerId)
+	
+	local fsm=FSM()
+	FSM_init_state(fsm)
+	FSM_add_function(fsm, UpdateFriendsList,FALSE,{})
+	FSM_add_delay_state(fsm, 0.2)
+	FSM_add_reset(fsm)
+	UpdateFriendsListFSM=fsm
+	if BackAction~=nil then
+		menu_xboxlive_friends.back=function()
+			HideFriendsList()
+			BackAction()
+		end
+	else
+		menu_xboxlive_friends.back=function()
+			HideFriendsList()
+			EnterMenu("menu_xboxlive")
+		end
+	end
+	
+	EnterMenu("menu_xboxlive_friends")
+end
+
+function HideFriendsList()
+	if UpdateFriendsListFSM then
+		FSM_init_state(UpdateFriendsListFSM)
+		UpdateFriendsListFSM=nil
+	end
+	--windows_reset()
+	Friends.EndEnumrate()
+	if ControllerId then
+		XBoxLive.GetMessageManager():DisableEnumrate(ControllerId)
+	end
+end
+
+
+
+
+----------------------------------------------------------------------------------------------
+-- Friends list
+----------------------------------------------------------------------------------------------
+
+local function CreateStatusString(Friend)
+	local status=ConvertToWString("")
+
+	if Friend.ReceivedRequest then
+		status=FRIEND_REQUEST_RECEIVED
+	elseif Friend.SentRequest then
+		status=FRIEND_REQUEST_SENT
+	elseif Friend.ReceivedInvite then
+		status=FRIEND_WANTS
+	elseif Friend.SentInvite then
+		status=FRIEND_INVITED
+	elseif Friend.Playing then
+		status=FRIEND_PLAYING
+	elseif Friend.Online then
+		status=FRIEND_ONLINE
+	else
+		status=FRIEND_OFFLINE
+	end
+
+	return status
+end	
+
+
+local function CreateVoiceString(Friend)
+	local text=ConvertToWString("")
+	if Friend.Online then
+		if Friend.Voice then
+			text=FRIEND_ON
+		else
+			text=FRIEND_OFF
+		end
+	end
+	return text
+end
+
+local function UpdateFriendInfo(FriendNr)
+	local label1=wm.GetWindow("label1")
+	local label2=wm.GetWindow("label2")
+	local label3=wm.GetWindow("label3")
+	local label4=wm.GetWindow("label4")
+
+	local statustext1=wm.GetWindow("statustext1")
+	local statustext2=wm.GetWindow("statustext2")
+	local statustext3=wm.GetWindow("statustext3")
+	local statustext4=wm.GetWindow("statustext4")
+	
+	label1:HideWindow()
+	statustext1:HideWindow()
+	label2:HideWindow()
+	statustext2:HideWindow()
+	label3:HideWindow()
+	statustext3:HideWindow()
+	label4:HideWindow()
+	statustext4:HideWindow()
+
+	if FriendNr~=0 then
+		local friend=Friends.GetFriend(FriendNr)
+			label1:SetTitle(FRIENDS_GAMERTAG)
+			statustext1:SetTitle(friend.GamerTag)
+			label1:ShowWindow()
+			statustext1:ShowWindow()
+		if friend.Online then
+			label2:SetTitle(FRIENDS_GAME)
+			statustext2:SetTitle(friend.GameTitle)
+			label3:SetTitle(FRIENDS_VOICE)
+			statustext3:SetTitle(CreateVoiceString(friend))
+			label4:SetTitle(FRIENDS_STATUS)
+			statustext4:SetTitle(CreateStatusString(friend))
+			statustext4:WordWrap()
+			label2:ShowWindow()
+			statustext2:ShowWindow()	
+			label3:ShowWindow()
+			statustext3:ShowWindow()	
+			label4:ShowWindow()
+			statustext4:ShowWindow()	
+		else
+			label2:SetTitle(FRIENDS_STATUS)
+			statustext2:SetTitle(CreateStatusString(friend))
+			statustext2:WordWrap()
+			label2:ShowWindow()
+			statustext2:ShowWindow()
+		end
+	end
+
+end
+
+function UpdateFriendsList()
+	local friendslist=wm.GetWindow("friendslist")
+	local iconlist=wm.GetWindow("iconlist")
+	if friendslist then
+		friendslist:Refresh()
+		iconlist:Refresh()
+		local row=friendslist:GetSelectedRow()
+		if row>0 then
+			UpdateFriendInfo(row)
+		end
+	end
+end
+
+
+
+
+
+menu_xboxlive_friends = CreateMenuFromTemplate("template_basic")
+menu_xboxlive_friends.options.title = FRIENDS_FRIENDS
+menu_xboxlive_friends.back = function()HideFriendsList()EnterMenu("menu_xboxlive")end
+
+function menu_xboxlive_friends.create(self)
+	self.parent:create(self)
+	self:loadResources()
+	
+	items = { }
+end
+
+function menu_xboxlive_friends.init(self)
+	self.parent:init(self)
+	
+	local infobox=Frame{ Position = Layout.InfoBoxPos, Size=Layout.InfoBoxSize, ShowBorders=FALSE}
+	infobox:AttachResource(self:getResource("ui-box"))
+	
+	local scrollDownArrow=Button{Position=Layout.ScrollDownArrow1Pos, Size=wm.GetResourceSize(wm.GetResource("control_arrow_down_pal_3"))}
+	local scrollUpArrow=Button{Position=Layout.ScrollUpArrow1Pos, Size=wm.GetResourceSize(wm.GetResource("control_arrow_up_pal_3"))}
+
+	scrollDownArrow:AttachResource(wm.GetResource("control_arrow_down_pal_3"))
+	scrollUpArrow:AttachResource(wm.GetResource("control_arrow_up_pal_3"))
+	scrollDownArrow:HideWindow()
+	scrollUpArrow:HideWindow()
+
+
+	
+	local listboxParams={
+		ListBoxTemplate={Name="playerslist", ShowBorders=FALSE},
+		Left=Layout.ListPos[1],
+		Top=Layout.ListPos[2],
+		LeftPadding=0,
+		RightPadding=0,
+		TopPadding=0,
+		BottomPadding=0,
+		RowWidth=wm.GetResourceSize(wm.GetResource("xbox_voice_communicator"))[1]*2+20,
+		RowHeight=Layout.ListItemHeight,
+		RowPadding=Layout.ListItemPadding,
+		RowTemplate={Font=Layout.ListFont, DrawBackgroundColor=TRUE, TitleCentering=TITLE_CENTER_Y},
+		RowTemplateType="Button",
+		RowTemplateCust=function(Row, RowNr)
+		end,
+		NumRows=Layout.ListNumRows,
+		Coloumns={
+			[1]={
+			Name="num", -- _row# is added
+			ColoumnTemplate={Position=Layout.ListNumPos, Size=Layout.ListNumSize, ShowBorders=FALSE, Align=FONTF_CENTER},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},
+			[2]={
+			Name="statusicon", -- _row# is added
+			ColoumnTemplate={Position=Layout.ListStatusIconPos, Size=wm.GetResourceSize("xbox_friend_online"), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:AttachResource(wm.GetResource("xbox_friend_online"))
+				Coloumn:HideWindow()
+			end
+			},
+			[3]={
+			Name="voiceicon", -- _row# is added
+			ColoumnTemplate={Position=Layout.ListVoiceIconPos, Size=wm.GetResourceSize("xbox_voice_communicator"), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+				Coloumn:AttachResource(wm.GetResource("xbox_voice_communicator"))
+				Coloumn:HideWindow()
+			end
+			},
+			[4]={
+			Name="flagicon", -- _row# is added
+			ColoumnTemplate={Position=Layout.ListFlagIconPos, Size=SIZE(20,13), ShowBorders=FALSE},
+--			ColoumnTemplate={Position=Layout.ListFlagIconPos, Size=wm.GetResourceSize("flag_finland"), ShowBorders=FALSE},
+			ColoumnTemplateType="Frame",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+--				Coloumn:AttachResource(wm.GetResource("flag_finland"))
+				Coloumn:HideWindow()
+			end
+			},
+			[5]={
+			Name="playername", -- _row# is added
+			ColoumnTemplate={Position=Layout.ListPlayerNamePos, Size=Layout.ListPlayerNameSize, ShowBorders=FALSE},
+			ColoumnTemplateType="StaticText",
+			ColoumnTemplateCust=function(Coloumn, RowNr, ColoumnNr)
+			end
+			},
+		}
+	}
+	
+	
+	local playerslist=CreateMultiColoumnListBox(listboxParams)
+	
+	playerslist.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local friend=Friends.GetFriend(RowNr)
+		local voiceiconname=string.format("voiceicon_row%i", ControlRowNr)
+		local voiceicon=wm.GetWindow(voiceiconname)
+		if friend.Voice then
+			voiceicon:ShowWindow()
+		else
+			voiceicon:HideWindow()
+		end
+
+
+		local statusiconname=string.format("statusicon_row%i", ControlRowNr)
+		local statusicon=wm.GetWindow(statusiconname)
+		statusicon:ShowWindow()
+		if friend.ReceivedRequest then
+			statusicon:AttachResource(wm.GetResource("xbox_friend_invite_received"))
+			statusicon:ShowWindow()
+		elseif friend.SentRequest then
+			statusicon:AttachResource(wm.GetResource("xbox_friend_sent"))
+			statusicon:ShowWindow()
+		elseif friend.ReceivedInvite then
+			statusicon:AttachResource(wm.GetResource("xbox_game_invite_received"))
+			statusicon:ShowWindow()
+		elseif friend.SentInvite then
+			statusicon:AttachResource(wm.GetResource("xbox_game_invite_sent"))
+			statusicon:ShowWindow()
+		elseif friend.Online then
+			statusicon:AttachResource(wm.GetResource("xbox_friend_online"))
+			statusicon:ShowWindow()
+		else
+			statusicon:HideWindow()
+		end
+		
+		local playername=wm.GetWindow("playername_row"..RowNr)
+		playername:SetTitle(friend.GamerTag)
+	end
+	
+	playerslist.onShowScrollUpArrow=function()
+		scrollUpArrow:ShowWindow()
+	end
+	playerslist.onHideScrollUpArrow=function()
+		scrollUpArrow:HideWindow()
+	end
+	playerslist.onShowScrollDownArrow=function()
+		scrollDownArrow:ShowWindow()
+	end
+	playerslist.onHideScrollDownArrow=function()
+		scrollDownArrow:HideWindow()
+	end
+	playerslist.onSelectedRowChanged=function(Self, RowNr)
+		UpdateFriendInfo(RowNr)
+	end
+	
+	
+	playerslist:SetNumRows(0)
+	
+	local friendlist=CreateSingleColoumnListBox(listboxParams)
+	friendlist.onNeedData=function(Self, RowObject, RowNr, ControlRowNr)
+		local friend=Friends.GetFriend(RowNr)
+		RowObject:SetTitle(friend.GamerTag)
+	end
+	
+	friendlist:SetNumRows(0)
+
+	for i = 1, 4 do
+		local ypos = Layout.StatusBoxTop + (i - 1) * (Layout.RowHeight + Layout.RowPadding)
+		local frame = Frame { Position=POS(Layout.StatusBoxLeft, ypos), Size=Layout.StatusRowSize, DrawBackgroundColor=FALSE }
+	end
+	
+	local pos = Layout.StatusLabelPos
+	StaticText { Title=L"STATUS", Position=pos, Size=Layout.StatusLabelSize, Color=Layout.StatusLabelFontColor, Font=Layout.StatusFont }
+	pos[2] = pos[2] + Layout.RowHeight + Layout.RowPadding
+	StaticText { Title=L"PLAYING", Name="playerstatus", Position=pos, Size=Layout.StatusLabelSize, Color=Layout.StatusTextFontColor, Font=Layout.StatusFont }
+	pos[2] = pos[2] + Layout.RowHeight + Layout.RowPadding
+	StaticText { Title=L"GAME", Position=pos, Size=Layout.StatusLabelSize, Color=Layout.StatusLabelFontColor, Font=Layout.StatusFont }
+	pos[2] = pos[2] + Layout.RowHeight + Layout.RowPadding
+	StaticText { Title=L"GRAND THEURISMO 5", Name="playergame", Position=pos, Size=Layout.StatusLabelSize, Color=Layout.StatusTextFontColor, Font=Layout.StatusFont }
+	
+	local handler=InputHandler{Name="inputhandler"}
+	handler.onKeyPressed=function(Self, Character, VirtualKey, ScanCode)
+		if ScanCode==ControllerId then
+			if VirtualKey==KeyCodes["BUTTON_START"] then
+				local friendslist=wm.GetWindow("friendslist")
+				local row=friendslist:GetSelectedRow()
+				if row > 0 then
+					local friend=Friends.GetFriend(row)
+					ShowFriendOptions(friend, "menu_xboxlive_friends")
+				end
+			elseif VirtualKey==KeyCodes["BUTTON_SELECT"] then
+				menu_xboxlive_friends.options.back()
+			elseif VirtualKey==KeyCodes["BUTTON_UP"] then
+				iconlist:MovePrev()
+				friendlist:MovePrev()
+			elseif VirtualKey==KeyCodes["BUTTON_DOWN"] then
+				iconlist:MoveNext()
+				friendlist:MoveNext()
+			end
+		end
+	end
+	
+	handler:SetFocus()
+	
+	FirstUpdate=true
+	Error=false
+end
+	
+function menu_xboxlive_friends.deinit(self)
+	self.parent:deinit(self)
+end
+	
+function menu_xboxlive_friends.update(self)
+	self.parent:update(self)
+	if CheckXBoxLiveErrors() then
+		return
+	end
+	local friendslist=wm.GetWindow("friendslist")
+	local iconlist=wm.GetWindow("iconlist")
+	if Friends.IsResultsReady() and FirstUpdate then
+		if Friends.GetNumFriends()==0 and not Error then
+			Error=true
+			ShowMessageBox2(
+				POS(154, 70),
+				FRIENDS_EMPTY, nil, nil,
+				FRIEND_OK, 
+				menu_xboxlive_friends.back
+			)
+		else
+			friendslist:SetNumRows(Friends.GetNumFriends())
+			iconlist:SetNumRows(Friends.GetNumFriends())
+			UpdateFriendsList()
+		end
+		FirstUpdate=false
+	elseif Friends.IsResultsUpdated() and Error==false then
+		friendslist:SetNumRows(Friends.GetNumFriends())
+		iconlist:SetNumRows(Friends.GetNumFriends())
+		UpdateFriendsList()
+	end
+end

@@ -1,0 +1,129 @@
+--///////////////////////////////////////////////////////////////////////////
+--// TrackInfoMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 14.10.2005 11:59:24
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local state
+
+dofile("data/menu/selection_elements.bed")
+dofile("data/menu/track_arena.bed")
+dofile("data/menu/track_city_1.bed")
+dofile("data/menu/track_city_2.bed")
+dofile("data/menu/track_desert.bed")
+dofile("data/menu/track_canal.bed")
+dofile("data/menu/track_fields_1.bed")
+dofile("data/menu/track_fields_2.bed")
+dofile("data/menu/track_forest_1.bed")
+dofile("data/menu/track_forest_2.bed")
+dofile("data/menu/track_racing_1.bed")
+dofile("data/menu/track_racing_2.bed")
+dofile("data/menu/stunt_images.bed")
+dofile("data/menu/stunt_images_2.bed")
+dofile("data/menu/stunt_images_3.bed")
+
+
+function ShowTrackInfo(selection,backfunction,okfunction)
+	
+	state=CopyTable(selection)
+
+	state.back=backfunction
+	state.forward=okfunction
+
+	EnterMenu("menu_trackinfo")
+end
+
+
+
+
+
+menu_trackinfo = CreateMenuFromTemplate("template_basic")
+
+menu_trackinfo.options.title=TRANSLATOR(TITLE_TRACKINFO)
+
+function menu_trackinfo.create(self)
+	self.parent:create(self)
+
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("track_arena.tga",track_arena,track_arena_size)
+	self:addResource("track_canal.tga",track_canal,track_canal_size)
+	self:addResource("track_city_1.tga",track_city_1,track_city_1_size)
+	self:addResource("track_city_2.tga",track_city_2,track_city_2_size)
+	self:addResource("track_desert.tga",track_desert,track_desert_size)
+	self:addResource("track_fields_1.tga",track_fields_1,track_fields_1_size)
+	self:addResource("track_fields_2.tga",track_fields_2,track_fields_2_size)
+	self:addResource("track_forest_1.tga",track_forest_1,track_forest_1_size)
+	self:addResource("track_forest_2.tga",track_forest_2,track_forest_2_size)
+	self:addResource("track_racing_1.tga",track_racing_1,track_racing_1_size)
+	self:addResource("track_racing_2.tga",track_racing_2,track_racing_2_size)
+	self:addResource("stunt_images.tga",stunt_images,stunt_images_size)
+	self:addResource("stunt_images_2.tga",stunt_images_2,stunt_images_2_size)
+	self:addResource("stunt_images_3.tga",stunt_images_3,stunt_images_3_size)
+
+	self:addResource("track_logos.tga",track_logos,track_logos_size)
+	self:addResource("track_logos2.tga",track_logos2,track_logos2_size)
+	self:addResource("track_logos3.tga",track_logos3,track_logos3_size)
+
+
+	self:loadResources()
+end
+
+function menu_trackinfo.init(self)
+	self.parent:init(self)
+
+
+	local w=StaticText{Name="description",Position=POS(400,206),Size=SIZE(200,400),Font=fontsmall(),}
+	w:SetTitle(state.description or L"EVEN THE ANCIENT ROMANS BLAAA BOO BII PLOO PII PAA PLIP PLAP PLIP PLAP GOO POO FOO TOO SOO MOO NOO PII PAA PIIPAA")
+	w:WordWrap()
+
+	local clock_size=GetResourceSize(self:getResource("clock"))
+	Frame{Position=POS(400,160),Size=clock_size}:AttachResource(self:getResource("clock"))
+	StaticText{Name="highscore",Title=L"0'00'00  MUTSIS",Font=fontsmall(),Position=POS(400+clock_size[1]+4,160)}
+
+	if state.image then
+		Frame{Position=POS(80,57),Size=SIZE(290,270),}:AttachResource(self:getResource(state.image))
+	end
+
+	if state.logo then
+		Frame{Position=POS(400,70),Size=SIZE(160,64)}:AttachResource(self:getResource(state.logo))
+	end
+
+	local handler=InputHandler{}
+
+
+	function handler.onKeyPressed(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_SELECT then
+			playmenusound_back()
+			state.back()
+		elseif virtualkey == KeyCodes.BUTTON_START then
+			if state.forward then
+				playmenusound_action()
+				state.forward()
+			end
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+
+	if state.forward then
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+	else
+		GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK))
+	end
+
+end
+
+function menu_trackinfo.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+

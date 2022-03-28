@@ -1,0 +1,203 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MultiPlayerTournamentStandings.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 1.11.2005 16:36
+--// 
+--// Authors: Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+menu_multiplayer_tournament_standings = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_tournament_standings.options.title = TITLE_MULTIPLAYER_VIEWRANKING
+menu_multiplayer_tournament_standings.back = entermenu("menu_multiplayer_lobby")
+
+local AfterRace=false
+local StartTime
+local AnimateScore
+
+function ShowTournamentStandings(lobby_backmenu)
+	AfterRace = true
+	StartTime = nil
+	menu_multiplayer_lobby.backmenu = lobby_backmenu
+	EnterMenu("menu_multiplayer_tournament_standings")
+end
+
+function menu_multiplayer_tournament_standings.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+
+	self.items = { }
+end
+
+local Layout = {
+	TitlePos=POS(72,86),
+	TitleFont=fontlarge(),
+	TitleColor=GetPaletteColor(3),
+	
+	ListPos=POS(0,151),
+	ListRowWidth=640,
+	ListTop3RowHeight=25,
+	ListRowHeight=22,
+	ListRowPadding=3,
+	
+	ListTop3Font=fontlarge(),
+	ListFont=fontmedium(),
+	ListFontColor=GetPaletteColor(34),
+
+	ListTitleFont=fontmedium(),
+	ListTitleFontColor=GetPaletteColor(33),
+	
+	ListTitleY=129,
+	ListNumX=79,
+	ListNameX=122,
+	ListCarX=382,
+	ListTournamentPointsX=521,
+	ListRacePointsX=551,
+}
+
+local SortedPlayers = { }
+
+local function CreateListRow(menu, num)
+	local player=Session:GetPlayer(SortedPlayers[num])
+	local font
+	local y
+	local h
+	
+	if num < 4 then
+		y = Layout.ListPos[2] + (num - 1) * (Layout.ListTop3RowHeight + Layout.ListRowPadding)
+		h = Layout.ListTop3RowHeight
+		font = Layout.ListTop3Font
+	else
+		y = Layout.ListPos[2] + 3 * (Layout.ListTop3RowHeight + Layout.ListRowPadding) + (num - 4) * (Layout.ListRowHeight + Layout.ListRowPadding)
+		h = Layout.ListRowHeight
+		font = Layout.ListFont
+	end
+	
+	local bg = Frame { Position=POS(Layout.ListPos[1], y), Size=SIZE(640, h), DrawBackgroundColor=TRUE, Color={0,0,0,0.5*MAX_VERTEXCOLOR_A} }
+	StaticText { Position=POS(Layout.ListNumX, 0), Size=SIZE(12, h), Title=L(num.."."), Font=font, Color=Layout.ListFontColor, Parent=bg, Align=FONTF_CENTER }
+	StaticText { Position=POS(Layout.ListNameX, 0), Size=SIZE(260, h), Title=player.Name, Font=font, Color=Layout.ListFontColor, Parent=bg }
+	local cardata = db.FlatOut2.Cars:GetProperty("Car", player.Car)
+	StaticText { Position=POS(Layout.ListCarX, 0), Size=SIZE(169, h), Title=L(cardata.Name), Font=font, Color=Layout.ListFontColor, Parent=bg }
+--[[	if AfterRace then
+		local racePoints = GameFlow.GetPlayerRacePoints(num)
+		StaticText { Name="tournamentpoints_"..num, Position=POS(Layout.ListTournamentPointsX, 0), Size=SIZE(50, h), Title=L(player.TournamentPoints - racePoints), Font=font, Color=Layout.ListFontColor, Parent=bg, Align=FONTF_CENTER }
+		local win = StaticText { Name="racepoints_"..num, Position=POS(Layout.ListRacePointsX, 0), Size=SIZE(50, h), Font=font, Color=Layout.ListFontColor, Parent=bg, Align=FONTF_CENTER }
+		win:HideWindow()	
+	else--]]
+		StaticText { Name="tournamentpoints_"..num, Position=POS(Layout.ListTournamentPointsX, 0), Size=SIZE(50, h), Title=L(player.TournamentPoints), Font=font, Color=Layout.ListFontColor, Parent=bg, Align=FONTF_CENTER }
+	--end
+end
+
+local function ComparePlayers(p1num, p2num)
+	local p1 = Session:GetPlayer(p1num)
+	local p2 = Session:GetPlayer(p2num)
+	
+	if p1.TournamentPoints > p2.TournamentPoints then	
+		return true
+	elseif p1.TournamentPoints < p2.TournamentPoints then
+		return false
+	elseif p1.PeerId < p2.PeerId then
+		return true
+	else
+		return false
+	end
+end
+
+function menu_multiplayer_tournament_standings.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+	
+	StaticText { Title=HEADER_MULTIPLAYER_LOBBY_VIEWRANKING, Position=Layout.TitlePos, Size=SIZE(400,22), Font=Layout.TitleFont, Color=Layout.TitleColor }
+
+	StaticText { Title=MULTIPLAYER_LOBBY_VIEWRANKING_CROSSHATCH, Position=POS(Layout.ListNumX, Layout.ListTitleY), Size=SIZE(12,13), Font=Layout.ListTitleFont, Color=Layout.ListTitleFontColor, Align=FONTF_CENTER }
+	StaticText { Title=MULTIPLAYER_NAME, Position=POS(Layout.ListNameX, Layout.ListTitleY), Size=SIZE(260,13), Font=Layout.ListTitleFont, Color=Layout.ListTitleFontColor}
+	StaticText { Title=MULTIPLAYER_CAR, Position=POS(Layout.ListCarX, Layout.ListTitleY), Size=SIZE(169,13), Font=Layout.ListTitleFont, Color=Layout.ListTitleFontColor }
+	StaticText { Title=MULTIPLAYER_POINTS, Position=POS(Layout.ListTournamentPointsX, Layout.ListTitleY), Size=SIZE(50,13), Font=Layout.ListTitleFont, Color=Layout.ListTitleFontColor, Align=FONTF_CENTER }
+	
+	SortedPlayers = { }
+	
+	for i = 1, Session:GetNumPlayers() do
+		SortedPlayers[i] = i
+	end
+	
+	table.sort(SortedPlayers, ComparePlayers)
+	
+	for i = 1, Session:GetNumPlayers() do
+		CreateListRow(self, i)
+	end
+	
+	local handler=InputHandler{ Name="inputhandler" }
+	handler.onKeyPressed = function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey == KeyCodes["BUTTON_SELECT"] or AfterRace and VirtualKey == KeyCodes["BUTTON_START"] then
+			AfterRace = false
+			menu_multiplayer_tournament_standings.back()
+		end
+	end
+	if AfterRace then
+		--AnimateScore = true
+		GUI:SetHelpButtons(BUTTON_OK, TRANSLATOR(UI_CONTINUE)) --//L"CONTINUE")
+	else
+		GUI:SetHelpButtons(BUTTON_BACK, TRANSLATOR(UI_BACK)) --//L"BACK")
+	end
+end
+	
+function menu_multiplayer_tournament_standings.deinit(self)
+	self.parent:deinit(self)
+end
+
+function menu_multiplayer_tournament_standings.update(self, time)
+	self.parent:update(self, time)
+	
+	if AfterRace and AnimateScore then
+		if StartTime == nil then
+			StartTime = time
+		end
+		
+		local dt = time - StartTime
+		local numplayers = table.getn(SortedPlayers)
+		local state0time = 1.0
+		local state1time = state0time + 0.125 * numplayers
+		local state2time = state1time + 1.0
+		local state3time = state2time + 0.5
+		
+		if dt < state0time then
+			-- wait
+		elseif dt < state1time then
+			local visiblerows = (dt - state0time) / 0.125
+			for i = 1, visiblerows do
+				wm.GetWindow("racepoints_"..i):SetTitle(L(GameFlow.GetPlayerRacePoints(SortedPlayers[i])))
+				wm.GetWindow("racepoints_"..i):ShowWindow()
+			end
+		elseif dt < state2time then
+			local d = (dt - state1time) / (state2time - state1time)
+			local x = Layout.ListRacePointsX - (Layout.ListRacePointsX - Layout.ListTournamentPointsX) * d
+			for i = 1, numplayers do
+				local win = wm.GetWindow("racepoints_"..i)
+				win:SetTitle(L(GameFlow.GetPlayerRacePoints(SortedPlayers[i])))
+				win:ShowWindow()
+				local _,y = win:GetPosition()
+				win:SetPosition(x, y)
+				local alpha
+				if PS2 then
+					alpha = 127 - d * 127
+				else
+					alpha = 255 - d * 255
+				end
+				local color={Layout.ListFontColor[1], Layout.ListFontColor[2], Layout.ListFontColor[3], alpha}
+				win:SetColor(color, false)
+			end
+		elseif dt < state3time then
+			-- wait
+		else
+			for i = 1, numplayers do
+				wm.GetWindow("racepoints_"..i):HideWindow()
+				wm.GetWindow("tournamentpoints_"..i):SetTitle(L(Session:GetPlayer(SortedPlayers[i]).TournamentPoints))
+			end
+			AnimateScore = false		
+		end
+	end
+end

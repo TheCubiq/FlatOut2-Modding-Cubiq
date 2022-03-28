@@ -1,0 +1,12 @@
+map_backdrop_size = { 512,256 }
+map_backdrop = {
+	
+	map_backdrop_left = {  0, 0, 224, 167 },
+	map_backdrop_right = {  226, 0, 224, 167 },
+
+	map_arrow_left = {  0, 168, 45, 88 },
+	map_arrow_right = {  44, 168, 45, 88 },
+
+	track_trail = {  88, 169, 424, 37 },
+
+}

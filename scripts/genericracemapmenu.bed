@@ -1,0 +1,209 @@
+--///////////////////////////////////////////////////////////////////////////
+--// GenericRaceMapMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 4.10.2005 16:14:38
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/selection_elements.bed")
+
+local mapcoords = {
+	{ 1,1 },
+	{ 2,1 },
+}
+
+local function getmap(id)
+	return mapcoords[id]
+end
+
+local state
+
+local race_items = {
+	{ map=getmap(1), position=POS(231,234), },
+	{ map=getmap(1), position=POS(324,240), },
+	{ map=getmap(1), position=POS(421,238), },
+	
+	{ map=getmap(2), position=POS(1,235), },
+	{ map=getmap(2), position=POS(103,239), },
+	{ map=getmap(2), position=POS(196,244), },
+	{ map=getmap(2), position=POS(293,247), },
+	{ map=getmap(2), position=POS(385,244), },
+	{ map=getmap(2), position=POS(488,245), },
+
+	{ map=getmap(3), position=POS(69,251), },
+	{ map=getmap(3), position=POS(166,249), },
+	{ map=getmap(3), position=POS(258,246), },
+	{ map=getmap(3), position=POS(360,250), },
+	{ map=getmap(3), position=POS(453,255), },
+
+	{ map=getmap(4), position=POS(38,258), },
+	{ map=getmap(4), position=POS(130,255), },
+	{ map=getmap(4), position=POS(216,253), },
+	{ map=getmap(4), position=POS(309,259), },
+	{ map=getmap(4), position=POS(406,257), },
+	{ map=getmap(4), position=POS(498,254), },
+
+	{ map=getmap(5), position=POS(88,258), },
+	{ map=getmap(5), position=POS(181,263), },
+	{ map=getmap(5), position=POS(278,266), },
+	{ map=getmap(5), position=POS(370,263), },
+	{ map=getmap(5), position=POS(470,249), },
+
+	{ map=getmap(6), position=POS(51,255), },
+	{ map=getmap(6), position=POS(148,253), },
+	{ map=getmap(6), position=POS(240,250), },
+	{ map=getmap(6), position=POS(342,254), },
+	{ map=getmap(6), position=POS(435,259), },
+}
+
+local icons = {
+	[TRACKTYPE_FOREST] = "race_symbol_forest",
+	[TRACKTYPE_FIELDS] = "race_symbol_fields",
+	[TRACKTYPE_DESERT] = "race_symbol_desert",
+	[TRACKTYPE_CANAL] = "race_symbol_canals",
+	[TRACKTYPE_CITY] = "race_symbol_city",
+	[TRACKTYPE_RACING] = "race_symbol_racing",
+}
+
+
+
+local function UpdateData()
+
+	local data=state.racestruct
+
+	local race=data.Races[state.selected_race]
+	local level=Levels[race.Level or 0]
+--[[--/*
+	if level and race then
+		W("category_title"):SetTitle(ConvertToWString(level.Name or L"NO NAME"))
+		W("lap_data"):SetTitle(ConvertToWString(string.format("%d LAPS",race.Laps)))
+	else
+		W("category_title"):SetTitle(ConvertToWString("NO DATA IN CLASSES.BED"))
+		W("lap_data"):SetTitle(ConvertToWString("0 LAPS"))
+	end
+--]]--*/
+
+	MenuMap:SetSelectedWindow(state.racewindows[state.selected_race].window)
+
+
+--//	W("trophy_1_text"):SetTitle(ConvertToWString(string.format("$%d",data.RaceWinnings[1])))
+--//	W("trophy_2_text"):SetTitle(ConvertToWString(string.format("$%d",data.RaceWinnings[2])))
+--//	W("trophy_3_text"):SetTitle(ConvertToWString(string.format("$%d",data.RaceWinnings[3])))
+
+
+	if state.selected_race < 4 then
+		MenuMap:SetMapPosition(0,0)
+	elseif state.selected_race > 4 then
+		MenuMap:SetMapPosition(380,0)
+	end
+end
+
+
+
+function RaceMapSetSelected(num)
+	if num > 0 and num <= table.getn(state.racewindows) then
+		state.selected_race=num
+		UpdateData()
+	end
+end
+
+function RaceMapGetSelected()
+	return state.selected_race
+end
+
+
+local function OnKeyPressed(self,character,virtualkey,scancode)
+	if virtualkey == KeyCodes.BUTTON_LEFT then
+		RaceMapSetSelected(state.selected_race-1)
+	elseif virtualkey == KeyCodes.BUTTON_RIGHT then
+		RaceMapSetSelected(state.selected_race+1)
+	elseif virtualkey == KeyCodes.BUTTON_START then
+		if state.actions.ok_button then
+			state.actions.ok_button()
+		end
+	elseif virtualkey == KeyCodes.BUTTON_SELECT then
+		if state.actions.back_button then
+			state.actions.back_button()
+		end
+	end
+end
+
+
+
+
+function RaceMapCreate(self)
+
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+
+	self:addResource("cup_overview_map_1",image("cup_overview_map_1.tga"))
+	self:addResource("cup_overview_map_2",image("cup_overview_map_2.tga"))
+
+end
+
+
+--//racestruct is same format as in Classes.Cups or Tournaments
+function RaceMapInit(self,racestruct)
+
+	state={}
+	state.selected_race=1
+	state.racestruct=racestruct
+
+	local uv={ 0.0,0.0,1.0,1.0 }
+	local size=SIZE(512,512)
+
+	MenuMap:Reset()
+	MenuMap:SetMenu(self)
+	MenuMap:AddBackground(1,1,size,self:getResource("cup_overview_map_1"),uv)
+	MenuMap:AddBackground(2,1,size,self:getResource("cup_overview_map_2"),uv)
+	MenuMap:AddBackground(3,1,size,self:getResource("cup_overview_map_1"),uv)
+	MenuMap:AddBackground(4,1,size,self:getResource("cup_overview_map_2"),uv)
+	MenuMap:AddBackground(5,1,size,self:getResource("cup_overview_map_1"),uv)
+	MenuMap:AddBackground(6,1,size,self:getResource("cup_overview_map_2"),uv)
+	MenuMap:SetMapPosition(0,0,false)
+	MenuMap:SetMapZoom(1.0)
+	
+	state.racewindows={}
+
+
+	for k,v in pairs(state.racestruct.Races) do
+		local tracktype=Levels[v.Level].TrackType or TRACKTYPE_FOREST
+		
+		local iconname=icons[tracktype]
+		local locked=CupManager:IsRaceLocked(k)
+
+		if locked then
+			iconname=iconname.."_locked"
+		end
+		local resource=self:getResource(iconname)
+
+		local id=MenuMap:AddWindow(race_items[k].position,GetResourceSize(resource),resource,1,unpack(race_items[k].map))
+
+		table.insert(state.racewindows,{window=id, id=k,locked=locked,tracktype=tracktype,medal=medal_id})	
+
+	end
+
+
+--//	local input=InputHandler{}
+--//	input.onKeyPressed=OnKeyPressed
+--//	input:SetFocus()
+
+	MenuMap:Enable()
+	MenuMap:FadeWindowGroup(1,0.0,1.0,0.2,0.05)
+
+
+end
+
+
+function RaceMapDeinit(self)
+
+	MenuMap:Disable()
+	MenuMap:Reset()
+end
+
+
+
+

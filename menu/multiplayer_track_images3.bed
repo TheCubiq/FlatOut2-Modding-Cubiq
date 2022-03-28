@@ -1,0 +1,7 @@
+multiplayer_track_images3_size = { 512,512 }
+multiplayer_track_images3 = {
+	
+	tracktype_fields = {  0, 0, 332, 219 },
+	tracktype_city = {  0, 219, 332, 219 },
+
+}

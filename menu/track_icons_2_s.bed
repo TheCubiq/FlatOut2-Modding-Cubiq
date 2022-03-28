@@ -1,0 +1,35 @@
+track_icons_2_s_size = { 512,512 }
+track_icons_2_s = {
+	
+	track_icon_25_s = {  3, 3, 110, 70 },     -- city 1
+	track_icon_26_s = {  116, 3, 110, 70 },   -- city 2
+	track_icon_27_s = {  229, 3, 110, 70 },   -- city 3
+	track_icon_28_s = {  342, 3, 110, 70 },   -- city 4
+	track_icon_29_s = {  3, 76, 110, 70 },    -- city 5
+	track_icon_30_s = {  116, 76, 110, 70 },  -- city 6
+
+	track_icon_31_s = {  229, 76, 110, 70 },   -- arena 1
+	track_icon_32_s = {  342, 76, 110, 70 },   -- arena 2
+	track_icon_33_s = {  3, 149, 110, 70 },    -- arena 3
+	
+	track_icon_34_s = {  116, 149, 110, 70 }, -- derby 1
+	track_icon_35_s = {  229, 149, 110, 70 }, -- derby 2
+	track_icon_36_s = {  342, 149, 110, 70 }, -- derby 3
+	track_icon_37_s = {  3, 222, 110, 70 },   -- derby 4
+	track_icon_38_s = {  116, 222, 110, 70 }, -- derby 5
+	track_icon_39_s = {  229, 222, 110, 70 }, -- derby 6
+
+	track_icon_40_s = {  342, 222, 110, 70 }, -- oval 1
+	track_icon_41_s = {  3, 295, 110, 70 },   -- oval 2
+	
+	track_icon_42_s = {  116, 295, 110, 70 }, -- stunt 1
+	track_icon_43_s = {  229, 295, 110, 70 }, -- stunt 2
+
+--	track_icon_44_s = {  342, 295, 110, 70 }, -- city 2
+--	track_icon_45_s = {  3, 368, 110, 70 },   -- city 3
+--	track_icon_46_s = {  116, 368, 110, 70 }, -- city 4
+--	track_icon_47_s = {  229, 368, 110, 70 }, -- city 5
+--	track_icon_48_s = {  342, 368, 110, 70 }, -- city 6
+
+
+}

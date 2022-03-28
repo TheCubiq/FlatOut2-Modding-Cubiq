@@ -1,0 +1,100 @@
+--///////////////////////////////////////////////////////////////////////////
+--// Templates.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 1.4.2005 14:08:14
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+
+local template_basic = CopyTable(GetMenuTemplate("template_empty"))
+template_basic.options.title=L"template_basic"
+
+AddMenuTemplate("template_basic",template_basic)
+
+
+local template_career = CopyTable(GetMenuTemplate("template_empty"))
+
+template_career.options.title=L"template_career"
+
+
+function template_career.init(self,child)  --//changed from template_empty
+	StandardBarsAndButtons(child,true,true)  --//shows money
+
+	wm.SetGlobalAlpha(0.0)
+end
+
+AddMenuTemplate("template_career",template_career)
+
+
+
+
+--//template that is used in car menus
+local template_cars = CopyTable(GetMenuTemplate("template_empty"))
+
+template_cars.options.title=TRANSLATOR(TITLE_SELECTCAR)
+
+function template_cars.init(self,child)
+		StandardBarsAndButtons(child,child.shop_mode,true)
+end
+
+
+AddMenuTemplate("template_cars",template_cars)
+
+
+
+
+-- Multiplayer menu template, includes GameSpy logo and error checking for Live and GameSpy
+local template_multiplayer = GetMenuTemplate("template_empty")
+
+template_multiplayer.options = {
+			title = L"template_multiplayer",
+		}
+
+function template_multiplayer.init(self,child)
+	child.error = false
+
+	StandardBarsAndButtons(child,false,false)
+
+	local p = wm.GetWindow("menubar_top")
+	Frame{Name="menubar_gamespy_logo",IgnoreGlobalAlpha=TRUE,Layer=4,Position=POS(422,36),Parent=p,Size=GetResourceSize(child:getResource("gamespy_logo"))}:AttachResource(child:getResource("gamespy_logo"))
+	if XBOX or MultiplayerMode == MPMODE_LAN then
+		-- Kludge: this window is used in online options popup error handling for detecting if we are in a multiplayer menu
+		wm.GetWindow("menubar_gamespy_logo"):HideWindow()
+	end
+
+end
+
+function template_multiplayer.update(self,child,time)
+	if GUI:IsMenuAnimating() or Network == nil then
+		return
+	end
+
+	if OptionsPopup.PopupActive then
+		child.error = OptionsPopup.InErrorState
+		return
+	end
+	
+	if not PC then
+		if MultiplayerMode == MPMODE_XBOXLIVE then
+			child.error = CheckXBoxLiveErrors()
+		elseif MultiplayerMode == MPMODE_GAMESPY then
+			child.error = CheckGameSpyErrors()
+		elseif MultiplayerMode == MPMODE_LAN then
+			child.error = CheckSystemLinkErrors()
+		end
+	end
+end
+
+--//end template_multiplayer
+
+AddMenuTemplate("template_multiplayer",template_multiplayer)
+
+
+
+

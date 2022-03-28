@@ -1,0 +1,24 @@
+upgrade_exhaust_1_size = { 512,512 }
+upgrade_exhaust_1 = {
+
+	
+	exhaust_exhaust_racing	=		{ 0, 0, 183, 121 },
+	exhaust_exhaust_pro	= 		{ 320, 0, 192, 95 },
+		
+	
+	exhaust_exhaust_manifold_stock	    =	{ 0, 122, 200, 64   },
+	exhaust_exhaust_manifold_racing = 	{ 200, 85, 199, 74 },
+	exhaust_exhaust_manifold_pro = 		{ 0, 186, 202, 95 },
+
+	suspension_shocks_stock	 	 = 	{  295, 157, 218, 97 },
+	suspension_shocks_racing	=	{  0, 287, 213, 97 },
+	suspension_shocks_pro		= 	{ 212, 243, 215, 101  },
+		
+	suspension_steering_upgrade_stock =      { 154, 414 , 202, 97, },
+	suspension_steering_upgrade_racing =     {   310, 346, 202, 96 },
+	
+	tires_brakes_brakes_stock =		{ 0, 381, 151, 130 },
+
+}
+		
+	

@@ -1,0 +1,16 @@
+selection_elements_2_size = { 256,256 }
+selection_elements_2 = {
+	
+	cup_sign_derby = {  1, 0, 124, 68 },
+	cup_sign_race = {  128, 0, 124, 68 },
+	cup_sign_street = {  1, 72, 124, 68 },
+
+	derby_sign = {  129, 72, 124, 68 },
+	dirt_sign = {  129, 72, 124, 68 },
+	oval_sign = {  129, 72, 124, 68 },
+	stunt_sign = {  1, 144, 124, 68 },
+
+	cup_sign_locked = {  129, 144, 124, 68 },
+	event_sign_locked = {  129, 144, 124, 68 },
+	
+}

@@ -1,0 +1,7 @@
+difficulty_selection_size = { 512,256 }
+difficulty_selection = {
+	
+	difficulty_normal = {  3, 3, 250, 250 },
+  difficulty_hardcore = {  259, 3, 250, 250 },
+
+}

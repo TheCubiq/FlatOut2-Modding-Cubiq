@@ -1,0 +1,12 @@
+upgrade_icons_3_locked_size = { 256,256 }
+upgrade_icons_3_locked = {
+	
+	body_rollcage_upgrade_stock_icon_locked = {  3, 3, 110, 70 },  
+	body_rollcage_upgrade_racing_icon_locked = {  116, 3, 110, 70 }, 
+	body_rollcage_upgrade_pro_icon_locked = {  3, 76, 110, 70 },  
+	body_body_lightweight_stock_icon_locked = {  116, 76, 110, 70 }, 
+	body_body_lightweight_racing_icon_locked = {  3, 149, 110, 70 },  
+	body_body_lightweight_pro_icon_locked = {  116, 149, 110, 70 }, 
+
+
+}

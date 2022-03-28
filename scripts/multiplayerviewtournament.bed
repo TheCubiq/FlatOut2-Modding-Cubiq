@@ -1,0 +1,246 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MultiPlayerViewTournament.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 27.10.2005 17:06
+--// 
+--// Authors: Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/backdrops1.bed")
+dofile("data/menu/backdrops2.bed")
+dofile("data/menu/track_images.bed")
+dofile("data/menu/selection_elements.bed")
+
+local state = { }
+
+local CurrentEvent
+local CurRow
+local CurCol
+
+local Events
+
+local function UpdateEventInfo()
+	local event = Events[CurrentEvent]
+	local type = event.rules
+	local self = menu_multiplayer_view_tournament
+	
+	wm.GetWindow("track_name"):SetTitle(L(Levels[event.trackid].Name))
+	wm.GetWindow("game_mode"):SetTitle(GameModeNames[event.rules])
+	if type == ReplicatedSession.GAMETYPE_STUNT then
+		wm.GetWindow("lap"):HideWindow()
+		wm.GetWindow("num_laps"):HideWindow()
+	else
+		local lapiconwin = wm.GetWindow("lap")
+		local lapswin = wm.GetWindow("num_laps")
+		lapiconwin:ShowWindow()
+		lapswin:ShowWindow()
+
+		local lapstxt
+		local lapicon
+		if type == ReplicatedSession.GAMETYPE_RACE then
+			lapstxt = MULTIPLAYER_LAPS
+			lapicon = "lap"
+		elseif type == ReplicatedSession.GAMETYPE_DERBY_WRECKING then
+			lapstxt = MULTIPLAYER_MINUTES
+			lapicon = "clock"
+		end
+		lapiconwin:AttachResource(self:getResource(lapicon))
+
+		wm.GetWindow("num_laps"):SetTitle(WStringConcat(L(event.lapsOrTimeLimit.." "), lapstxt))
+	end
+
+	local eventnum = WStringConcat(MULTIPLAYER_EVENT, L(" "..CurrentEvent.." / "..table.getn(Events)))
+	wm.GetWindow("event_number"):SetTitle(eventnum)
+end
+
+local function ShowEventWindows()
+	local delay=0.0
+	local num_windows=table.getn(state.eventwindows)
+
+	for i=1,num_windows do
+		local w=state.eventwindows[i]
+		
+		if i < Session:GetInfo().NextRace then
+			AnimateWindowAlpha(w.image,0.0,0.5,0.2,delay)
+			AnimateWindowAlpha(w.info,0.0,0.5,0.2,delay)
+		else
+			AnimateWindowAlpha(w.image,0.0,1.0,0.2,delay)
+			AnimateWindowAlpha(w.info,0.0,1.0,0.2,delay)
+		end
+		
+		if w.image_selected then
+			AnimateWindowAlpha(w.image_selected,0.0,1.0,0.2,delay)
+
+			AnimateWindowPos(w,w.position,POS(w.position[1]+40,w.position[2]),0.3,0.2+0.1*num_windows)
+		end
+		
+		delay=delay+0.1
+	end
+end
+
+
+local function HideEventWindows()
+end
+
+menu_multiplayer_view_tournament = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_view_tournament.options.title = TITLE_MULTIPLAYER_VIEWTOURNAMENT
+menu_multiplayer_view_tournament.back = entermenu("menu_multiplayer_lobby")
+
+function menu_multiplayer_view_tournament.create(self)
+	self.parent:create(self)
+
+	self:addResource("backdrops1.tga",backdrops1,backdrops1_size)
+	self:addResource("backdrops2.tga",backdrops2,backdrops2_size)
+	self:addResource("track_images.tga",track_images,track_images_size)
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:loadResources()
+
+	self.items = { }
+end
+
+function menu_multiplayer_view_tournament.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+
+	Events = { }
+	
+	local pos = POS(353,298)
+	local p = Frame{Name="info_window",Position=pos,Size=SIZE(288,100)}
+
+	Frame { Position=RELATIVEPOS(POS(353,298),pos), Size=SIZE(69,100), Parent=p }:AttachResource(self:getResource("backdrop_detailed_tip"))
+	Frame { Position=RELATIVEPOS(POS(422,298),pos), Size=SIZE(219,100), Parent=p }:AttachResource(self:getResource("backdrop_detailed_main"))
+
+	StaticText { Name="event_number", Position=RELATIVEPOS(POS(369,303),pos), Font=fontmedium(), Color=GetPaletteColor(33), Parent=p }
+	StaticText { Name="game_mode", Position=RELATIVEPOS(POS(377,325),pos), Color=GetPaletteColor(34), Font=fontmedium(), Parent=p }
+	StaticText { Name="track_name", Position=RELATIVEPOS(POS(385,348),pos), Color=GetPaletteColor(34), Font=fontmedium(), Parent=p }
+
+	Frame { Name="lap", Position=RELATIVEPOS(POS(393,371),pos),Size=GetResourceSize(self:getResource("lap")),Parent=p}:AttachResource(self:getResource("lap"))
+	StaticText { Name="num_laps", Position=RELATIVEPOS(POS(413,371),pos), Font=fontmedium(), Color=GetPaletteColor(34), Parent=p }
+
+	local ppos = POS(0,62)
+	p = Frame { Name="track_image_bar",Position=ppos,Size=SIZE(640,22)}:AttachResource(self:getResource("black_transparent_50"))
+
+	local imgsize = wm.GetResourceSize(self:getResource("track_imagesl_selection_glow"))
+	local hilite = Frame { Name="highlight", Position=POS(0,0), Size=imgsize, Layer=5 }:AttachResource(self:getResource("track_imagesl_selection_glow"))
+
+	--//backdrop
+	local resource = self:getResource("backdrop_normal")
+	local size = GetResourceSize(resource)
+
+	Frame { Position=POS(56,84), Size=size}:AttachResource(resource)
+	Frame { Position=POS(81,169), Size=size}:AttachResource(resource)
+	Frame { Position=POS(106,254), Size=size}:AttachResource(resource)
+	Frame { Position=POS(131,339), Size=size}:AttachResource(resource)
+
+	state.eventwindows={}
+
+	local rowpositions={
+		POS(82,128),
+		POS(94,170),
+		POS(105,212),
+		POS(117,254),
+	}
+
+	local info = Session:GetInfo()
+
+	local imgsize = wm.GetResourceSize(self:getResource("track_images_forest1"))
+	for i=1,12 do
+		local pos = rowpositions[math.floor((i-1)/3)+1]
+		local x = pos[1] + 71 * math.mod(i-1,3)
+		local w = Frame { Name="event_icon_frame_"..i, Position=POS(x,pos[2]), Size=imgsize }
+		w.position=POS(x,pos[2])
+
+		local imageframe = Frame { Name="event_icon_"..i, Position=POS(0,0), Size=imgsize, Parent=w }
+		
+		w.info = StaticText { Name="event_info_"..i, Position=POS(60,18), Size=SIZE(20,20), Font=fontmedium(), Color=GetPaletteColor(1), Parent=w }
+		
+		if i <= Session:GetNumRaces() then
+			local race = info.Races[i]
+			Events[i] = { trackid = race.StageNr, rules = race.EventType, lapsOrTimeLimit = race.LapsOrTimeLimit, numhunters = race.NumHunters }
+			w.image = imageframe:AttachResource(self:getResource(Levels[Events[i].trackid].TrackIcon))
+			w.image:SetAlpha(0)
+			if Events[i].rules ~= ReplicatedSession.GAMETYPE_STUNT then
+				w.info:SetTitle(L(Events[i].lapsOrTimeLimit))
+			end
+		else
+			w.image = imageframe:AttachResource(self:getResource("track_images1_empty_box"))
+			w.image:SetAlpha(0)
+		end
+
+		table.insert(state.eventwindows,w)
+	end
+
+	local handler = InputHandler { Name="handler" }
+	handler.onKeyPressed = function(Self, Character, VirtualKey, ScanCode)
+		if VirtualKey == KeyCodes["BUTTON_SELECT"] then
+			menu_multiplayer_view_tournament.back()
+		elseif VirtualKey == KeyCodes["BUTTON_DOWN"] then
+			CurRow = math.mod(CurRow + 1, 4)
+			if Events[CurRow*3+CurCol+1] == nil then
+				CurRow = 0
+			end
+			CurrentEvent = CurRow*3+CurCol+1
+		elseif VirtualKey == KeyCodes["BUTTON_UP"] then
+			repeat
+				CurRow = math.mod(CurRow - 1 + 4, 4)
+				CurrentEvent = CurRow*3+CurCol+1
+			until Events[CurrentEvent] ~= nil
+		elseif VirtualKey == KeyCodes["BUTTON_LEFT"] then
+			local numevents = table.getn(Events)
+			CurrentEvent = math.mod(CurrentEvent - 2 + numevents, numevents) + 1
+			CurCol = math.mod(CurrentEvent - 1, 3)
+			CurRow = math.floor((CurrentEvent - 1) / 3)
+			playmenusound_move()
+		elseif VirtualKey == KeyCodes["BUTTON_RIGHT"] then
+			CurrentEvent = math.mod(CurrentEvent, table.getn(Events)) + 1
+			CurCol = math.mod(CurrentEvent - 1, 3)
+			CurRow = math.floor((CurrentEvent - 1) / 3)
+			playmenusound_move()
+		end
+		
+		if Events[CurrentEvent] then
+			local x,y = wm.GetWindow("event_icon_frame_"..CurrentEvent):GetPosition()
+			wm.GetWindow("highlight"):SetPosition(x-4, y-6)
+			UpdateEventInfo()
+		end
+	end
+
+	CurrentEvent = info.NextRace
+	local x,y = wm.GetWindow("event_icon_frame_"..CurrentEvent):GetPosition()
+	wm.GetWindow("highlight"):SetPosition(x-4, y-6)
+	CurRow = math.floor((CurrentEvent-1) / 3)
+	CurCol = math.mod(CurrentEvent-1, 3)
+	UpdateEventInfo()
+	
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_BACK, UI_BACK)
+end
+	
+	
+function menu_multiplayer_view_tournament.deinit(self)
+	self.parent:deinit(self)
+end
+	
+function menu_multiplayer_view_tournament.update(self, time)
+	self.parent:update(self, time)
+
+	local alpha = 1 - 0.20 + math.sin(time * 6) * 0.20
+	wm.GetWindow("highlight"):SetAlpha(alpha)
+end
+
+function menu_multiplayer_view_tournament.startshow(self)
+	self.parent:startshow(self)
+
+	ShowEventWindows()
+end
+
+function menu_multiplayer_view_tournament.starthide(self)
+	self.parent:starthide(self)
+
+	HideEventWindows()
+end

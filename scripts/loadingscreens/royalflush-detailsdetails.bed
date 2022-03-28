@@ -1,0 +1,109 @@
+--dofile("data/language/languages.bed")
+ITEMTYPE_TEXT = 0
+ITEMTYPE_PICTURE = 1
+ITEMTYPE_RECTANGLE = 2
+
+Background = "data/menu/generic5_bg.tga"
+
+LoadingBar = {
+	Image = "data/menu/loading_bar.tga",
+	Position = { 64, 415 },
+	Width = 501,
+	Height = 32,
+	ScrollSpeed = 5000,	
+}
+
+--visuals
+
+ItemCount = 8
+
+Items = {
+
+			
+	[1] = {
+		ItemType = ITEMTYPE_PICTURE,
+		File = "Data/Menu/loading_elements.tga",
+		TexSize = { 256, 256 },
+		Position = { 0, 219 },
+		Width = 203,
+		Height = 151,
+		TexCoords = {  64, 1, 110, 152 }, --middle balk
+		ColorId = 1,
+	},
+
+	[2] = {
+		ItemType = ITEMTYPE_PICTURE,
+		File = "Data/Menu/loading_elements.tga",
+		TexSize = { 256, 256 },
+		Position = { 254, 219 },
+		Width = 386,
+		Height = 151,
+		TexCoords = {  64, 1, 110, 152 },
+		ColorId = 1,
+	},
+
+	[3] = {
+		ItemType = ITEMTYPE_PICTURE,
+		File = "Data/Menu/loading_elements.tga",
+		TexSize = { 256, 256 },
+		Position = { 203, 219 },
+		Width = 46,
+		Height = 151,
+		TexCoords = {  162, 1, 208, 152 },
+		ColorId = 1,
+	},
+
+	[4] = {
+		ItemType = ITEMTYPE_PICTURE,
+		File = "Data/Menu/loading_elements.tga",
+		TexSize = { 256, 256 },
+		Position = { 208, 219 },
+		Width = 46,
+		Height = 151,
+		TexCoords = {  1, 1, 46, 152 },
+		ColorId = 1,
+	},
+
+	[5] = {
+		ItemType = ITEMTYPE_TEXT, --loading text
+		Font = "FontSmall",
+		Identifier = 	LOADINGSCREEN_LOADING,
+		Position = { 225, 385 },
+		ColorId = 33,
+		Center = 1,
+		Width = 300,
+	},
+
+	[6] = {
+		ItemType = ITEMTYPE_PICTURE,
+		File = "Data/Menu/tutorial_17.tga",
+		TexSize = { 256, 256 },
+		Position = { 0, 232 },
+		Width = 231,
+		Height = 126,
+		TexCoords = {  1, 1, 233, 128 }, --upper image
+		ColorId = 1,
+	},
+
+	[7] = {
+		ItemType = ITEMTYPE_TEXT, --tutorial text
+		Font = "FontSmall",
+		Identifier = TUTORIAL_ROYALFLUSH_DETAILS_TEXT,
+		Position = { 232, 228 },
+		ColorId = 34,
+		Center = 0,
+		Width = 300,
+		XShiftPerLine = 7,
+	},
+
+	[8] = {
+		ItemType = ITEMTYPE_TEXT, --tutorial title
+		Font = "FontSmall",
+		Identifier = TUTORIAL_ROYALFLUSH_DETAILS_TITLE,
+		Position = { 225, 201 },
+		ColorId = 33,
+		Center = 0,
+		Width = 300,
+	},
+
+}

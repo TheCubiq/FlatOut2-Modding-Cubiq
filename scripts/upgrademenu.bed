@@ -1,0 +1,653 @@
+--///////////////////////////////////////////////////////////////////////////
+--// UpgradeMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 4.8.2005 16:39:03
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+
+dofile("data/menu/upgrade_categories_1.bed")
+dofile("data/menu/upgrade_category_icons.bed")
+dofile("data/menu/upgrade_icons.bed")
+dofile("data/menu/upgrade_icons_2.bed")
+dofile("data/menu/upgrade_icons_3.bed")
+
+dofile("data/menu/upgrade_body_1.bed")
+dofile("data/menu/upgrade_engine_1.bed")
+dofile("data/menu/upgrade_engine_2.bed")
+dofile("data/menu/upgrade_exhaust_1.bed")
+dofile("data/menu/upgrade_gearbox_1.bed")
+dofile("data/menu/upgrade_suspension_1.bed")
+
+
+local state
+local save_when_exit
+
+
+menu_upgrade_categories = CreateMenuFromTemplate("template_career")
+menu_upgrade_categories.back = function() menu_upgrade_categories.current=nil; EnterMenu("menu_career") end
+
+menu_upgrade_categories.options.title=TRANSLATOR(TITLE_UPGRADESHOP)
+
+
+local function EnterUpgrades(category)
+	menu_upgrades.category=category
+	GUI:MenuSwitchIgnoreCarState()
+	EnterMenu("menu_upgrades")
+end
+
+local categories
+
+local function get_category_by_name(name)
+
+	for k,v in pairs(categories) do
+		if v.dbname == name then
+			return v
+		end
+	end
+end
+
+local function get_upgrade_by_id(id)
+	return db.FlatOut2.Upgrades:GetProperty("Upgrade",id)
+end
+
+function BuildUpgradeCategories()
+	categories={}
+	local category_nameindex={}
+
+	local upgradetable=db.Data.Upgrades
+
+	LOG("------------------BUILDING UPGRADES---------------------")
+
+	for i=1,upgradetable:GetNumChildren() do
+		local db_category=upgradetable:GetChildByIndex(i-1)
+
+		LOG("CATEGORY '%s'",db_category:GetName())
+
+		local category={}
+
+		category.dbname=db_category:GetName()
+		category.db=db_category
+		--//category.name=TRANSLATOR(db_category.Name)
+		--//category.icon=db_category.Icon
+		--//category.image=db_category.Image
+		--//category.description=TRANSLATOR(db_category.Description)
+
+		category.upgrades={}
+
+		table.insert(categories,db_category.MenuIndex,category)
+		category_nameindex[category.dbname]=category
+	end
+
+	LOG("%d categories.",table.getn(categories))
+
+	LOG("scanning upgrades...")
+
+	local reftable=db.FlatOut2.Upgrades
+
+	for i=1,reftable:GetPropertyArraySize("Upgrade") do
+		local db_upgrade=reftable:GetProperty("Upgrade",i-1)
+
+		if db_upgrade and Garage:IsCarUpgradeAvailable(PlayerProfile:GetActiveCar(),i-1) then
+
+	--//		LOG("path=%s",db_upgrade:GetFullPath())
+
+			local _,__,categoryname,upgradename=string.find(db_upgrade:GetFullPath(),"Data.Upgrades.(%w+).(%w+)")
+
+	--//			LOG("category=%s, name=%s",categoryname,upgradename)
+
+				local category=category_nameindex[categoryname] --//get_category_by_name(categoryname)
+
+				table.insert(category.upgrades,i-1)
+		end
+	end
+
+	for k,v in pairs(categories) do
+		LOG("%d upgrades in category '%s'.",table.getn(v.upgrades),v.dbname)
+	end
+end
+
+
+local function UpdateCategoryInfo(menu,id)
+	local category=menu.Categories[id]
+
+	local w=W("category_picture")
+	local res=menu:getResource(category.db.Image)
+	w:AttachResource(res)
+	local size={ w:GetSize() }
+	
+	w:SetPosition(135-size[1]/2,(185-83)-size[2]/2)
+
+
+
+	W("category_title"):SetTitle(TRANSLATOR(category.db.Name))
+	GUI:SwitchButtonText(TRANSLATOR(category.db.Name))
+
+	w=W("category_description")
+	w:SetTitle(TRANSLATOR(category.db.Description))
+	w:WordWrap()
+
+end
+
+local function ShowInfoText()
+	local w=W("category_description")
+
+	w:ShowWindow()
+	AnimateWindowAlpha(w,0.0,1.0,0.2,0.2)
+
+end
+
+
+local function HideInfoText()
+	
+	AnimateWindowAlpha(W("category_description"),1.0,0.0,0.2)
+end
+
+
+function menu_upgrade_categories.create(self)
+	self.parent:create(self)
+
+	--//TODO: remove when categories/parts dont change that much anymore
+	BuildUpgradeCategories()
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:addResource("upgrade_categories_1.tga",upgrade_categories_1,upgrade_categories_1_size)
+	self:addResource("upgrade_category_icons.tga",upgrade_category_icons,upgrade_category_icons_size)
+
+	self:loadResources()
+end
+
+
+
+function menu_upgrade_categories.init(self)
+	self.parent:init(self)
+
+
+	if not PlayerProfile:IsCareerWelcome2Displayed() then
+		MessageBox(TRANSLATOR(CAREER_WELCOME_UPGRADESHOP),MESSAGEBOX_OK,function() PlayerProfile:SetCareerWelcome2Displayed(true) end)
+	end
+
+
+	local ppos=POS(0,83)
+
+	local p=Frame{Name="confirm_bar",Position=POS(0,83),Size=SIZE(225+61,204)}
+	Frame{Position=POS(0,0),Size=SIZE(225,204),Parent=p}:AttachResource(self:getResource("upshop_confirm_left_slider_bar"))
+	Frame{Position=POS(225,0),Size=SIZE(61,204),Parent=p}:AttachResource(self:getResource("upshop_confirm_left_slider_bar_ang"))
+
+	Frame{Name="category_picture",Position=RELATIVEPOS(POS(12,97),ppos),Size=SIZE(256,170),Parent=p}
+
+
+	Frame{Position=POS(234,83),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(292,83),Size=SIZE(356,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="category_title",Position=POS(264,86),Font=fontlarge(),Color=GetPaletteColor(3)}
+
+	Frame{Position=POS(244,120),Size=SIZE(49,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar_ang"))
+	Frame{Position=POS(293,120),Size=SIZE(355,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar"))
+
+	Frame{Position=POS(282,255),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(340,255),Size=SIZE(310,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+
+	StaticText{Name="category_description",Position=POS(269,130),Size=SIZE(270,110),TextLineAdjust=6,Font=fontsmall(),Color=GetPaletteColor(32)}
+
+
+	--//StaticText{Name="category_description",Position=POS(460,160),Align=FONTF_CENTER,Size=SIZE(250,400),Font=fontsmall()}:SetAlpha(0)
+
+
+
+	--//CarStats are in garage.bed
+
+	local k,v
+	local _,height=wm.GetTextExtents(L"W",fontmedium())
+
+	local pos=POS(50,83)
+
+	--//CreateCarInfoWindows(self,pos,true,true)
+
+
+	Frame{Name="categories_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local parent=ButtonBar{ Slots=7,Name="upgrade_categories",Padding=0,SlotSize=SIZE(107,56),ButtonSize=SIZE(78,50),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+
+--//	local parent=ButtonBar{ Slots=7,Name="upgrade_categories",Padding=10,SlotSize=SIZE(100,60),SelectedSlotSize=SIZE(110,70),Position=POS(-60,336),Size=SIZE(640+50,60)}
+
+	parent.HideButtons = function(self)
+		local pos={ self:GetPosition() }
+		self.origpos={ parent:GetPosition() }
+		AnimateWindowPos(self,pos,POS(pos[1],pos[2]+150),0.2)
+	end
+
+	parent.ShowButtons = function(self)
+		local pos={ self:GetPosition() }
+		AnimateWindowPos(self,{ self:GetPosition() },self.origpos or POS(pos[1],pos[2]-150),0.3)
+	end
+--[[--/*
+	function parent.onButtonY(self)
+		if not menu_upgrade_categories.in_info then
+			HideCarInfoWindows()
+			ShowInfoText()
+			self:HideButtons()
+			GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK))
+			self:DisableMovement()
+			playmenusound_action()
+			menu_upgrade_categories.in_info=true
+		end
+	end
+--]]--*/
+	function parent.onBack(self)
+		if menu_upgrade_categories.in_info then
+			HideInfoText()
+			ShowCarInfoWindows()
+			playmenusound_back()
+			self:ShowButtons()
+			self:EnableMovement()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+			menu_upgrade_categories.in_info=nil
+		else
+			GUI:HideCar()
+			playmenusound_back()
+			if save_when_exit then
+				ProfileSave(Save.GetLastSaveSlotUsed(),function() EnterMenu("menu_career") end,
+														function() EnterMenu("menu_upgrades") end)
+			else
+				EnterMenu("menu_career")
+			end
+		end
+	end
+
+	function parent.onChildAction(self,id)
+		local category=menu_upgrade_categories.Categories[id]
+		if table.getn(category.upgrades) > 0 then
+			EnterUpgrades(category)
+			playmenusound_action()
+		else
+			W("upgrade_categories"):HideButtons()
+			MessageBox(L"DEV MESSAGE\nNO UPGRADES IN THIS CATEGORY",MESSAGEBOX_OK,function() W("upgrade_categories"):ShowButtons() end)
+		end
+	end
+
+	function parent.onButtonChange(self,id)
+		menu_upgrade_categories.current=id
+		UpdateCategoryInfo(menu_upgrade_categories,id)
+		playmenusound_move()
+	end
+
+	self.Categories={}
+
+	local i
+	for i=1,table.getn(categories) do
+
+		local id,button=parent:AddButton(self:getResource(categories[i].db.Icon))
+		table.insert(self.Categories,id,categories[i])
+	end
+
+	self.current = self.current or 1
+
+	UpdateCarInfo(PlayerProfile:GetActiveCar(),menu_upgrade_categories,false,nil,true)
+
+	parent:onButtonChange(1)
+
+	--//UpdateCategoryInfo(menu_upgrade_categories,self.current)
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	GUI:SetBackground("data/menu/upg_shop_bg.tga")
+end
+
+function menu_upgrade_categories.deinit(self)
+	self.parent:deinit(self)
+end
+
+
+function menu_upgrade_categories.update(self,t)
+	self.parent:update(self,t)
+end
+
+function menu_upgrade_categories.startshow(self)
+	self.parent:startshow(self)
+
+end
+
+
+function menu_upgrade_categories.starthide(self)
+
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+menu_upgrades = CreateMenuFromTemplate("template_career")
+menu_upgrades.options.title=TRANSLATOR(TITLE_UPGRADESHOP)
+
+
+
+local function UpdateUpgradeInfo(id)
+
+	local upgrade_id=state.category.upgrades[state.upgrades[id]]
+	local upgrade=get_upgrade_by_id(upgrade_id)
+
+	GUI:SwitchButtonText(state.category.name)
+	W("upgrade_title"):SetTitle(TRANSLATOR(upgrade.Name))
+	W("upgrade_description"):SetTitle(TRANSLATOR(upgrade.Description))
+	W("upgrade_description"):WordWrap()
+	local w=W("upgrade_picture")
+	local res=menu_upgrades:getResource(upgrade.Image)
+	if res then
+		w:AttachResource(res)
+		local size=GetResourceSize(res)
+		w:SetSize(size[1],size[2])
+		local psize={ W("confirm_bar"):GetSize() }
+
+		w:SetPosition(240-size[1],psize[2]/2-size[2]/2)
+	end
+
+	
+	w=W("upgrade_price")
+	if Garage:IsCarUpgraded(PlayerProfile:GetActiveCar(),upgrade_id) then
+		w:SetTitle(TRANSLATOR(UPGRADESHOP_PURCHASED))
+	elseif Garage:IsCarUpgradeDisabled(PlayerProfile:GetActiveCar(),upgrade_id) then
+		w:SetTitle(L"---")
+	else
+		w:SetTitle(MONEY(upgrade.Price[Garage:GetCarClass(PlayerProfile:GetActiveCar())]))
+	end
+
+	local car_idx=PlayerProfile:GetActiveCar()
+	local performance=Garage:GetCarPerformanceLevelFromProfile(car_idx)
+	local performance2=Garage:GetCarPerformanceLevelFromProfileWithUpgrade(car_idx,upgrade_id)
+
+	w=W("car_topspeed_bar")
+	if w then
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.topspeed*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.topspeed*100,false,0.2,nil,nil,nil)
+
+		w=W("car_acceleration_bar")
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.acceleration*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.acceleration*100,false,0.2,nil,nil,nil)
+
+		w=W("car_handling_bar")
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.handling*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.handling*100,false,0.2,nil,nil,nil)
+
+		w=W("car_durability_bar")
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.strength*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.strength*100,false,0.2,nil,nil,nil)
+
+		w=W("car_weight_bar")
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.weight*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.weight*100,false,0.2,nil,nil,nil)
+
+		w=W("car_nitro_bar")
+		AnimateValue(w,"value","SetValue",false,w:GetValue(),performance.nitro*100,false,0.2,nil,nil,nil)
+		AnimateValue(w,"value2","SetValue2",false,w:GetValue2(),performance2.nitro*100,false,0.2,nil,nil,nil)
+	end
+
+end
+
+local function ShowConfirmBar()
+	AnimateWindowAlpha(W("confirm_bg"),0.0,1,0.3,0.2)
+	W("confirm_bar"):ShowWindow()
+	AnimateWindowPos(W("confirm_bar"),POS(-340,83),POS(0,83),0.3,0.2)
+
+end
+
+local function HideConfirmBar()
+	AnimateWindowAlpha(W("confirm_bg"),W("confirm_bg"):GetAlpha(),0.0,0.2)
+	AnimateWindowPos(W("confirm_bar"),{ W("confirm_bar"):GetPosition() },POS(-340,83),0.2)
+end
+
+local function CheckButtons()
+	
+	local parent=W("upgrades")
+
+	for k,v in pairs(state.upgrades) do
+		parent:DisableButton(k,FALSE)
+		parent:EnableButton(k,FALSE)
+
+		if Garage:IsCarUpgraded(PlayerProfile:GetActiveCar(),state.category.upgrades[k]) then
+			parent:EnableButton(k,TRUE)
+		elseif Garage:IsCarUpgradeDisabled(PlayerProfile:GetActiveCar(),state.category.upgrades[k]) then
+			parent:DisableButton(k,TRUE)
+		end
+	end
+
+end
+
+
+local function PurchaseUpgrade(id)
+	local upgrade_id=state.category.upgrades[state.upgrades[id]]
+	local upgrade=get_upgrade_by_id(upgrade_id)
+	
+	local price=upgrade.Price[Garage:GetCarClass(PlayerProfile:GetActiveCar())]
+	PlayerProfile:SubtractMoneyUpgrades(price)
+	Garage:AddCarUpgradesValue(PlayerProfile:GetActiveCar(),price)
+	Garage:SetCarUpgraded(PlayerProfile:GetActiveCar(),upgrade_id,true)
+	save_when_exit=true
+	UpdateUpgradeInfo(id)
+	CheckButtons()
+	W("upgrades"):ShowButtons()
+	ShowCarInfoWindows()
+	HideConfirmBar()
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	
+--//	GUI:HideCar()
+--[[--/*	ProfileSave(Save.GetLastSaveSlotUsed(),function() EnterMenu("menu_career") end,
+										function() 
+												local car=PlayerProfile:GetActiveCar()
+												PlayerProfile:SetMoney(PlayerProfile:GetMoney()+upgrade.Price)
+												Garage:SetCarUpgradesValue(car,Garage:GetCarUpgradesValue(car)-upgrade.Price)
+												Garage:SetCarUpgraded(PlayerProfile:GetActiveCar(),upgrade_id,false)
+												EnterMenu("menu_upgrades")
+										end)
+--]]--*/
+	
+end
+
+
+function menu_upgrades.create(self)
+	self.parent:create(self)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:addResource("upgrade_icons.tga",upgrade_icons,upgrade_icons_size)
+	self:addResource("upgrade_icons_2.tga",upgrade_icons_2,upgrade_icons_2_size)
+	self:addResource("upgrade_icons_3.tga",upgrade_icons_3,upgrade_icons_3_size)
+
+	self:addResource("upgrade_body_1.tga",upgrade_body_1,upgrade_body_1_size)
+	self:addResource("upgrade_engine_1.tga",upgrade_engine_1,upgrade_engine_1_size)
+	self:addResource("upgrade_engine_2.tga",upgrade_engine_2,upgrade_engine_2_size)
+	self:addResource("upgrade_exhaust_1.tga",upgrade_exhaust_1,upgrade_exhaust_1_size)
+	self:addResource("upgrade_gearbox_1.tga",upgrade_gearbox_1,upgrade_gearbox_1_size)
+	self:addResource("upgrade_suspension_1.tga",upgrade_suspension_1,upgrade_suspension_1_size)
+	
+--[[--/*
+
+	local function find_texture(res)
+		for k,v in pairs(self.resourcelist) do
+			if k == res then
+				return string.sub(v.filename,string.find(v.filename,"[^%.]+"))
+			end
+		end
+	end
+
+	local resources={}
+
+	for i=1,table.getn(self.category.upgrades) do
+		local upgrade=get_upgrade_by_id(self.category.upgrades[i])
+		local r=find_texture(upgrade.Icon)
+		if r then
+			resources[r]=true
+		end
+		r=find_texture(upgrade.Image)
+		if r then
+			resources[r]=true
+		end
+	end
+
+	self:clearResources()
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	for k,v in pairs(resources) do
+		self:addResource(k..".tga",_G[k],_G[k.."_size"])
+	end
+--]]--*/
+	self:loadResources()
+end
+
+function menu_upgrades.init(self)
+	self.parent:init(self)
+
+	state={}
+	state.category=self.category
+	state.upgrades={}
+
+	local ppos=POS(0,83)
+
+	local bgcolor={ 1,1,1,1.0 }
+	local p=Frame{Name="confirm_bg",Position=POS(0,0),Size=SIZE(640,480),DrawBackgroundColor=TRUE,Color=GetPaletteColor(1),Layer=2}
+	p:HideWindow()
+
+	local p=Frame{Name="confirm_bar",Position=POS(0,83),Size=SIZE(225+61,204)}
+	Frame{Position=POS(0,0),Size=SIZE(225,204),Parent=p}:AttachResource(self:getResource("upshop_confirm_left_slider_bar"))
+	Frame{Position=POS(225,0),Size=SIZE(61,204),Parent=p}:AttachResource(self:getResource("upshop_confirm_left_slider_bar_ang"))
+	p:HideWindow()
+
+	Frame{Name="upgrade_picture",Position=RELATIVEPOS(POS(12,97),ppos),Size=SIZE(172,190),Parent=p}
+
+
+	Frame{Position=POS(234,83),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(292,83),Size=SIZE(356,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="upgrade_title",Position=POS(264,86),Font=fontlarge(),Color=GetPaletteColor(3)}
+
+	Frame{Position=POS(244,120),Size=SIZE(49,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar_ang"))
+	Frame{Position=POS(293,120),Size=SIZE(355,130)}:AttachResource(self:getResource("upshop_mid_infotxt_bar"))
+
+	Frame{Position=POS(282,255),Size=SIZE(58,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame{Position=POS(340,255),Size=SIZE(310,32)}:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText{Name="upgrade_description",Position=POS(269,130),Size=SIZE(290,110),TextLineAdjust=6,Font=fontsmall(),Color=GetPaletteColor(32)}
+
+	StaticText{Name="upgrade_price_text",Title=TRANSLATOR(UPGRADESHOP_PRICE),Position=POS(440,264),Align=FONTF_RIGHT,Font=fontmedium(),Color=GetPaletteColor(33)}
+	StaticText{Name="upgrade_price",Position=POS(444,261),Font=fontlarge(),Color=GetPaletteColor(34)}
+
+
+	--//Frame{Name="car_picture",Position=POS(360,90),Size=SIZE(220,100)}
+
+
+	--//CarStats are in garage.bed
+
+	local k,v
+	local _,height=wm.GetTextExtents(L"W",fontmedium())
+
+	local pos=POS(50,83)
+
+	CreateCarInfoWindows(self,pos,true,true)
+
+
+	Frame{Name="upgrades_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local parent=ButtonBar{ Slots=7,Name="upgrades",Padding=0,SlotSize=SIZE(107,56),ButtonSize=SIZE(78,50),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							ButtonEnabled=self:getResource("upgrade_bought_icon"),
+							ButtonDisabled=self:getResource("upgrade_disabled_icon"),
+							}
+
+
+	parent.HideButtons = function(self)
+		local pos={ self:GetPosition() }
+		self.origpos={ parent:GetPosition() }
+		AnimateWindowPos(self,pos,POS(pos[1],pos[2]+150),0.2)
+	end
+
+	parent.ShowButtons = function(self)
+		local pos={ self:GetPosition() }
+		AnimateWindowPos(self,{ self:GetPosition() },self.origpos or POS(pos[1],pos[2]-150),0.3)
+	end
+
+
+	function parent.onBack(self)
+		GUI:MenuSwitchIgnoreCarState()
+		playmenusound_back()
+		EnterMenu("menu_upgrade_categories")
+	end
+
+	function parent.onChildAction(self,id)
+		local upgrade_id=state.category.upgrades[state.upgrades[id]]
+		if Garage:IsCarUpgraded(PlayerProfile:GetActiveCar(),upgrade_id) or Garage:IsCarUpgradeDisabled(PlayerProfile:GetActiveCar(),upgrade_id) then
+			playmenusound_error()
+		else
+			local upgrade=get_upgrade_by_id(upgrade_id)
+			if not PlayerProfile:EnoughMoney(upgrade.Price[Garage:GetCarClass(PlayerProfile:GetActiveCar())]) then
+				W("upgrades"):HideButtons()
+				playmenusound_error()
+				MessageBox(TRANSLATOR(MESSAGE_NOTENOUGHMONEYUPGRADE),MESSAGEBOX_OK,function() W("upgrades"):ShowButtons() end)
+			else
+				playmenusound_action()
+				W("upgrades"):HideButtons()
+				HideCarInfoWindows()
+				ShowConfirmBar()
+				playmenusound_action()
+				ConfirmationDialog(TRANSLATOR(MESSAGE_BUYUPGRADE),function(value) 
+																if value == TRUE then
+																	PurchaseUpgrade(state.current_upgrade)
+																else
+																	W("upgrades"):ShowButtons()
+																	ShowCarInfoWindows()
+																	HideConfirmBar()
+																	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+																end
+														end)
+			end
+		end
+	end
+
+	function parent.onButtonChange(self,id)
+		state.current_upgrade=id
+		UpdateUpgradeInfo(id)
+		playmenusound_move()
+	end
+
+
+	local i
+	for i=1,table.getn(state.category.upgrades) do
+		local upgrade=get_upgrade_by_id(state.category.upgrades[i])
+		local id,button=parent:AddButton(self:getResource(upgrade.Icon))
+
+		table.insert(state.upgrades,id,i)
+	end
+
+	CheckButtons()
+
+	UpdateCarInfo(PlayerProfile:GetActiveCar(),menu_upgrades,false,nil,true)
+	
+	state.current_upgrade=1
+
+	UpdateUpgradeInfo(state.current_upgrade)
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+	GUI:SetBackground("data/menu/upg_shop_bg.tga")
+
+end
+
+function menu_upgrades.deinit(self)
+	self.parent:deinit(self)
+end
+
+

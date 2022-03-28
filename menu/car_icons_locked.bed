@@ -1,0 +1,57 @@
+car_icons_locked_size = { 512,512 }
+car_icons_locked = {
+	
+
+	car_1_icon_locked = {  0, 0, 79, 44 }, 
+	car_2_icon_locked = {  79, 0, 79, 44 }, 
+	car_3_icon_locked = {  158, 0, 79, 44 }, 
+	car_4_icon_locked = {  237, 0, 79, 44 },
+	car_5_icon_locked = {  316, 0, 79, 44 },
+	car_6_icon_locked = {  395, 0, 79, 44 }, 
+
+	car_7_icon_locked = {  0, 44, 79, 44 }, 
+	car_8_icon_locked = {  79, 44, 79, 44 }, 
+	car_9_icon_locked = {  158, 44, 79, 44 }, 
+	car_10_icon_locked = {  237, 44, 79, 44 }, 
+	car_11_icon_locked = {  316, 44, 79, 44 },
+	car_12_icon_locked = {  395, 44, 79, 44 },  
+
+	car_13_icon_locked = {  0, 88, 79, 44 }, 
+	car_14_icon_locked = {  79, 88, 79, 44 }, 
+	car_15_icon_locked = {  158, 88, 79, 44 }, 
+	car_16_icon_locked = {  237, 88, 79, 44 },   
+	car_17_icon_locked = {  316, 88, 79, 44 }, 
+	car_18_icon_locked = {  395, 88, 79, 44 }, 
+
+	car_19_icon_locked = {  0, 132, 79, 44 },
+	car_20_icon_locked = {  79, 132, 79, 44 },
+	car_21_icon_locked = {  158, 132, 79, 44 },
+	car_22_icon_locked = {  237, 132, 79, 44 },
+	car_23_icon_locked = {  316, 132, 79, 44 },
+	car_24_icon_locked = {  395, 132, 79, 44 },
+
+	car_25_icon_locked = {  0, 176, 79, 44 },
+	car_26_icon_locked = {  79, 176, 79, 44 },
+	car_27_icon_locked = {  158, 176, 79, 44 },
+	car_28_icon_locked = {  237, 176, 79, 44 },
+	car_29_icon_locked = {  316, 176, 79, 44 },
+	car_30_icon_locked = {  395, 176, 79, 44 },
+
+	car_31_icon_locked = {  0, 220, 79, 44 },
+	car_32_icon_locked = {  79, 220, 79, 44 },
+	car_33_icon_locked = {  158, 220, 79, 44 },
+	car_34_icon_locked = {  237, 220, 79, 44 },
+	car_35_icon_locked = {  316, 220, 79, 44 },
+	car_36_icon_locked = {  395, 220, 79, 44 },
+
+	car_37_icon_locked = {  0, 264, 79, 44 },
+	car_38_icon_locked = {  79, 264, 79, 44 },
+	car_39_icon_locked = {  158, 264, 79, 44 },
+	car_40_icon_locked = {  237, 264, 79, 44 },
+	car_41_icon_locked = {  316, 264, 79, 44 },
+	car_42_icon_locked = {  395, 264, 79, 44 },
+
+	car_43_icon_locked = {  158, 308, 79, 44 },
+	car_45_icon_locked = {  237, 308, 79, 44 },
+
+}

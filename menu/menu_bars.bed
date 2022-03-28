@@ -1,0 +1,24 @@
+menu_bars_size = { 512,256 }
+menu_bars = {
+	
+	menu_bar_top = {  0, 0, 512, 66 },
+	menu_bar_bottom = {  0, 71, 512, 76 },
+
+	career_class_backdrop = {  0, 190, 410, 61 },
+
+	finals_trophy_backdrop_tip = {  411, 190, 52, 61 },
+	finals_trophy_backdrop_strech = {  442, 190, 68, 61 },
+	finals_trophy_backdrop_half_tip = {  420, 215, 44, 36 },
+	finals_trophy_backdrop_half_strech = {  464, 215, 48, 36 },
+
+	narrow_black_bar_tip_left = {  248, 152, 31, 21 },
+	narrow_black_bar_tip_right = {  476, 152, 31, 21 },
+	narrow_black_bar_main = {  279, 152, 196, 21 },	
+	narrow_black_bar = {  248, 152, 259, 21 },	
+
+	thick_black_bar_tip = {  420, 215, 40, 32 },
+	thick_black_bar_main = {  440, 215, 70, 32 },
+
+	signin_balk = { 2, 149, 245, 37 },
+
+}

@@ -1,0 +1,72 @@
+--///////////////////////////////////////////////////////////////////////////
+--// LANGame.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2004 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 9.1.2004 0:03:08
+--// 
+--// Authors: Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+multiplayer_menustate={}
+local StartTime=nil
+local CommandLineJoinOrCreateInProgress=false
+
+menu_lan_modeselect = CreateMenuFromTemplate("template_basic")
+menu_lan_modeselect.options.title = PC_MULTIPLAYER_LAN
+menu_lan_modeselect.back = function() EnterMenu("menu_multiplayer"); end
+
+function menu_lan_modeselect.create(self)
+	self.parent:create(self)
+	self:loadResources()
+
+	if not CommandLine["-host"] and not CommandLine["-join"] then
+		self.items = {
+			{ ICON_MULTIPLAYER_JOINGAME, function() menu_multiplayer_optimatchresults.backmenu = "menu_lan_modeselect"; menu_multiplayer_creategame.backmenu = "menu_lan_modeselect"; menu_multiplayer_lobby.backmenu = "menu_lan_modeselect"; EnterMenu("menu_multiplayer_optimatchresults"); end, ICON(self, "icon_xbl_optimatch") },
+			{ ICON_MULTIPLAYER_CREATEGAME, function() EnterCreateGameMenu("menu_lan_modeselect"); end, ICON(self, "icon_xbl_create_game") },
+		}
+	end
+end
+
+function menu_lan_modeselect.init(self)
+	self.parent:init(self)
+	
+	GUI:SetBackgroundVideo("data/video/bg_main")
+
+	if Network == nil then
+		StartNetwork()
+	end
+
+	Network:StopMultiplayer()
+	StartTime = nil
+	CommandLineJoinOrCreateInProgress = false
+	if CommandLine["-host"] or CommandLine["-join"] then
+		ShowThinkingWindow()
+		GUI:SetHelpButtons()
+	end
+end
+
+function menu_lan_modeselect.deinit(self)
+	self.parent:deinit(self)
+end
+	
+function menu_lan_modeselect.update(self,time)
+	self.parent:update(self,time)
+	if StartTime == nil then
+		StartTime = time
+	end	
+
+	if not GUI:IsMenuAnimating() and not CommandLineJoinOrCreateInProgress and ( CommandLine["-host"] or CommandLine["-join"] ) then		
+		if CreateGameFromCommandLine then
+			CreateSessionFromCommandLine("menu_lan_modeselect")
+		elseif JoinGameFromCommandLine then
+			JoinSessionFromCommandLine()
+		else
+			Event:PostEvent(event(EVENT_QUIT))
+		end
+		CommandLineJoinOrCreateInProgress=true
+		CreateGameFromCommandLine = false
+		JoinGameFromCommandLine = false
+	end		
+end

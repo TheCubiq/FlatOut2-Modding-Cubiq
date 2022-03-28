@@ -1,0 +1,7 @@
+character_images_locked_size = { 512,512 }
+character_images_locked = {
+	
+	ai_portrait_locked_1 = {  0, 0, 256, 345 },   -- Jack Benton
+	ai_portrait_locked_4 = {  256, 0, 256, 345 }, -- Katie Daggert
+
+}

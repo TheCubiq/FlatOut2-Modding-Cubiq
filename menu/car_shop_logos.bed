@@ -1,0 +1,12 @@
+car_shop_logos_size = { 512,256 }
+car_shop_logos = {
+	
+	car_shop_logo_1 = {  3, 3, 125, 65 },    -- tom's junk yard
+	car_shop_logo_2 = {  132, 3, 134, 75 },  -- pro race gear ltd.
+	car_shop_logo_3 = {  270, 3, 142, 70 }, -- ashbridges quality auto parts
+	
+	car_shop_logo_1_s = {  3, 84, 125, 65 },    -- tom's junk yard highlighted
+	car_shop_logo_2_s = {  132, 84, 134, 75 },  -- pro race gear ltd. highlighted
+	car_shop_logo_3_s = {  270, 84, 142, 70 }, -- ashbridges quality auto parts highlighted
+
+}

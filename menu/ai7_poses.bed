@@ -1,0 +1,6 @@
+ai7_poses_size = { 256,512 }
+ai7_poses = {
+	
+	ai7_pose = {  0, 32, 256, 480 },
+
+}

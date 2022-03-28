@@ -1,0 +1,652 @@
+--///////////////////////////////////////////////////////////////////////////
+--// LobbySessionDetails.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 28.9.2005 11:27
+--// 
+--// Authors: Pasi Matilainen (pasi.matilainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/cup_final_results_elements1.bed")
+dofile("data/menu/backdrops3.bed")
+dofile("data/menu/garage_elements1.bed")
+
+dofile("data/menu/single_player_track_images1.bed")
+dofile("data/menu/single_player_track_images2.bed")
+dofile("data/menu/single_player_track_images3.bed")
+dofile("data/menu/single_player_track_images4.bed")
+dofile("data/menu/single_player_track_images5.bed")
+dofile("data/menu/single_player_track_images6.bed")
+dofile("data/menu/single_player_track_images7.bed")
+dofile("data/menu/single_player_track_images8.bed")
+dofile("data/menu/single_player_track_images9.bed")
+dofile("data/menu/single_player_track_images10.bed")
+dofile("data/menu/single_player_track_images11.bed")
+dofile("data/menu/single_player_track_images12.bed")
+dofile("data/menu/single_player_track_images13.bed")
+dofile("data/menu/single_player_track_images14.bed")
+dofile("data/menu/single_player_track_images15.bed")
+dofile("data/menu/single_player_track_images16.bed")
+dofile("data/menu/single_player_track_images17.bed")
+dofile("data/menu/single_player_track_images18.bed")
+dofile("data/menu/single_player_track_images19.bed")
+dofile("data/menu/single_player_track_images20.bed")
+dofile("data/menu/single_player_track_images21.bed")
+dofile("data/menu/single_player_track_images22.bed")
+dofile("data/menu/single_player_track_images23.bed")
+dofile("data/menu/single_player_track_images24.bed")
+dofile("data/menu/single_player_track_images25.bed")
+dofile("data/menu/single_player_track_images26.bed")
+dofile("data/menu/single_player_track_images27.bed")
+dofile("data/menu/single_player_track_images28.bed")
+dofile("data/menu/single_player_track_images29.bed")
+dofile("data/menu/single_player_track_images30.bed")
+
+
+local State
+local SESSION_DETAILS = 1
+local EVENT_HELP = 2
+
+local EventHelpText
+
+function EnterSessionDetails(title, backmenu)
+	menu_multiplayer_lobby_sessiondetails.options.title = title
+	menu_multiplayer_lobby_sessiondetails.back = entermenu(backmenu)
+	EnterMenu("menu_multiplayer_lobby_sessiondetails")
+end
+
+
+
+local GameTypes = {
+	[ReplicatedSession.GAMETYPE_RACE] = 1,
+	[ReplicatedSession.GAMETYPE_PONGRACE] = 1,
+	[ReplicatedSession.GAMETYPE_TOURNAMENT_RACE] = 1,
+	[ReplicatedSession.GAMETYPE_STUNT] = 2,
+	[ReplicatedSession.GAMETYPE_DERBY_WRECKING] = 3,
+	[ReplicatedSession.GAMETYPE_DERBY_LMS] = 3,
+	[ReplicatedSession.GAMETYPE_DERBY_FRAG] = 3,
+	[ReplicatedSession.GAMETYPE_TOURNAMENT_DERBY] = 3,	
+	[ReplicatedSession.GAMETYPE_HUNTER_PREY] = 3,
+	[ReplicatedSession.GAMETYPE_TOURNAMENT] = 4,
+}
+
+local OptionItems = {
+	{
+		MULTIPLAYER_SESSIONTYPE,
+		{MULTIPLAYER_SESSIONTYPE_SINGLERACE, MULTIPLAYER_SESSIONTYPE_TOURNAMENT},
+		{1, 2},
+		1,
+		true,
+		nil,
+		{MULTIPLAYER_SESSIONTYPE_SINGLERACE_DESCRIPTION, MULTIPLAYER_SESSIONTYPE_TOURNAMENT_DESCRIPTION},
+	},	
+	{
+		MULTIPLAYER_RANKEDGAME,
+		{UI_YES, UI_NO},
+		{1, 0},
+		2,
+		true,
+		function()OnRatedChanged()end,
+		{MULTIPLAYER_RANKED_YES_DESCRIPTION, MULTIPLAYER_RANKED_NO_DESCRIPTION}
+	},
+	{
+		MULTIPLAYER_GAMETYPE,
+		{MULTIPLAYER_GAMETYPE_RACE, MULTIPLAYER_GAMETYPE_STUNT, MULTIPLAYER_GAMETYPE_DERBY, MULTIPLAYER_GAMETYPE_MIXED },
+		{1, 2, 3, 4},
+		1,
+		true,
+		function()OnGameTypeChanged()end,
+		{MULTIPLAYER_GAMETYPE_RACE_DESCRIPTION, MULTIPLAYER_GAMETYPE_STUNT_DESCRIPTION, MULTIPLAYER_GAMETYPE_DERBY_DESCRIPTION }
+	},
+	{
+		MULTIPLAYER_CARTYPE,
+		{MULTIPLAYER_CARTYPE_ANY, MULTIPLAYER_CARTYPE_DERBY, MULTIPLAYER_CARTYPE_RACING, MULTIPLAYER_CARTYPE_STREET, MULTIPLAYER_CARTYPE_STUNT, MULTIPLAYER_CAR_SAMEHOST },
+		{SessionInfo.CarClass.Any, SessionInfo.CarClass.ClassA, SessionInfo.CarClass.ClassB, SessionInfo.CarClass.ClassC, SessionInfo.CarClass.Stunt, -1},
+		1,
+		true,
+		nil,
+		{MULTIPLAYER_CARTYPE_ANY_DESCRIPTION, MULTIPLAYER_CARTYPE_STREET_DESCRIPTION, MULTIPLAYER_CARTYPE_RACING_DESCRIPTION, MULTIPLAYER_CARTYPE_DERBY_DESCRIPTION, MULTIPLAYER_CARTYPE_STUNT_DESCRIPTION, MULTIPLAYER_CAR_SAMEHOST_DESC}
+	},
+	{
+		MULTIPLAYER_UPGRADES,
+		{L"0%", L"50%", L"100%", MULTIPLAYER_UPGRADES_CHOICE},
+		{SessionInfo.CarUpgrades.None, SessionInfo.CarUpgrades.Half, SessionInfo.CarUpgrades.All, SessionInfo.CarUpgrades.Any},
+		3,
+		true,
+		nil,
+		{MULTIPLAYER_UPGRADES_0_DESCRIPTION, MULTIPLAYER_UPGRADES_50_DESCRIPTION, MULTIPLAYER_UPGRADES_100_DESCRIPTION, MULTIPLAYER_UPGRADES_ANY_DESCRIPTION}
+	},
+	{
+		MULTIPLAYER_NITRO,
+		{L"0x", L"0.5x", L"1x", L"2x"},
+		{SessionInfo.NitroRegen.Regen0, SessionInfo.NitroRegen.Regen50, SessionInfo.NitroRegen.Regen100, SessionInfo.NitroRegen.Regen200},
+		3,
+		true,
+		nil,
+		{MULTIPLAYER_NITRO_0_DESCRIPTION, MULTIPLAYER_NITRO_50_DESCRIPTION, MULTIPLAYER_NITRO_100_DESCRIPTION, MULTIPLAYER_NITRO_200_DESCRIPTION}
+	},
+	{
+		MULTIPLAYER_PLAYERS,
+		{L"2", L"3", L"4", L"5", L"6", L"7", L"8"},
+		{2, 3, 4, 5, 6, 7, 8},
+		7,
+		true,
+		function()OnNumPlayersChanged()end,
+		MULTIPLAYER_PLAYERS_DESCRIPTION
+	},
+	{
+		MULTIPLAYER_RESERVED,
+		{L"0", L"1", L"2", L"3", L"4", L"5", L"6", L"7"},
+		{0, 1, 2, 3, 4, 5, 6, 7, 8, -1},
+		1,
+		true,
+		function()OnReservedChanged()end,
+		MULTIPLAYER_RESERVEDFORFRIENDS_DESCRIPTION
+	},
+	{
+		MULTIPLAYER_RACEDAMAGELEVEL,
+		{L"0x", L"0.5x", L"1x", L"1.5x", L"2x"},
+		{ReplicatedSession.DAMAGELEVEL_0, ReplicatedSession.DAMAGELEVEL_50, ReplicatedSession.DAMAGELEVEL_100, ReplicatedSession.DAMAGELEVEL_150, ReplicatedSession.DAMAGELEVEL_200},
+		3,
+		true,
+		nil,
+		{MULTIPLAYER_RACEDAMAGELEVEL_0_DESCRIPTION, MULTIPLAYER_RACEDAMAGELEVEL_50_DESCRIPTION, MULTIPLAYER_RACEDAMAGELEVEL_100_DESCRIPTION, MULTIPLAYER_RACEDAMAGELEVEL_150_DESCRIPTION, MULTIPLAYER_RACEDAMAGELEVEL_200_DESCRIPTION}
+	},
+	{
+		MULTIPLAYER_DERBYDAMAGELEVEL,
+		{L"0.5x", L"1x", L"1.5x", L"2x"},
+		{ReplicatedSession.DERBYDAMAGELEVEL_50, ReplicatedSession.DERBYDAMAGELEVEL_100, ReplicatedSession.DERBYDAMAGELEVEL_150, ReplicatedSession.DERBYDAMAGELEVEL_200},
+		2,
+		true,
+		nil,
+		{MULTIPLAYER_DERBYDAMAGELEVEL_50_DESCRIPTION, MULTIPLAYER_DERBYDAMAGELEVEL_100_DESCRIPTION, MULTIPLAYER_DERBYDAMAGELEVEL_150_DESCRIPTION, MULTIPLAYER_DERBYDAMAGELEVEL_200_DESCRIPTION}
+	}
+}
+
+local NumOptions=10
+
+-- OptionItem item indexes
+local Label=1
+local ItemLabels=2
+local ItemValues=3
+local SelectedItem=4
+local Enabled=5
+local OnChanged=6
+local Descriptions=7
+
+-- OptionItem indexes
+local SessionType=1
+local RankedGame=2
+local GameType=3
+local CarType=4
+local Upgrades=5
+local NitroRegen=6
+local Players=7
+local Reserved=8
+local DamageLevel=9
+local DerbyDamageLevel=10
+
+local function SetEnabled(RowNr, value)
+	OptionItems[RowNr][Enabled]=value
+end
+
+local function SetSelectedItem(RowNr, Item)
+	OptionItems[RowNr][SelectedItem]=Item
+end
+
+local function GetSelectedItemValue(rowNr)
+	return OptionItems[rowNr][ItemValues][OptionItems[rowNr][SelectedItem] ]
+end
+
+local function GetSelectedItemLabel(rowNr)
+	return OptionItems[rowNr][ItemLabels][OptionItems[rowNr][SelectedItem] ]
+end
+
+local Layout=
+{
+	ListLeft=300,
+	ListTop=127,
+	ListFont=fontmedium(),
+	LabelLeft=170,
+	LabelFontColor=GetPaletteColor(33),
+	
+	OptionLeft=180,
+	OptionWidth=200,
+	OptionFontColor=GetPaletteColor(34),
+	
+	RowHeight=18,
+	RowPadding=1,
+	NumRows=10,
+	
+	NumHelpTextRows=14,
+}
+
+local HelpTopRow
+local NumHelpTextRows
+
+local EventHelpTexts = {
+	[ReplicatedSession.GAMETYPE_DERBY_WRECKING]		= {  },
+	[ReplicatedSession.GAMETYPE_DERBY_LMS]			= {  },
+	[ReplicatedSession.GAMETYPE_DERBY_FRAG]			= {  },
+	[ReplicatedSession.GAMETYPE_HUNTER_PREY]		= {  },
+	[ReplicatedSession.GAMETYPE_PONGRACE]			= {  },
+}
+
+local StuntTexts = {
+	[LevelIndex.CURLING]		= "INTRO_STUNT_CURLING",
+	[LevelIndex.HIGHJUMP]		= "INTRO_STUNT_HIGHJUMP",
+	[LevelIndex.STONESKIPPING]	= "INTRO_STUNT_STONESKIPPING",
+	[LevelIndex.RINGOFFIRE]		= "INTRO_STUNT_RING",
+	[LevelIndex.DARTS]			= "INTRO_STUNT_DARTS",
+	[LevelIndex.ROYALFLUSH]		= "INTRO_STUNT_ROYALFLUSH",
+	[LevelIndex.SKIJUMP]		= "INTRO_STUNT_SKIJUMP",
+	[LevelIndex.FIELDGOAL]		= "INTRO_STUNT_FIELDGOAL",
+	[LevelIndex.BOWLING]		= "INTRO_STUNT_BOWLING",
+	[LevelIndex.BASKETBALL]		= "INTRO_STUNT_BASKETBALL",
+	[LevelIndex.BASEBALL]		= "INTRO_STUNT_BASEBALL",
+	[LevelIndex.SOCCER]			= "INTRO_STUNT_SOCCER",
+}
+
+local EventHelpEnabled
+
+local trackfiles = {
+	[TRACKTYPE_RACING] = { "single_player_track_images1","single_player_track_images2","single_player_track_images3" },
+	[TRACKTYPE_FIELDS] = { "single_player_track_images4","single_player_track_images5", "single_player_track_images6" },
+	[TRACKTYPE_FOREST] = { "single_player_track_images7","single_player_track_images8",	"single_player_track_images9" },
+	[TRACKTYPE_CITY] = { "single_player_track_images10", "single_player_track_images11", "single_player_track_images12" },
+	[TRACKTYPE_DESERT] = {"single_player_track_images13","single_player_track_images14" },
+	[TRACKTYPE_CANAL] = { "single_player_track_images14", "single_player_track_images15" },
+	[TRACKTYPE_STUNT] = { "single_player_track_images25", "single_player_track_images26", "single_player_track_images27",
+						  "single_player_track_images28", "single_player_track_images29", "single_player_track_images30", },
+	[TRACKTYPE_EVENT] = {  "single_player_track_images19", "single_player_track_images20", "single_player_track_images21",
+						  "single_player_track_images22", "single_player_track_images23", "single_player_track_images24", },
+	[TRACKTYPE_DERBY] = { "single_player_track_images16", "single_player_track_images17", "single_player_track_images18", },
+}						
+
+
+local function ShowArrows()
+	if HelpTopRow > (NumHelpTextRows - Layout.NumHelpTextRows) then
+		wm.GetWindow("scrolldown"):HideWindow()
+	else
+		wm.GetWindow("scrolldown"):ShowWindow()
+	end
+
+	if HelpTopRow > 1 then
+		wm.GetWindow("scrollup"):ShowWindow()
+	else
+		wm.GetWindow("scrollup"):HideWindow()
+	end
+end
+
+local function ScrollHelpUp()
+	local help = wm.GetWindow("eventhelp")
+	HelpTopRow = HelpTopRow - 1
+	if HelpTopRow < 1 then
+		HelpTopRow = 1
+	end
+	help:SetTitle(GetWStringLines(EventHelpText, HelpTopRow, Layout.NumHelpTextRows))
+	ShowArrows()
+end
+
+local function ScrollHelpDown()
+	local help = wm.GetWindow("eventhelp")
+	HelpTopRow = HelpTopRow + 1
+	if HelpTopRow > (NumHelpTextRows - Layout.NumHelpTextRows + 1 ) then
+		HelpTopRow = (NumHelpTextRows - Layout.NumHelpTextRows + 1)
+		if HelpTopRow < 1 then
+			HelpTopRow = 1
+		end
+	end
+	help:SetTitle(GetWStringLines(EventHelpText, HelpTopRow, Layout.NumHelpTextRows))
+	ShowArrows()
+end
+
+local function ShowEventHelp()
+	wm.GetWindow("eventhelp_box"):ShowWindow()
+	local help = wm.GetWindow("eventhelp")
+	HelpTopRow = 1
+	NumHelpTextRows = GetNumWStringLines(EventHelpText)
+	help:SetTitle(GetWStringLines(EventHelpText, HelpTopRow, Layout.NumHelpTextRows))
+	ShowArrows()
+end
+
+local function HideEventHelp()
+	wm.GetWindow("eventhelp_box"):HideWindow()
+end
+
+menu_multiplayer_lobby_sessiondetails = CreateMenuFromTemplate("template_multiplayer")
+menu_multiplayer_lobby_sessiondetails.options.title = L""
+menu_multiplayer_lobby_sessiondetails.back = function() end
+
+function menu_multiplayer_lobby_sessiondetails.create(self)
+	self.parent:create(self)
+
+	self:addResource("cup_final_results_elements1.tga",cup_final_results_elements1,cup_final_results_elements1_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+	self:addResource("backdrops3.tga",backdrops3,backdrops3_size)
+	
+	local id = Session:GetInfo().Races[Session:GetInfo().NextRace].StageNr
+	
+	local files = trackfiles[Levels[id].TrackType]
+
+	for k,v in ipairs(files) do
+		self:addResource(v..".tga",_G[v],_G[v.."_size"])
+	end
+	
+	self:loadResources()
+	self.items = { }
+end
+
+function menu_multiplayer_lobby_sessiondetails.init(self)
+	self.parent:init(self)
+
+	GUI:SetBackground("data/menu/career_race_rewards_background.tga")
+
+	if not XBOX and table.getn(OptionItems) == 10 then
+		CarType=2
+		Upgrades=3
+		NitroRegen=4
+		Players=5
+		DamageLevel=6
+		DerbyDamageLevel=7
+		
+		table.remove(OptionItems, Reserved)
+		table.remove(OptionItems, GameType)
+		table.remove(OptionItems, RankedGame)
+
+		NumOptions = table.getn(OptionItems)
+	end
+
+	local info = Session:GetInfo()	
+	local eventtype = info.Races[info.NextRace].EventType
+	if eventtype == ReplicatedSession.GAMETYPE_STUNT then
+		EventHelpEnabled = true
+		-- Event help
+		local p = Frame { Name="eventhelp_box", Position=POS(0,0), Size=SIZE(640,480), Layer=5 }
+		p:AttachResource(wm.GetResource("wide_black_bar_50"))
+		local box = Frame { Position=POS(70,50), Size=SIZE(500,380), ShowBorders=TRUE, Layer=5, Parent=p }
+		local eventhelp = StaticText { Name="eventhelp", Position=POS(30,30), Size=SIZE(440,320), Font=fontmedium(), Color=GetPaletteColor(34), Layer=5, Parent=box }
+		
+		local stunttype = info.Races[info.NextRace].StageNr
+		local textid = StuntTexts[stunttype]
+		local text = L("#33"..Levels[info.Races[info.NextRace].StageNr].Name.."#34\n\n")
+		for i = 1,4 do
+			if i > 1 then
+				text = WStringConcat(text, L"\n\n")
+			end
+			text = WStringConcat(text, L(i..". "))
+			text = WStringConcat(text, _G[textid.."_"..i])
+		end
+		eventhelp:SetTitle(text)
+		eventhelp:WordWrap()
+		EventHelpText = eventhelp:GetTitle()
+		local numlines = GetNumWStringLines(EventHelpText)
+		if numlines > Layout.NumHelpTextRows then
+			numlines = Layout.NumHelpTextRows
+		end
+		local _,h = wm.GetTextExtents(L"A", fontmedium())
+		h = numlines * h
+		
+		box:SetPosition(70, 240 - h / 2 - 45)
+		box:SetSize(500, h + 90)
+
+		local arrowsize = wm.GetResourceSize(wm.GetResource("scroll_arrow_up"))
+		local scroll = Frame { Name="scrollup", Position=POS(250-arrowsize[1]/2,(30-arrowsize[2])/2+2), Size=arrowsize, Layer=5, Parent=box }
+		scroll:AttachResource(wm.GetResource("scroll_arrow_orange_up"))
+
+		arrowsize = wm.GetResourceSize(wm.GetResource("scroll_arrow_down"))
+		scroll = Frame { Name="scrolldown", Position=POS(250-arrowsize[1]/2,h+30+(30-arrowsize[2])/2-2), Size=arrowsize, Layer=5, Parent=box }
+		scroll:AttachResource(wm.GetResource("scroll_arrow_orange_down"))
+
+		local backbutton
+		if PS2 then
+			backbutton = "ps2_triangle"
+		elseif XBOX then
+			backbutton = "xbox_b"
+		elseif PC then
+			backbutton = "esc_btn"
+		end
+		buttonsize = wm.GetResourceSize(backbutton)
+		
+		local x = 500 - 30
+		local function updatebutton(buttonname)
+			local button,buttontitle,buttony,titley,buttonwidth,w,_
+			buttontitle = wm.GetWindow(buttonname.."_title")
+			_,titley = buttontitle:GetPosition()
+			w,_ = wm.GetTextExtents(buttontitle:GetTitle(), fontmedium())
+			x = x - w
+			buttontitle:SetPosition(x, titley)
+			button = wm.GetWindow(buttonname)
+			_,buttony = button:GetPosition()
+			buttonwidth,_ = button:GetSize()
+			x = x - buttonwidth - 4
+			button:SetPosition(x, buttony)
+			x = x - 20
+		end
+		
+		local y = h + 90 - 30
+		local win = Frame { Name="backbutton", Position=POS(300,y), Size=buttonsize, Parent=box, Layer=5 }
+		win:AttachResource(wm.GetResource(backbutton))
+		StaticText { Name="backbutton_title", Title=UI_BACK, Position=POS(320,y-1), Size=SIZE(50,13), Color=GetPaletteColor(34), Font=fontmedium(), Parent=box, Layer=5 }
+		updatebutton("backbutton")	
+
+		p:HideWindow()
+	else
+		EventHelpEnabled = false
+	end
+			
+	p = Frame { Position=POS(-30,30),Size=SIZE(670,480) }
+
+	-- Track image + bg
+	Frame { Position=POS(0,72),Size=SIZE(273,143),Parent=p }:AttachResource(self:getResource("big_bottom"))
+	Frame { Position=POS(273,72),Size=SIZE(45,143),Parent=p }:AttachResource(self:getResource("big_bottom_ang"))
+
+	Frame { Position=POS(0,215),Size=SIZE(313,101),Parent=p }:AttachResource(self:getResource("big_bottom_race_sel"))
+	Frame { Position=POS(313,215),Size=SIZE(34,101),Parent=p }:AttachResource(self:getResource("big_bottom_race_sel_ang"))
+	Frame { Name="track_image",Position=POS(0,84),Size=SIZE(332,219),Parent=p }
+
+	-- Track name + bg
+	Frame { Position=POS(284,72),Size=SIZE(58,32),Parent=p }:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar_ang"))
+	Frame { Position=POS(342,72),Size=SIZE(328,32),Parent=p }:AttachResource(self:getResource("upshop_top_n_bottom_infotxt_bar"))
+
+	StaticText { Name="track_name",Position=POS(441,79),Align=FONTF_CENTER,Font=fontlarge(),Color=GetPaletteColor(33),Parent=p }
+
+	-- Session details
+	Frame { Name="sessiondetails_windows",Position=POS(350,0),Size=SIZE(640,480),Parent=p }
+
+	local listboxParams = {
+		ListBoxTemplate	= { Name="optionlist",Parent=p },
+		Left			= Layout.ListLeft,
+		Top				= Layout.ListTop,
+		LeftPadding		= 0,
+		RightPadding	= 0,
+		TopPadding		= 0,
+		BottomPadding	= 0,
+		RowWidth		= 640,
+		RowHeight		= Layout.RowHeight,
+		RowPadding		= Layout.RowPadding,
+		RowTemplate		= { },
+		RowTemplateType	= "Button",
+		RowTemplateCust	= function(Row, RowNr)
+		end,
+		NumRows	= NumOptions,
+		Coloumns = {
+			[1] = {
+				Name				= "bgleft", -- _row# is added
+				ColoumnTemplate		= { Position=POS(0,0), Size=wm.GetResourceSize(self:getResource("options_1_slice_r_ang")), Layer=3 },
+				ColoumnTemplateType	= "Frame",
+				ColoumnTemplateCust	= function(Coloumn, RowNr, ColoumnNr)
+					Coloumn:AttachResource(self:getResource("options_1_slice_r_ang"))
+				end
+			},
+			[2] = {
+				Name				= "bg", -- _row# is added
+				ColoumnTemplate		= { Position=POS(0,0), Size=SIZE(400, Layout.RowHeight), Layer=3 },
+				ColoumnTemplateType	= "Frame",
+				ColoumnTemplateCust	= function(Coloumn, RowNr, ColoumnNr)
+					Coloumn:AttachResource(self:getResource("multiplayer_str_18"))
+				end
+			},
+			[3] = {
+				Name				= "optiontitle", -- _row# is added
+				ColoumnTemplate		= { Font=Layout.ListFont, Color=Layout.LabelFontColor, Position=POS(Layout.LabelLeft, -1), Size=SIZE(Layout.OptionWidth, Layout.RowHeight), Align=FONTF_RIGHT, Layer=4 },
+				ColoumnTemplateType	= "StaticText",
+				ColoumnTemplateCust	= function(Coloumn, RowNr, ColoumnNr)
+				end
+			},
+			[4] = {
+				Name				= "optionvalue", -- _row# is added
+				ColoumnTemplate		= { Font=Layout.ListFont, Color=Layout.OptionFontColor, Position=POS(Layout.OptionLeft, -1), Size=SIZE(Layout.OptionWidth, Layout.RowHeight), Layer=4 },
+				ColoumnTemplateType	= "StaticText",
+				ColoumnTemplateCust	= function(Coloumn, RowNr, ColoumnNr)
+				end
+			},
+		}
+	}
+	
+	local optionlist = CreateMultiColoumnListBox(listboxParams)
+	optionlist:SetNumRows(NumOptions)
+	optionlist:SetSelectedRow(1)
+	optionlist.onNeedData = function(Self, RowObject, RowNr, ControlRowNr)
+		local title = wm.GetWindow("optiontitle_row"..RowNr)
+		local value = wm.GetWindow("optionvalue_row"..RowNr)
+		local bgleft = wm.GetWindow("bgleft_row"..RowNr)
+		local bg = wm.GetWindow("bg_row"..RowNr)
+		
+		local w = wm.GetResourceSize(self:getResource("options_1_slice_r_ang"))[1]
+		bgleft:SetPosition(5.37 * (ControlRowNr - 1), 0)
+		bg:SetPosition(5.37 * (ControlRowNr - 1) + w, 0)
+		title:SetPosition(Layout.LabelLeft + 5.37 * (ControlRowNr - 1), -1)
+		value:SetPosition(Layout.OptionLeft + 5.37 * (ControlRowNr - 1), -1)
+		
+		title:SetTitle(OptionItems[RowNr][Label])
+		if OptionItems[RowNr][Enabled] then
+			value:SetLayer(4)
+			title:SetLayer(4)
+			value:SetTitle(GetSelectedItemLabel(RowNr))
+		else
+			value:SetLayer(2)
+			title:SetLayer(2)
+			if RowNr == GameType then
+				value:SetTitle(MULTIPLAYER_GAMETYPE_MIXED)
+			else
+				value:SetTitle(L"")
+			end
+		end
+	end
+	
+	local handler = InputHandler { Name="inputhandler" }
+	handler.onKeyPressed = function(Self, Character, VirtualKey, ScanCode)
+		if State == SESSION_DETAILS then
+			if VirtualKey == KeyCodes["BUTTON_SELECT"] then
+				menu_multiplayer_lobby_sessiondetails.back()
+			elseif EventHelpEnabled and ((PS2 or PC) and VirtualKey==KeyCodes["BUTTON_X"] or XBOX and VirtualKey==KeyCodes["BUTTON_Y"]) then
+				ShowEventHelp()
+				State = EVENT_HELP
+			end
+		elseif State == EVENT_HELP then
+			if VirtualKey == KeyCodes["BUTTON_SELECT"] then
+				HideEventHelp()
+				State = SESSION_DETAILS
+			elseif VirtualKey == KeyCodes["BUTTON_UP"] then
+				ScrollHelpUp()
+				playmenusound_move()
+			elseif VirtualKey == KeyCodes["BUTTON_DOWN"] then
+				ScrollHelpDown()
+				playmenusound_move()
+			end
+		end
+	end
+	
+	optionlist:SetNumRows(NumOptions)
+
+	local leveldata = Levels[info.Races[info.NextRace].StageNr]
+	W("track_name"):SetTitle(L(leveldata.Name))
+	local icon = leveldata.TrackIcon or ""
+	W("track_image"):AttachResource(self:getResource(icon.."_sp"))
+
+	if Session:GetNumRaces() == 1 then
+		SetSelectedItem(SessionType, 1)
+	else
+		SetSelectedItem(SessionType, 2)
+	end
+	
+	local gameMode = info.TournamentType
+	local gameType = GameTypes[gameMode]
+	SetSelectedItem(GameType, gameType)
+	if gameType == 1 then
+		SetEnabled(DamageLevel, true)
+		SetEnabled(DerbyDamageLevel, false)
+	elseif gameType == 3 then
+		SetEnabled(DamageLevel, false)
+		SetEnabled(DerbyDamageLevel, true)
+	elseif gameType == 2 then
+		SetEnabled(DamageLevel, false)
+		SetEnabled(DerbyDamageLevel, false)
+	elseif gameType == 4 then
+		SetEnabled(DamageLevel, true)
+		SetEnabled(DerbyDamageLevel, true)
+	end
+
+	if XBOX then
+		SetSelectedItem(RankedGame, info.RatedGame and 1 or 2)
+		if info.RatedGame then
+			SetEnabled(Reserved, false)
+		else
+			SetEnabled(Reserved, true)
+		end
+	end
+	
+	if info.CarClass < 5 then
+		for i = 1, table.getn(OptionItems[CarType][ItemValues]) do
+			if OptionItems[CarType][ItemValues][i] == info.CarClass then
+				SetSelectedItem(CarType, i)
+				break
+			end
+		end
+	else
+		SetSelectedItem(CarType, 6)
+	end
+	
+	for i = 1, table.getn(OptionItems[Upgrades][ItemValues]) do
+		if OptionItems[Upgrades][ItemValues][i] == info.CarUpgrades then
+			SetSelectedItem(Upgrades, i)
+			break
+		end
+	end
+	
+	for i = 1, table.getn(OptionItems[NitroRegen][ItemValues]) do
+		if OptionItems[NitroRegen][ItemValues][i] == info.NitroRegen then
+			SetSelectedItem(NitroRegen, i)
+			break
+		end
+	end
+
+	if XBOX then
+		SetSelectedItem(Players, info.MaxPublicSlots + info.MaxPrivateSlots - 1)
+		SetSelectedItem(Reserved, info.MaxPrivateSlots + 1)
+	else
+		SetSelectedItem(Players, info.MaxPublicSlots - 1)
+	end
+	SetSelectedItem(DamageLevel, info.DamageLevel + 1)
+	SetSelectedItem(DerbyDamageLevel, info.DerbyDamageLevel + 1)
+	
+	if EventHelpEnabled then
+		GUI:SetHelpButtons(BUTTON_BACK, UI_BACK, BUTTON_EXTRA, UI_EVENTHELP)
+	else
+		GUI:SetHelpButtons(BUTTON_BACK, UI_BACK)
+	end
+
+	State = SESSION_DETAILS
+	handler:SetFocus()
+end
+	
+function menu_multiplayer_lobby_sessiondetails.deinit(self)
+	self.parent:deinit(self)
+end
+
+function menu_multiplayer_lobby_sessiondetails.update(self,time)
+	self.parent:update(self,time)
+end

@@ -1,0 +1,7 @@
+class_icons_size = { 512,256 }
+class_icons = {
+	
+	class_icon_a = {  3, 3, 110, 70 },
+
+
+}

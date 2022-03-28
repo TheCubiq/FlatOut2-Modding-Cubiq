@@ -1,0 +1,7 @@
+character_images_2_size = { 512,512 }
+character_images_2 = {
+	
+	ai_portrait_3 = {  0, 0, 256, 345 },   -- Valerio Vega
+	ai_portrait_2 = {  256, 0, 256, 345 }, -- Sue O'Neill
+
+}

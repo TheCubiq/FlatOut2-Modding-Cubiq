@@ -1,0 +1,34 @@
+track_icons_s_size = { 512,512 }
+track_icons_s = {
+	
+	track_icon_1_s = {  3, 3, 110, 70 },     -- forest 1
+	track_icon_2_s = {  116, 3, 110, 70 },   -- forest 2
+	track_icon_3_s = {  229, 3, 110, 70 },   -- forest 3
+	track_icon_4_s = {  342, 3, 110, 70 },   -- forest 4
+	track_icon_5_s = {  3, 76, 110, 70 },    -- forest 5
+	track_icon_6_s = {  116, 76, 110, 70 },  -- forest 6
+
+	track_icon_7_s = {  229, 76, 110, 70 },   -- field 1
+	track_icon_8_s = {  342, 76, 110, 70 },   -- field 2
+	track_icon_9_s = {  3, 149, 110, 70 },    -- field 3
+	track_icon_10_s = {  116, 149, 110, 70 }, -- field 4
+	track_icon_11_s = {  229, 149, 110, 70 }, -- field 5
+	track_icon_12_s = {  342, 149, 110, 70 }, -- field 6
+
+	track_icon_13_s = {  3, 222, 110, 70 },   -- desert 1
+	track_icon_14_s = {  116, 222, 110, 70 }, -- desert 2
+	track_icon_15_s = {  229, 222, 110, 70 }, -- desert 3
+
+	track_icon_16_s = {  342, 222, 110, 70 }, -- canals 1
+	track_icon_17_s = {  3, 295, 110, 70 },   -- canals 2
+	track_icon_18_s = {  116, 295, 110, 70 }, -- canals 3
+	
+	track_icon_19_s = {  229, 295, 110, 70 }, -- racing 1
+	track_icon_20_s = {  342, 295, 110, 70 }, -- racing 2
+	track_icon_21_s = {  3, 368, 110, 70 },   -- racing 3
+	track_icon_22_s = {  116, 368, 110, 70 }, -- racing 4
+	track_icon_23_s = {  229, 368, 110, 70 }, -- racing 5
+	track_icon_24_s = {  342, 368, 110, 70 }, -- racing 6
+
+
+}

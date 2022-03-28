@@ -1,0 +1,637 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CareerModeMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 13.4.2005 10:32:48
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+
+--//local resources
+dofile("data/menu/track_icons.bed")
+dofile("data/menu/cup_menu_bars.bed")
+dofile("data/menu/cup_menu_bg.bed")
+dofile("data/menu/menu_bars.bed")
+
+dofile("data/menu/ai1_and_ai2_poses.bed")
+dofile("data/menu/ai3_and_ai4_poses.bed")
+dofile("data/menu/ai5_and_ai6_poses.bed")
+dofile("data/menu/ai7_poses.bed")
+
+dofile("data/menu/ai_signatures.bed")
+
+dofile("data/menu/ai_cars01.bed")
+dofile("data/menu/ai_cars02.bed")
+dofile("data/menu/ai_cars03.bed")
+dofile("data/menu/ai_cars04.bed")
+dofile("data/menu/ai_cars05.bed")
+dofile("data/menu/ai_cars06.bed")
+dofile("data/menu/ai_cars07.bed")
+dofile("data/menu/ai_cars08.bed")
+dofile("data/menu/ai_cars09.bed")
+dofile("data/menu/ai_cars10.bed")
+dofile("data/menu/ai_cars11.bed")
+
+menu_career = CreateMenuFromTemplate("template_career")
+
+
+menu_career.options.title=TRANSLATOR(TITLE_CAREER)
+menu_career.back = function() EnterSinglePlayer() end --//entermenu("menu_singleplayer")
+
+local classnames = {
+	"ClassC",
+	"ClassB",
+	"ClassA",
+	"Finals",
+	"Extra",
+}
+
+local subclassnames = {
+	TRANSLATOR(SUBCLASS_BEGINNER),
+	TRANSLATOR(SUBCLASS_AMATEUR),
+	TRANSLATOR(SUBCLASS_PROFESSIONAL),
+	TRANSLATOR(SUBCLASS_FINALS),
+}
+
+local trophy_positions = {
+	[1] = { y_pos=141, x_pos = { 61,81,113,135,156,186,207,229 } },
+	[2] = { y_pos=226, x_pos = { 88,108,140,162,183,213,234,256,277 } },
+	[3] = { y_pos=310, x_pos = { 95,117,137,169,191,212,242,263,285,306 } },
+}
+
+local ai_images = {
+	[1] = { name="ai1_pose", size=SIZE(263,480), data="ai1_and_ai2_poses", cardatas={"ai_cars01","ai_cars02"} },
+	[2] = { name="ai2_pose", size=SIZE(249,480), data="ai3_and_ai4_poses", cardatas={"ai_cars05", "ai_cars06"} },
+	[3] = { name="ai3_pose", size=SIZE(263,480), data="ai3_and_ai4_poses", cardatas={"ai_cars04", "ai_cars05"} },
+	[4] = { name="ai4_pose", size=SIZE(249,480), data="ai1_and_ai2_poses", cardatas={"ai_cars02", "ai_cars03"} }, 
+	[5] = { name="ai5_pose", size=SIZE(263,480), data="ai5_and_ai6_poses", cardatas={"ai_cars07", "ai_cars08"} },
+	[6] = { name="ai6_pose", size=SIZE(249,480), data="ai5_and_ai6_poses", cardatas={"ai_cars08", "ai_cars09"} },
+	[7] = { name="ai7_pose", size=SIZE(256,480), data="ai7_poses", cardatas={"ai_cars10", "ai_cars11"} },
+}
+
+local ai_sigs = {
+	[1] = { name="ai1_signature", position=POS(84,272) },
+	[2] = { name="ai2_signature", position=POS(103,286) },
+	[3] = { name="ai3_signature", position=POS(124,251) },
+	[4] = { name="ai4_signature", position=POS(105,261) },
+	[5] = { name="ai5_signature", position=POS(108,268) },
+	[6] = { name="ai6_signature", position=POS(114,257) },
+	[7] = { name="ai7_signature", position=POS(119,275) },
+}
+
+
+
+
+function CheckCupActive()
+	if PlayerProfile:GetActiveCup() ~= 0 then
+		db.GameFlow.PreRace.Class=PlayerProfile:GetActiveClass()
+		db.GameFlow.PreRace.Cup=PlayerProfile:GetActiveCup()
+
+--//			subclass=db.GameFlow.PreRace.SubClass
+
+		local selection={
+			class_id=db.GameFlow.PreRace.Class,
+			event_id=db.GameFlow.PreRace.Cup,
+			event_type=TYPE_CUP,
+			classname=classnames[db.GameFlow.PreRace.Class],
+			subclass=PlayerProfile:GetCupSubClass(db.GameFlow.PreRace.Class,db.GameFlow.PreRace.Cup),
+			cupmode=true,
+		}
+		local races=Classes[selection.class_id].Cups[selection.event_id].Races
+		local next_race=Levels[races[1].Level]
+		for k,v in ipairs(races) do
+			if not GameFlow.IsCupRaceLocked(k) then
+				next_race=v.Level
+			end
+		end
+
+		local level=Levels[next_race]
+		
+		selection.image=level.TrackImage
+		selection.logo=level.TrackLogo
+
+		--//EnterRaceSelection(selection)
+		--//ShowTrackInfo(selection,entermenu("menu_career"),function() EnterRace(selection) end)
+		ShowCupInfo(selection,entermenu("menu_career"),function() EnterRace(selection) end)
+		
+		return true
+	end
+end
+
+local function enterrace_check()
+	if not CheckCupActive() then
+		if PlayerProfile:GetActiveCar() == -1 then
+			GUI:HideMenuButtons()
+			MessageBox(TRANSLATOR(MESSAGE_SELECTCAR),MESSAGEBOX_OK,function() GUI:ShowMenuButtons() end)
+		else
+			EnterMenu("menu_career_racemap")
+		end
+	end
+end
+
+
+local function entergarage_check()
+	if Garage:GetNumCarsPurchased() > 0 then 
+		EnterMenu("menu_career_garage"); 
+	else
+		GUI:HideMenuButtons()
+		MessageBox(TRANSLATOR(MESSAGE_PURCHASECAR),MESSAGEBOX_OK,function() GUI:ShowMenuButtons() end)
+	end
+end
+
+local function enterupgrade_check()
+	if PlayerProfile:GetActiveCar() > -1 then
+		EnterMenu("menu_upgrade_categories")
+	else
+		GUI:HideMenuButtons()
+		MessageBox(TRANSLATOR(MESSAGE_SELECTCAR),MESSAGEBOX_OK,function() GUI:ShowMenuButtons() end)
+	end
+end
+
+local function resign_cup_confirmation()
+	local function confirmation_end(value)
+		if value==TRUE then
+			GameFlow.ClearCup(); 
+			PlayerProfile:ResetActiveCup();
+			ProfileSave(Save.GetLastSaveSlotUsed(),entermenu("menu_career"),entermenu("menu_career"))
+			EnterMenu("menu_career");
+		else
+			GUI:ShowMenuButtons()
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT))
+		end
+	end
+	GUI:HideMenuButtons()
+	GUI:SetHelpButtons()
+	MessageBox(TRANSLATOR(MESSAGE_RESIGNCUP),MESSAGEBOX_YESNO,confirmation_end)
+end
+
+
+function menu_career.create(self)
+	self.parent:create(self)
+
+	self:addResource("track_icons.tga",track_icons,track_icons_size)
+--//	self:addResource("cup_menu_bg.tga",cup_menu_bg,cup_menu_bg_size)
+	self:addResource("cup_menu_bars.tga",cup_menu_bars,cup_menu_bars_size)
+	self:addResource("menu_bars.tga",menu_bars,menu_bars_size)
+
+	--//load only wanted ai driver and car
+	if PlayerProfile:GetActiveCup() ~= 0 then
+		local ai=math.random(table.getn(ai_images))
+		local ai_image=ai_images[ai]
+
+		self.ai_character=ai
+
+		self:addResource(ai_image.data..".tga",_G[ai_image.data],_G[ai_image.data.."_size"])
+		
+		for k,v in pairs(ai_image.cardatas) do
+			self:addResource(v..".tga",_G[v],_G[v.."_size"])
+		end
+
+		self:addResource("ai_signatures.tga",ai_signatures,ai_signatures_size)
+	end
+
+	if GameFlow.IsCupFinished() then
+		CupManager:Clear()
+	end
+
+	self:loadResources()
+
+
+	menu_career.items = {
+		MENUITEM(TRANSLATOR(ICON_CAREER_GORACE),enterrace_check,ICON(self,"icon_sp_single_race")), --//entermenu("menu_career_racemap")
+		MENUITEM(TRANSLATOR(ICON_CAREER_GARAGE),entergarage_check,ICON(self,"icon_garage")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_CARSHOP),entermenu("menu_career_carshop"),ICON(self,"icon_car_shop")),
+		MENUITEM(TRANSLATOR(ICON_CAREER_UPGRADESHOP),enterupgrade_check,ICON(self,"icon_upgrades")),
+	}
+
+	if PlayerProfile:GetActiveCup() ~= 0 then
+		table.insert(self.items,MENUITEM(TRANSLATOR(ICON_CAREER_RESIGNCUP),resign_cup_confirmation,ICON(self,"icon_retire_cup")))
+	end
+
+end
+
+
+function menu_career.init(self)
+	self.parent:init(self)
+
+
+	local cup_active=false
+
+	categories=nil
+	menu_upgrade_categories.Categories=nil
+
+	if PlayerProfile:GetActiveCup() ~= 0 then
+		cup_active=true
+		GameFlow.PrepareCupFromProfile()
+	end
+
+--//	local w=Frame{Position=POS(0,57),Size=SIZE(640,350),Layer=0}:AttachResource(self:getResource("cup_menu_bg"))
+
+
+	if PlayerProfile:GetActiveCar() ~=  -1 and not cup_active then
+		GUI:LoadCar(GetCarDataIndex(PlayerProfile:GetActiveCar()),Garage:GetCarSkinIndex(PlayerProfile:GetActiveCar())) --//PlayerProfile:GetActiveCar()+1
+		GUI:AllowCarRotate(FALSE)
+		GUI:SetCarRotate(FALSE)
+		GUI:SetCarPose(POSE_LEFT)
+	end
+
+	if not PlayerProfile:IsCareerWelcome1Displayed() then
+		MessageBox(TRANSLATOR(CAREER_WELCOME),MESSAGEBOX_OK,function() PlayerProfile:SetCareerWelcome1Displayed(true) end)
+	end
+
+	if cup_active then
+
+		Frame{Position=POS(0,159),Size=SIZE(310,201)}:AttachResource(self:getResource(string.format("ai%d_car%d",self.ai_character,math.random(3))))
+		Frame{Position=POS(0,0),Size=ai_images[self.ai_character].size}:AttachResource(self:getResource(ai_images[self.ai_character].name))
+
+		local signature=self:getResource(ai_sigs[self.ai_character].name)
+		Frame{Position=ai_sigs[self.ai_character].position,Size=GetResourceSize(signature)}:AttachResource(signature)
+
+
+		Frame{Position=POS(0,91),Size=SIZE(446-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+		Frame{Position=POS(0+446-31,91),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_right"))
+
+		StaticText{Title=ConvertToWString(Classes[PlayerProfile:GetActiveClass()].Cups[PlayerProfile:GetActiveCup()].Name),Position=POS(53,92),Font=fontmedium(),Color=GetPaletteColor(33)}
+
+
+		StaticText{Title=TRANSLATOR(TITLE_CROSSHATCH),Align=FONTF_CENTER,Position=POS(237+20,113),Font=fontsmall(),Align=FONTF_CENTER,Color=GetPaletteColor(33)}
+		StaticText{Title=TRANSLATOR(TITLE_NAME),Align=FONTF_LEFT,Position=POS(247+35,113),Font=fontsmall(),Color=GetPaletteColor(33)}
+		StaticText{Title=TRANSLATOR(TITLE_POINTS),Align=FONTF_CENTER,Position=POS(555,112),Font=fontsmall(),Color=GetPaletteColor(33)}
+
+
+		
+		local x=240
+		local y=130
+		local i
+		for i=1,CupManager:GetNumDrivers() do
+
+			Frame{Position=POS(x,y),Size=SIZE(31,21)}:AttachResource(self:getResource("narrow_black_bar_tip_left"))
+			Frame{Position=POS(x+31,y),Size=SIZE(410-31,21)}:AttachResource(self:getResource("narrow_black_bar_main"))
+
+			local id=GameFlow.GetPlayerIdByPosition(i)
+
+			--//if CupManager:IsCupPositionVisible(i) then
+				StaticText{Title=ConvertToWString(string.format("%d.",i)),Position=POS(x+20,y+1),Align=FONTF_CENTER,Font=fontmedium(),Color=GetPaletteColor(33)}
+			--//end
+			StaticText{Title=GameFlow.GetPlayerName(id),Position=POS(x+35,y+1),Align=FONTF_LEFT,Font=fontmedium(),Color=GetPaletteColor(34)}
+			StaticText{Title=ConvertToWString(GameFlow.GetPlayerCupPoints(id)),Position=POS(555,y+1),Align=FONTF_CENTER,Font=fontsmall(),Color=GetPaletteColor(34)}
+
+			y=y+27
+			x=x+10
+		end
+
+		GUI:SetBackground("data/menu/career_incup_bg.tga")
+	else
+		Frame{Position=POS(305,95),Size=SIZE(52,61)}:AttachResource(self:getResource("finals_trophy_backdrop_tip"))
+		Frame{Position=POS(305+52,95),Size=SIZE(283,61)}:AttachResource(self:getResource("finals_trophy_backdrop_strech"))
+
+		Frame{Position=POS(327,156),Size=SIZE(52,36)}:AttachResource(self:getResource("finals_trophy_backdrop_half_tip"))
+		Frame{Position=POS(327+52,156),Size=SIZE(269,36)}:AttachResource(self:getResource("finals_trophy_backdrop_half_strech"))
+
+
+
+		Frame{Position=POS(341,198),Size=SIZE(52,61)}:AttachResource(self:getResource("finals_trophy_backdrop_tip"))
+		Frame{Position=POS(341+52,198),Size=SIZE(247,61)}:AttachResource(self:getResource("finals_trophy_backdrop_strech"))
+
+		Frame{Position=POS(363,259),Size=SIZE(52,36)}:AttachResource(self:getResource("finals_trophy_backdrop_half_tip"))
+		Frame{Position=POS(363+52,259),Size=SIZE(233,36)}:AttachResource(self:getResource("finals_trophy_backdrop_half_strech"))
+
+
+	
+		StaticText{Title=TRANSLATOR(TITLE_CAREERSITUATION),Position=POS(317,97),Font=fontmedium(),Color=GetPaletteColor(33)}
+
+
+		local classes_completed={}
+		for current_class=1,3 do
+			classes_completed[current_class]={}
+			classes_completed[current_class].num_completed=0
+			classes_completed[current_class].num_total=PlayerProfile:GetNumCups(current_class)
+
+			for i=1,PlayerProfile:GetNumCups(current_class) do 
+				local p=PlayerProfile:GetCupPosition(current_class,i)
+				if p > 0 and p <= 3 then
+					classes_completed[current_class].num_completed=classes_completed[current_class].num_completed+1
+				end
+			end
+		end
+
+		local len=wm.GetTextWidth(TRANSLATOR(HEADER_DERBYCLASS),fontmedium())		
+		StaticText{Title=TRANSLATOR(HEADER_DERBYCLASS),Position=POS(325,123),Font=fontmedium(),Color=GetPaletteColor(33)}
+		StaticText{Position=POS(325+len+4,123),Title=ConvertToWString(string.format("%d%%",(classes_completed[1].num_completed/classes_completed[1].num_total)*100)),Font=fontmedium(),Color=GetPaletteColor(34)}
+
+		len=wm.GetTextWidth(TRANSLATOR(HEADER_RACINGCLASS),fontmedium())	
+		StaticText{Title=TRANSLATOR(HEADER_RACINGCLASS),Position=POS(332,144),Font=fontmedium(),Color=GetPaletteColor(33)}
+		StaticText{Position=POS(332+len+4,144),Title=ConvertToWString(string.format("%d%%",(classes_completed[2].num_completed/classes_completed[2].num_total)*100)),Font=fontmedium(),Color=GetPaletteColor(34)}
+
+		len=wm.GetTextWidth(TRANSLATOR(HEADER_STREETCLASS),fontmedium())	
+		StaticText{Title=TRANSLATOR(HEADER_STREETCLASS),Position=POS(339,165),Font=fontmedium(),Color=GetPaletteColor(33)}
+		StaticText{Position=POS(339+len+4,165),Title=ConvertToWString(string.format("%d%%",(classes_completed[3].num_completed/classes_completed[3].num_total)*100)),Font=fontmedium(),Color=GetPaletteColor(34)}
+
+		StaticText{Title=TRANSLATOR(HEADER_LASTCOMPLETEDCUP),Position=POS(353,199),Font=fontmedium(),Color=GetPaletteColor(33)}
+
+
+		local prevclass=PlayerProfile:GetPreviousRaceClass()
+		local prevclassname
+		local prevsubclassname
+		local prevthingiename
+
+		if prevclass > 0 and prevclass < 4 then
+			local prevsubclass=PlayerProfile:GetPreviousRaceSubClass()
+
+			local prevthingie=PlayerProfile:GetPreviousRaceCup()
+			local was_event
+			local cup_struct
+			if prevthingie == 0 then
+				prevthingie=PlayerProfile:GetPreviousRaceEvent()
+				was_event=true
+				cup_struct=Classes[prevclass].Events[prevthingie].Races
+			else
+				cup_struct=Classes[prevclass].Cups[prevthingie].Races
+			end
+
+			local previndex=PlayerProfile:GetPreviousRaceIndex()
+
+			local classnames = {
+				TRANSLATOR(TITLE_DERBY),
+				TRANSLATOR(TITLE_RACING),
+				TRANSLATOR(TITLE_STREET),
+				TRANSLATOR(TITLE_GRANDFINALS),
+			}
+
+			local subclassnames = {
+				TRANSLATOR(SUBCLASS_BEGINNER),
+				TRANSLATOR(SUBCLASS_AMATEUR),
+				TRANSLATOR(SUBCLASS_PROFESSIONAL),
+				TRANSLATOR(SUBCLASS_FINALS),
+			}
+			
+			if cup_struct[previndex] and Levels[cup_struct[previndex].Level] then
+				prevclassname=classnames[prevclass]
+				prevsubclassname=subclassnames[prevsubclass]
+				prevthingiename=ConvertToWString(Levels[cup_struct[previndex].Level].Name)
+			else
+				prevclassname=classnames[4]
+				prevsubclassname=classnames[prevclass]
+				prevthingiename=subclassnames[4]
+
+				if not prevsubclassname then
+					prevsubclassname=classnames[4]
+					prevthingiename=classnames[4]
+				end
+			end
+		end
+
+		if prevclassname then
+			len=wm.GetTextWidth(TRANSLATOR(HEADER_CLASS),fontmedium())
+			StaticText{Title=TRANSLATOR(HEADER_CLASS),Position=POS(360,225),Font=fontmedium(),Color=GetPaletteColor(33)}
+			StaticText{Title=prevclassname,Position=POS(360+len+4,225),Font=fontmedium(),Color=GetPaletteColor(34)}
+		end
+
+		if prevsubclassname then
+			len=wm.GetTextWidth(TRANSLATOR(HEADER_LEVEL),fontmedium())
+			StaticText{Title=TRANSLATOR(HEADER_LEVEL),Position=POS(367,247),Font=fontmedium(),Color=GetPaletteColor(33)}
+			StaticText{Title=prevsubclassname,Position=POS(367+len+4,246),Font=fontmedium(),Color=GetPaletteColor(34)}
+		end
+
+		if prevthingiename then
+			len=wm.GetTextWidth(TRANSLATOR(HEADER_CUP),fontmedium())
+			StaticText{Title=TRANSLATOR(HEADER_CUP),Position=POS(374,268),Font=fontmedium(),Color=GetPaletteColor(33)}
+			StaticText{Title=prevthingiename,Position=POS(374+len+4,268),Font=fontmedium(),Color=GetPaletteColor(34)}
+		end
+
+		GUI:SetBackground("data/menu/career_main_bg.tga")
+	end
+
+	--//track icon
+	--//Frame{Position=POS(63,232),Size=GetResourceSize(self:getResource("track_icon_empty"))}:AttachResource(self:getResource("track_icon_empty"))
+
+	--//titles
+
+end
+
+function menu_career.update(self,time)
+	self.parent:update(self,time)
+end
+
+
+
+function menu_career.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_career.startshow(self)
+	self.parent:startshow(self)
+
+end
+
+function menu_career.starthide(self)
+	self.parent:starthide(self)
+	
+	GUI:HideCar() --//W("car_fade"))
+end
+
+
+function menu_career.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+local function stat_notimplemented()
+	return ConvertToWString(string.format("0"))	
+end
+
+local statistics = {   
+	--//title, function which returns string that is used as value or nil if title
+	{ TRANSLATOR(STATISTICS_PERSONAL) },
+		{ TRANSLATOR(STATISTICS_MONEYEARNED), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_MONEYEARNED_INRACESCUPS),stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_MONEYEARNED_INCRASHES),stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_MONEYSPENT), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_MONEYSPENT_ONCARS), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_MONEYSPENT_ONUPGRADES), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_NUMBEROFPOS), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_AVERAGERACERANK), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_NUMBEROFCUPRESTARTS), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_TIMESRAGDOLLED), stat_notimplemented },
+	{ TRANSLATOR(STATISTICS_CAR)},
+		{ TRANSLATOR(STATISTICS_DISTANCETRAVELLED), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_CARSOWNED), stat_notimplemented },
+		{ TRANSLATOR(STATISTICS_CARSUNLOCKED), stat_notimplemented },
+}
+
+
+local TRANSITION = 0.15
+
+local function StatsScrollUp()
+	local state=menu_career_statistics.state
+
+	local cur_line=state.cur_line
+	state.cur_line = cur_line - 1
+
+	local num_visible=state.num_visible
+
+	local lines=state.lines
+
+	max_lines=table.getn(lines)
+
+	local _,large_height=wm.GetTextExtents(L"W",fontlarge())
+	local _,small_height=wm.GetTextExtents(L"W",fontsmall())
+
+
+	for i=1,table.getn(lines) do
+
+	end
+end
+
+local function StatsScrollDown()
+	local state=menu_career_statistics.state
+
+	local cur_line=state.cur_line
+	state.cur_line = cur_line + 1
+
+	local num_visible=state.num_visible
+
+	local lines=state.lines
+
+	local _,large_height=wm.GetTextExtents(L"W",fontlarge())
+	local _,small_height=wm.GetTextExtents(L"W",fontsmall())
+
+	for i=1,table.getn(lines) do
+
+	end
+
+
+end
+
+
+menu_career_statistics = CreateMenuFromTemplate("template_basic")
+
+menu_career_statistics.options.title=TRANSLATOR(TITLE_CAREER_STATISTICS)
+
+
+function menu_career_statistics.create(self)
+	self.parent:create(self)
+
+
+	self:loadResources()
+end
+
+function menu_career_statistics.init(self)
+	self.parent:init(self)
+
+	local state={}
+	self.state=state
+
+	state.lines={}
+	state.cur_line=1
+	state.num_visible=0
+
+	local y_pos=86
+
+	local _,large_height=wm.GetTextExtents(L"W",fontlarge())
+	local _,small_height=wm.GetTextExtents(L"W",fontsmall())
+	
+	local hide=false
+
+	for k,v in pairs(statistics) do
+		local title=v[1]
+		local func=v[2]
+
+		local w1,w2
+
+		if not func then
+			w1=StaticText{Title=title,Position=POS(128,y_pos),Font=fontlarge(),Color=GetPaletteColor(3)}
+		else
+			w1=StaticText{Title=title,Position=POS(128,y_pos),Font=fontsmall(),Color=GetPaletteColor(1)}
+			w2=StaticText{Title=func(),Position=POS(440,y_pos),Font=fontsmall(),Color=GetPaletteColor(1)}
+		end
+
+		table.insert(state.lines,{w1,w2})
+
+		if hide then
+			w1:SetAlpha(0)
+			if w2 then w2:SetAlpha(0) end
+		else
+			state.num_visible=state.num_visible + 1
+		end
+
+		if not w2 then 
+			y_pos=y_pos+5+large_height
+		else
+			y_pos=y_pos+2+small_height
+		end
+
+		if y_pos > 350 then
+			hide=true
+		end
+	end
+
+
+	local w=Frame{Name="scroll_up",Position=POS(530,85),Size=GetResourceSize(self:getResource("scroll_arrow_up"))}:AttachResource(self:getResource("scroll_arrow_up"))
+	w:HideWindow()
+
+	w=Frame{Name="scroll_down",Position=POS(530,366),Size=GetResourceSize(self:getResource("scroll_arrow_down"))}:AttachResource(self:getResource("scroll_arrow_down"))
+	
+	if table.getn(state.lines) <= state.num_visible then
+		w:HideWindow()
+	end
+
+
+	local handler=InputHandler{}
+
+	handler.onKeyPressed = function(self,character,virtualkey,scancode)
+		if virtualkey == KeyCodes.BUTTON_SELECT then
+			EnterMenu("menu_career")
+		elseif virtualkey == KeyCodes.BUTTON_UP then
+
+			W("scroll_down"):ShowWindow()
+
+			if menu_career_statistics.state.cur_line > 1 then
+				StatsScrollUp()
+			end
+
+			if menu_career_statistics.state.cur_line == 1 then
+				W("scroll_up"):HideWindow()
+			else
+				W("scroll_up"):ShowWindow()
+			end
+		elseif virtualkey == KeyCodes.BUTTON_DOWN then
+			local state=menu_career_statistics.state
+			local line=state.cur_line
+		
+			W("scroll_up"):ShowWindow()
+
+			if table.getn(state.lines) > line+state.num_visible then
+				StatsScrollDown()
+			end
+
+			if menu_career_statistics.state.cur_line+state.num_visible == table.getn(state.lines) then
+				W("scroll_down"):HideWindow()
+			else
+				W("scroll_down"):ShowWindow()				
+			end
+		end
+	end
+
+	handler:SetFocus()
+
+	GUI:SetHelpButtons(BUTTON_BACK,TRANSLATOR(UI_BACK))
+
+end
+
+
+function menu_career_statistics.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+

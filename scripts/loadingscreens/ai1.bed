@@ -1,0 +1,53 @@
+--dofile("data/language/languages.bed")
+ITEMTYPE_TEXT = 0
+ITEMTYPE_PICTURE = 1
+ITEMTYPE_RECTANGLE = 2
+
+Background = "data/menu/loading_ai1.tga"
+
+LoadingBar = {
+	Image = "data/menu/loading_bar.tga",
+	Position = { 64, 415 },
+	Width = 501,
+	Height = 32,
+	ScrollSpeed = 5000,	
+}
+
+--visuals
+
+ItemCount = 3
+
+Items = {
+
+	[1] = {
+		ItemType = ITEMTYPE_TEXT, --loading text
+		Font = "FontSmall",
+		Identifier = 	LOADINGSCREEN_LOADING,
+		Position = { 225, 385 },
+		ColorId = 33,
+		Center = 1,
+		Width = 300,
+	},
+
+	[2] = {
+		ItemType = ITEMTYPE_TEXT, --ai quickbio
+		Font = "FontSmall",
+		Identifier = AI1_QUICKBIO,
+		Position = { 300, 200 },
+		ColorId = 33,
+		Center = 0,
+		Width = 250,
+		XShiftPerLine = 0,
+	},
+
+	[3] = {
+		ItemType = ITEMTYPE_TEXT, --ai name
+		Font = "HUDNumbers",
+		Identifier = AI1_NAME,
+		Position = { 300, 140 },
+		ColorId = 33,
+		Center = 0,
+		Width = 300,
+		XShiftPerLine = 0,
+	},
+}

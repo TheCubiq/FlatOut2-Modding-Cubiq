@@ -1,0 +1,7 @@
+character_images_locked_4_size = { 512,512 }
+character_images_locked_4 = {
+	
+	ai_portrait_locked_7 = {  0, 0, 256, 345 },   -- Frank Malcov
+--	ai_portrait_locked_8 = {  256, 0, 256, 345 }, -- character name
+
+}

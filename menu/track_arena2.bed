@@ -1,0 +1,9 @@
+track_arena2_size = { 512,512 }
+track_arena2 = {
+
+	track_arena_4 = {  0, 0, 256, 256 },     -- arena name
+	track_arena_5 = {  256, 0, 256, 256 },   -- arena name
+	track_arena_6 = {  0, 256, 256, 256 },   -- arena name
+	x = {  256, 256, 256, 256 },    -- arena name
+
+}

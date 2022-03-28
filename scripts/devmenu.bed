@@ -1,0 +1,592 @@
+--///////////////////////////////////////////////////////////////////////////
+--// DevMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 1.9.2005 14:35:34
+--// 
+--// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+local state={}
+
+local dev_options = {
+	{ title="AI DRIVERS", 
+	  status=function() 
+					if Settings.Dev.EnableAI then 
+						return L"ON" 
+					else 
+						return L"OFF"
+					end 
+			 end,
+	  toggle=function()
+			if Settings.Dev.EnableAI then
+				Settings.Dev.EnableAI=FALSE
+			else
+				Settings.Dev.EnableAI=TRUE
+			end
+	  end,
+	},
+	{ title="DAMAGE",
+	  status=function()
+					if Settings.Dev.EnableCarDamage then
+						return L"ON"
+					else
+						return L"OFF"
+					end
+			end,
+		toggle=function()
+			if Settings.Dev.EnableCarDamage then
+					Settings.Dev.EnableCarDamage=FALSE
+			else
+					Settings.Dev.EnableCarDamage=TRUE
+			end
+
+		end,
+	},
+	{ title="RAGDOLL",
+	  status=function()
+					if Settings.Dev.EnableRagdoll then
+						return L"ON"
+					else
+						return L"OFF"
+					end
+			end,
+		toggle=function()
+			if Settings.Dev.EnableCarDamage then
+					Settings.Dev.EnableRagdoll=FALSE
+			else
+					Settings.Dev.EnableRagdoll=TRUE
+			end
+
+		end,
+	},
+
+
+}
+
+
+menu_dev = CreateMenuFromTemplate("template_basic")
+
+
+menu_dev.options.title=L"DEV MENU"
+menu_dev.back=backmenu()
+
+
+function menu_dev.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+
+
+	self.items = {
+		MENUITEM(L"RACE",entermenu("menu_dev_carselect"),ICON(self)),
+		MENUITEM(L"OPTIONS",entermenu("menu_dev_options"),ICON(self)),
+	}
+end
+
+function menu_dev.init(self)
+	self.parent:init(self)
+
+end
+
+function menu_dev.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+menu_dev_options = CreateMenuFromTemplate("template_basic")
+
+menu_dev_options.options.title=L"DEV MENU OPTIONS"
+
+menu_dev_options.back=backmenu()
+
+function menu_dev_options.create(self)
+	self.parent:create(self)
+
+	self:loadResources()
+
+	state={}
+	state.selected=1
+
+	self.items ={}
+
+	for k,v in pairs(dev_options) do
+		table.insert(self.items,MENUITEM(ConvertToWString(v.title),v.toggle,ICON(self)))
+	end
+
+
+end
+
+
+function menu_dev_options.init(self)
+	self.parent:init(self)
+
+	local pos=POS(200,200)
+
+	for k,v in pairs(dev_options) do
+		local len,_=wm.GetTextExtents(ConvertToWString(v.title),fontsmall())
+
+		v.titlewindow=StaticText{Name=string.format("%s_title",v.title),Title=ConvertToWString(v.title),Position=pos,Font=fontsmall()}
+		v.window=StaticText{Name=string.format("%s_data",v.title),Title=v.status(),Position=POS(pos[1]+len+20,pos[2]),Font=fontsmall()}
+
+		pos[2] = pos[2] + 20
+	end
+
+	GUI:SetBackground("data/menu/menu_background.tga")
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK)) --//L"SELECT",BUTTON_BACK,L"BACK")
+
+end
+
+function menu_dev_options.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_dev_options.buttonChange(self,oldbutton,newbutton)
+	state.selected=newbutton
+end
+
+function menu_dev_options.update(self)
+	local option=dev_options[state.selected]
+	option.window:SetTitle(option.status())
+
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// carselect
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+DevCarStats={
+	{ name="car_class",title=L"CLASS" },
+	{ name="car_drive",title=L"DRIVE" },
+	{ name="car_brakes",slider=100,title=L"BRAKES" },
+	{ name="car_acceleration",slider=100, title=L"ACCELERATION" },
+	{ name="car_topspeed",slider=100, title=L"TOP SPEED" },
+	{ name="car_steering",slider=100, title=L"STEERING" },
+	{ name="car_durability",slider=100, title=L"DURABILITY" },
+	{ name="car_nitro",slider=100, title=L"NITRO" },
+}
+
+
+--//local resources
+dofile("data/menu/car_icons.bed")
+dofile("data/menu/car_icons_locked.bed")
+
+
+menu_career_garage.options.title=L"GARAGE"
+menu_career_garage.back=backmenu()
+
+local classes = { L"A",L"B",L"C" }
+local drive = { L"RWD", L"FWD", L"4WD" }
+
+
+function DevCreateCarInfoWindows(pos,slidersonly)
+
+	local k,v
+	local _,height=wm.GetTextExtents(L"W",fontmedium())
+
+	for k,v in ipairs(DevCarStats) do
+		if not v.slider and not slidersonly then
+			StaticText{Position=pos,Name=string.format("%s_text",v.name),Title=v.title,Font=fontmedium(),Color=GetPaletteColor(20),Align=FONTF_RIGHT}
+			StaticText{Position=POS(pos[1]+8,pos[2]),Name=string.format("%s_data",v.name),
+						Title=ConvertToWString(string.format("%s data",k)),Font=fontmedium(),
+						Color=GetPaletteColor(20),
+			}
+			pos[2] = pos[2]+height
+		end
+		if v.slider then
+			StaticText{Position=pos,Name=string.format("%s_text",v.name),Title=v.title,Font=fontmedium(),Color=GetPaletteColor(20),Align=FONTF_RIGHT}
+			ProgressBar{Position=POS(pos[1]+8,pos[2]+(height-10)/2),Name=string.format("%s_data",v.name),Size=SIZE(80,10),
+						Color=GetPaletteColor(21),BackgroundColor=GetPaletteColor(22),
+						Ticks=v.slider,Value=0,
+			}
+
+			pos[2] = pos[2]+height-4
+		end
+	end
+
+
+end
+
+function DevUpdateCarInfo(car_idx)
+
+	local car_data=db.FlatOut2.Cars:GetProperty("Car",car_idx)
+
+	local drivetype=0
+
+
+	if car_data.Body.RearTraction and not car_data.Body.FrontTraction then
+		drivetype=1
+	elseif not car_data.Body.RearTraction and car_data.Body.FrontTraction then
+		drivetype=2
+	else 
+		drivetype=3
+	end
+
+	local w
+
+	w=W("car_class_data")
+	if w then
+		w:SetTitle(classes[math.random(3)])
+	end
+	w=W("car_drive_data")
+	if w then
+		w:SetTitle(drive[drivetype])
+	end
+	w=W("car_name")
+	if w then
+		w:SetTitle(ConvertToWString(car_data.Name))
+	end
+
+	w=W("car_brakes_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+	w=W("car_acceleration_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+	w=W("car_topspeed_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+	w=W("car_steering_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+	w=W("car_durability_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+	w=W("car_nitro_data")
+	AnimateValue(w,"value","SetValue",false,w:GetValue(),math.random(100),false,0.2,nil,nil,nil)
+
+end
+
+local function DevGetCarItemIndex(tbl,car_index)
+	local i
+	for i=1,table.getn(tbl) do
+		if tbl[i].car_index == car_index then
+			return i
+		end
+	end
+end
+
+
+local function DevSelectCar(menu,idx)
+	local menucar=menu.GarageCars[idx]
+	local index=menucar.index
+	
+	GameFlow.ClearRace()
+
+	menu.SelectedCar=index
+	db.GameFlow.PreRace.Car=index
+	EnterMenu("menu_dev_trackselect")
+end
+
+
+
+
+menu_dev_carselect = CreateMenuFromTemplate("template_basic")
+
+menu_dev_carselect.options.title=L"DEV SELECT CAR"
+
+
+function menu_dev_carselect.create(self)
+	self.parent:create(self)
+
+	self:addResource("car_icons.tga",car_icons,car_icons_size)
+--//	self:addResource("car_icons_2.tga",car_icons_2,car_icons_2_size)
+	self:addResource("car_icons_locked.tga",car_icons_locked,car_icons_locked_size)
+--//	self:addResource("car_icons_2_locked.tga",car_icons_2_locked,car_icons_2_locked_size)
+
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+
+
+end
+
+
+function menu_dev_carselect.init(self)
+	self.parent:init(self)
+
+	Frame{Name="garage_cars_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+
+	local parent=ButtonBar{ Slots=7,Name="garage_cars",Padding=0,SlotSize=SIZE(107,56),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+	parent.onButtonChange = function(self,id)
+		menu_dev_carselect.SelectedCar=menu_dev_carselect.GarageCars[id].index
+		UpdateCarInfo(menu_dev_carselect.SelectedCar,menu_dev_carselect)
+	end
+
+	parent.onChildAction = function(self,id)
+		DevSelectCar(menu_dev_carselect,id)
+	end
+
+	function parent.onBack(self)
+		menu_dev_carselect.SelectedCar=nil
+		BackMenu()
+	end
+
+
+	StaticText{Name="car_logo",Position=POS(580,257),Align=FONTF_RIGHT,Font=fonthuge()}
+	
+
+
+	local pos=POS(50,66)
+
+	CreateCarInfoWindows(self,pos,false)
+
+	GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK)) --//L"SELECT",BUTTON_BACK,L"BACK",BUTTON_EXTRA,L"CAR INFO",TRUE)
+
+	local cars={}
+	local id,button
+	local first
+
+
+	--//get unlocked cars
+	local cars_unlocked = { "car_1_icon","car_2_icon","car_3_icon","car_4_icon" }
+	local cars_locked = { "car_icon_1_locked","car_icon_2_locked","car_icon_3_locked","car_icon_4_locked" }
+
+
+	local i
+	local cars={}
+	for i=0,Garage:GetNumCars()-1 do
+		
+			local car=db.FlatOut2.Cars:GetProperty("Car",i)
+			if car then
+
+				iconname=string.format("car_%d_icon",GetCarDataIndex(i))
+
+				local id,button=parent:AddButton(self:getResource(iconname)) --//ICON(self,iconname))
+				table.insert(cars,id,{ car=car,index=i,button=button})
+
+			
+				if not first then first=id end
+			end
+	end
+
+	self.GarageCars=cars
+
+	local cur_car=self.SelectedCar or PlayerProfile:GetActiveCar()
+	if cur_car < 0 then
+		cur_car=self.GarageCars[first].index
+	end
+	self.SelectedCar=cur_car
+
+--//	UpdateCarInfo(cur_car,self)
+
+	parent:SetSelectedButton(0,FALSE)
+	parent:onButtonChange(1)
+
+	GUI:SetBackground("data/menu/carshop_bg.tga")
+
+
+end
+
+function menu_dev_carselect.deinit(self)
+	self.parent:deinit(self)
+
+	GUI:HideCar()
+end
+
+
+function menu_dev_carselect.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// trackselect
+--// ---------------------------------------------------------------------------------------------------------------------------------
+dofile("data/menu/character_images.bed")
+dofile("data/menu/character_images_2.bed")
+dofile("data/menu/character_images_3.bed")
+dofile("data/menu/character_images_4.bed")
+
+
+
+menu_dev_trackselect = CreateMenuFromTemplate("template_basic")
+menu_dev_trackselect.options.title=L"DEV TRACK SELECT"
+
+function menu_dev_trackselect.create(self)
+	self.parent:create(self)
+
+	self:addResource("character_images.tga",character_images,character_images_size)
+	self:addResource("character_images_2.tga",character_images_2,character_images_2_size)
+	self:addResource("character_images_3.tga",character_images_3,character_images_3_size)
+	self:addResource("character_images_4.tga",character_images_4,character_images_4_size)
+	self:addResource("selection_elements.tga",selection_elements,selection_elements_size)
+	self:addResource("event_type_icons.tga",event_type_icons,event_type_icons_size)
+
+	self:loadResources()
+end
+
+function menu_dev_trackselect.init(self)
+	self.parent:init(self)
+
+	local portrait = string.format("ai_portrait_%d",1+math.random(6))
+
+	local p=Frame{Name="cup_character",Position=POS(330,91),Size=SIZE(256,345)}:AttachResource(self:getResource(portrait))
+	StaticText{Name="character_comment",Title=L"",FontScale=0.8,Position=POS(100,30),Align=FONTF_RIGHT,Color=GetPaletteColor(3),Font=fontsmall(),Parent=p}
+
+	StaticText{Name="track_name",Position=POS(50,86),Font=fontlarge(),Color=GetPaletteColor(3)}
+	StaticText{Name="track_path",Position=POS(50,100),Font=fontlarge(),Color=GetPaletteColor(3)}
+	
+
+
+	local parent=ButtonBar{ Slots=20,Name="tracks",Padding=10,SlotSize=SIZE(32,32),SelectedSlotSize=SIZE(44,44),Position=POS(-60,336),Size=SIZE(640+50,60)}
+
+	parent.onButtonChange = function(self,id)
+		local comments={
+			"LIFE IS GOOD!!!",
+			"WHEEEEEEE!!!!",
+			"JEE!!",
+			"YES!!!!!",
+		}
+
+		
+
+
+		local track=menu_dev_trackselect.Tracks[id]
+		menu_dev_trackselect.SelectedTrack=track.index
+
+		W("track_name"):SetTitle(ConvertToWString(track.name))
+		W("track_path"):SetTitle(ConvertToWString(track.path))
+--//		UpdateCarInfo(menu_dev_carselect.SelectedCar)
+
+--[[--/*
+		if GameFlow.LevelDataExists(track.index) then
+			W("character_comment"):SetTitle(L(comments[math.random(table.getn(comments))]))
+		else
+			W("character_comment"):SetTitle(ConvertToWString(string.format("OH NOES! FILES ARE MISSING!\n%s",GameFlow.GetLevelDataError())))
+		end
+--]]--*/
+	end
+
+	parent.onChildAction = function(self,id)
+		--//GameFlow.ClearRace()
+		local track=menu_dev_trackselect.Tracks[id]
+		db.GameFlow.PreRace.Level=track.index
+		db.GameFlow.PreRace.Mode=GM_DEVELOPER
+		db.GameFlow.PreRace.Rules=GR_RACE
+		Event:PostEvent(event(EVENT_RACE_BEGIN))
+--//		SelectCar(menu_dev_trackselect,id)
+	end
+
+	function parent.onBack(self)
+		menu_dev_trackselect.SelectedTrack=nil
+		BackMenu()
+	end
+
+	local icons = {
+		["forest"] = "race_type_1",
+		["fields"] = "race_type_2",
+		["desert"] = "race_type_3",
+		["canal"] = "race_type_4",
+		["racing"] = "race_type_5",
+		["city"] = "race_type_6",
+		["arena"] = "icon_dirts_ovals",
+		["derby"] = "icon_dirst_ovals",
+	}
+
+	local tracks={}
+	for k,v in ipairs(Levels) do
+		--//LOG("level %d, stagepath=%s,gfxsetpath=%s",k,v.StagePath or "nil",v.GfxSetPath or "nil")
+		if v.TrackType then 
+			local path=string.lower(v.GfxSetPath)
+			local s,e,p=string.find(path,"data/tracks/(%w+)/")
+			local iconname="race_type_1"
+			local s,e,path=string.find(string.lower(v.StagePath),"data/tracks/(%.*)")
+
+			if p then 
+				iconname = icons[p] or iconname
+			end
+
+			local id,button=parent:AddButton(self:getResource(iconname))
+			table.insert(tracks,id,{name=v.Name,path=path or string.lower(v.StagePath),index=k,button=button})
+			
+			if not first then first=id end
+		end
+	end
+
+	self.Tracks=tracks
+
+	local cur_track=self.SelectedTrack or 1
+	if cur_track < 0 then
+		cur_track=self.Tracks[first].index
+	end
+
+	local track=self.Tracks[first]
+	menu_dev_trackselect.SelectedTrack=track.index
+
+	parent:onButtonChange(first)
+
+	W("track_name"):SetTitle(ConvertToWString(track.name))
+	W("track_path"):SetTitle(ConvertToWString(track.path))
+
+
+	state.whee={}
+	state.whee.startpos={W("cup_character"):GetPosition()}
+	state.whee.endpos=POS(330,61)
+	state.whee.time=0
+
+	function whee_animate(event)
+		state.whee.time = state.whee.time + (event.data/1000)
+		local speed=0.4
+
+		local t=math.abs(math.sin(state.whee.time/speed))
+
+
+		local startpos=state.whee.startpos
+		local endpos=state.whee.endpos
+
+		local x,y
+		x = startpos[1] + (endpos[1] - startpos[1])*t
+		y = startpos[2] + (endpos[2] - startpos[2])*t
+		W("cup_character"):SetPosition(x,y)
+        
+	end
+
+	function whee_comment()
+		local comments={
+			"LIFE IS GOOD!!!",
+			"WHEEEEEEE!!!!",
+			"JEE!!",
+			"YES!!!!!",
+		}
+
+		--//W("character_comment"):SetTitle(L(comments[math.random(table.getn(comments))]))
+	end
+
+	--//state.whee.timerhandle=Event:AddTimer(whee_animate,0)
+
+	--//state.whee.timer2handle=Event:AddTimer(whee_comment,10000)
+
+	GUI:SetBackground("data/menu/carshop_bg.tga")
+
+	self.SelectedTrack=cur_track
+
+end
+
+function menu_dev_trackselect.deinit(self)
+	self.parent:deinit(self)
+
+	--//Event:RemoveTimer(state.whee.timerhandle)
+
+	--//Event:RemoveTimer(state.whee.timer2handle)
+end

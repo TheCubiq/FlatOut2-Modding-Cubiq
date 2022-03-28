@@ -1,0 +1,8 @@
+time_attack_tracks_3_size = { 512,256 }
+time_attack_tracks_3 = {
+
+	time_attack_track_9 = {  0, 0, 256, 256 },     -- track name
+	time_attack_track_10 = {  256, 0, 256, 256 },   -- track name
+
+
+}

@@ -1,0 +1,35 @@
+upgrade_icons_size = { 512,512 }
+upgrade_icons = {
+	
+	engine_port_polish_icon = {  3, 3, 110, 70 },   
+	engine_engine_balancing_icon = {  116, 3, 110, 70 }, 
+	engine_chip_icon = {  229, 3, 110, 70 }, 
+	engine_dis_icon = {  342, 3, 110, 70 }, 
+	engine_fuel_kit_stock_icon = {  3, 76, 110, 70 },
+	engine_fuel_kit_racing_icon = {  116, 76, 110, 70 },
+	engine_fuel_kit_pro_icon = {  229, 76, 110, 70 }, 
+	engine_filter_kit_stock_icon = {  342, 76, 110, 70 }, 
+	engine_filter_kit_racing_icon = {  3, 149, 110, 70 }, 
+	engine_filter_kit_pro_icon = {  116, 149, 110, 70 }, 
+	engine_tuning_kit_stock_icon = {  229, 149, 110, 70 }, 
+	engine_tuning_kit_racing_icon = {  342, 149, 110, 70 },
+	engine_tuning_kit_pro_icon = {  3, 222, 110, 70 },  
+	suspension_steering_upgrade_stock_icon = {  116, 222, 110, 70 }, 
+	suspension_steering_upgrade_racing_icon = {  229, 222, 110, 70 }, 
+	suspension_steering_upgrade_pro_icon = {  342, 222, 110, 70 }, 
+	engine_supercharger_icon = {  3, 295, 110, 70 },   
+	engine_turbo_kit_stock_icon = {  116, 295, 110, 70 }, 
+	engine_turbo_kit_racing_icon = {  229, 295, 110, 70 }, 
+	engine_turbo_kit_pro_icon = {  342, 295, 110, 70 }, 
+	engine_nitro_kit_1_icon = {  3, 368, 110, 70 },   
+	engine_nitro_kit_2_icon = {  116, 368, 110, 70 }, 
+	engine_nitro_kit_3_icon = {  229, 368, 110, 70 }, 
+
+	gearbox_gearbox_stock_icon = {  342, 368, 110, 70 }, 
+	gearbox_gearbox_racing_icon = {  3, 441, 110, 70 },   
+	gearbox_gearbox_pro_icon = {  116, 441, 110, 70 }, 
+	gearbox_clutch_stock_icon = {  229, 441, 110, 70 }, 
+	gearbox_clutch_racing_icon = {  342, 441, 110, 70 }, 
+
+	Upgrade_icons_bg = { 3, 295, 110, 70 },
+}

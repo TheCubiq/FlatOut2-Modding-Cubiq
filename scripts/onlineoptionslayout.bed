@@ -1,0 +1,96 @@
+OnlineOptionsLayout =
+{
+	OnlineOptionsPopupLayout = {
+		BoxPos=POS(166,158),
+		BoxSize=SIZE(318,164),
+		TitlePos=POS(159,30),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(33),
+	},
+
+	PlayersMenuLayout = {
+		TitlePos=POS(73-41,86-68),
+		TitleSize=SIZE(300,24),
+		
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(33),
+		
+		BoxPos=POS(41,68),
+		BoxSize=SIZE(558,384),
+
+		ListPos=POS(2,120-68),
+		ListWidth=355-41,
+		ListRowHeight=19,
+		ListRowPadding=3,
+		ListFont=fontmedium(),
+		ListFontColor=GetPaletteColor(34),
+		ListSelectedFontColor=GetPaletteColor(34),
+		ListBgColor=GetPaletteColor(0),
+		ListSelectedBgColor=GetPaletteColor(14),
+		ListNumPos			= POS(85-41, 0),
+		ListStatusIconPos	= POS(100-41, 1),
+		ListVoiceIconPos	= POS(124-41, 0),
+		ListNamePos			= POS(146-41, 0),
+
+		ListNumSize			= SIZE(30, 19),
+		ListPlayerNameSize	= SIZE(158, 19),
+		
+		ListNumRows=10,
+		
+		ScrollUpArrowPos	= POS(200-41, 109-68),
+		ScrollDownArrowPos	= POS(200-41, 342-68),
+
+		StatusBoxLeft=364-41,	
+		StatusBoxTop=120-68,
+		StatusRowSize=SIZE(274-41, 19),
+		
+		StatusLabelLeft=370-41,
+		StatusLabelTop=120-68,
+		StatusFont=fontmedium(),
+		StatusLabelFontColor=GetPaletteColor(33),
+		StatusLabelSize=SIZE(263, 19),
+		StatusTextFontColor=GetPaletteColor(34),
+	},
+	
+	LiveFeedbackLayout = {
+		BoxPos=POS(41,68),
+		BoxSize=SIZE(558,384),
+
+		TitlePos=POS(95-41,86-68),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(33),
+		NamePos=POS(95-41,108-68),
+		NameColor=GetPaletteColor(34),
+		
+		PositiveListPos=POS(95-41,163-68),
+		ListFont=fontmedium(),
+		ListTitleColor=GetPaletteColor(33),
+		ListItemColor=GetPaletteColor(34),
+		ListActiveItemColor=GetPaletteColor(34),
+		ListBgColor=GetPaletteColor(0),
+		ListSelectedBgColor=GetPaletteColor(14),
+		ListItemBgSize=SIZE(276-41,19),
+		ListItemHeight=22,
+	},
+	
+	LiveSendVoiceLayout = {
+		BoxPos=POS(41,68),
+		BoxSize=SIZE(558,384),
+
+		TitlePos=POS(94-41,86-68),
+		TitleFont=fontlarge(),
+		TitleColor=GetPaletteColor(33),
+		
+		NamePos=POS(94-41,108-68),
+		NameColor=GetPaletteColor(34),
+		
+		ProgressFramePos=POS(65-41,165-68),
+		ProgressFrameSize=SIZE(510,100),
+		ProgressPos=POS(30,30),
+		ProgressSize=SIZE(450,16),
+		
+		MessagePosPos=POS(30,57),
+		MessagePosFont=fontmedium(),
+		MessagePosColor=GetPaletteColor(34),
+	},
+}

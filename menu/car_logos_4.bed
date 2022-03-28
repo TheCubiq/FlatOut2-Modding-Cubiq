@@ -1,0 +1,11 @@
+car_logos_4_size = { 512,256 }
+car_logos_4 = {
+	
+	stuntcar_0_logo = {  0, 0, 256, 85 },      -- car name
+	stuntcar_1_logo = {  256, 0, 256, 85 },    -- car name
+	stuntcar_2_logo = {  0, 85, 256, 85 },     -- car name
+	stuntcar_3_logo = {  256, 85, 256, 85 },   -- car name
+	stuntcar_4_logo = {  0, 170, 256, 85 },    -- car name
+	stuntcar_5_logo = {  256, 170, 256, 85 },  -- car name
+
+}

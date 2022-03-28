@@ -1,0 +1,18 @@
+track_images_big3_size = { 512,512 }
+track_images_big3 = {
+	
+	track_images_curling_big = {  0, 0, 197, 51 },
+	track_images_skipping_big = {  199, 0, 197, 51 },
+	track_images_ring_big = {  0, 52, 197, 51 },
+	track_images_blackjack_big = {  199, 52, 197, 51 },
+	track_images_darts_big = {  0, 104, 197, 51 },
+	track_images_highjump_big = {  199, 104, 197, 51 },
+
+	track_images_baseball_big = {  0, 157, 197, 51 },
+	track_images_soccer_big = {  199, 157, 197, 51 },
+	track_images_basketball_big = {  0, 209, 197, 51 },
+	track_images_bowling_big = {  199, 209, 197, 51 },
+	track_images_fieldgoal_big = {  0, 261, 197, 51 },
+	track_images_skijump_big = {  199, 261, 197, 51 },
+
+}

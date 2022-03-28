@@ -1,0 +1,21 @@
+backdrops1_size = { 256,256 }
+backdrops1 = {
+	
+	backdrop_normal = {  1, 112, 254, 85 },
+	backdrop_normal_strech = {  59, 112, 98, 85 },
+	backdrop_normal_tip_right = {  28, 112, 227, 85 },
+	backdrop_detailed_tip = {  1, 1, 69, 100 },
+	backdrop_detailed_main = {  73, 1, 154, 100 },
+
+	race_rew_21_r_ang = { 275, 176, 30, 21 },
+	race_rew_21_l_ang = { 1, 112, 39, 21 },
+	race_rew_21_str =   { 27, 176, 30, 21 },
+	
+	race_rew_32_ang = { 1, 112, 30, 32 }, 
+	race_rew_32_str = { 31, 112, 30, 32 },
+
+	cls_l_66_ang = { 219, 112, 30, 66 },
+	cls_title_ang = { 1, 112, 20, 20 },
+	cls_info_ang = { 1, 112, 30, 74 },
+	cls_desc_ang = { 1, 112, 30, 69 },
+}

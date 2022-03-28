@@ -1,0 +1,555 @@
+--///////////////////////////////////////////////////////////////////////////
+--// main.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 23.3.2005 12:14:20
+--// 
+--// @Author: Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/language/languages.bed")
+dofile("data/Scripts/Resources.bed")
+dofile("data/Scripts/transaction.bed")
+dofile("data/Scripts/internal.bed")
+dofile("data/Scripts/MenuTemplate.bed")
+dofile("data/Scripts/Templates.bed")
+dofile("data/Scripts/WindowAnimate.bed")
+dofile("data/Scripts/ButtonBarGroup.bed")
+
+
+
+dofile("data/Scripts/Levels.bed")
+dofile("data/Scripts/Classes.bed")
+dofile("data/Scripts/Tournaments.bed")
+--//dofile("data/Scripts/State.bed")
+
+--//backwards compatibility
+--//dofile("data/scripts/handicap.bed")
+
+local menufilepath = "data/scripts/"
+
+
+local resourcefiles = {
+	"common.bed",
+	"menu_bars.bed",
+	"control_keys.bed",
+	"menu_icons_normal.bed",
+	"menu_icons_normal_2.bed",
+	"menu_icons_glow.bed",
+	"menu_icons_glow_2.bed",
+	"keyboard.bed",
+}
+
+
+local menufiles = {
+
+	"MainMenu.bed",
+	"LoadSaveMenu.bed",
+	"OptionsMenu.bed",
+	"SingleplayerMenu.bed",
+	"CareerModeMenu.bed",
+	"TrackInfoMenu.bed",
+	"CareerCupInfoMenu.bed",
+	"CareerRaceSelectionMenu.bed",
+	"CareerRacemapMenu.bed",
+	"CareerRewardMenu.bed",
+	"CareerCupMenu.bed",
+	"Garage.bed",
+	"GenericRaceMapMenu.bed",
+	"CarSelectionGenericMenu.bed",
+	"CareerCarShop.bed",
+
+	"TimeAttackMenu.bed",
+	"SingleRaceMenu.bed",
+	"CrashtestDummyMenu.bed",
+	"MultiplayerMenu.bed",
+	"RaceResultsMenu.bed",
+	"ProfilesMenu.bed",
+	--//"TournamentMenu.bed",
+	"UpgradeMenu.bed",
+	"PartyModeMenu.bed",
+	"ExtrasMenu.bed",
+	"StartScreen.bed",
+
+	"LobbyChangeOptions.bed",
+	"LobbySessionDetails.bed",
+	"MultiplayerCreateGame.bed",
+	"MultiplayerOptiMatch.bed",
+	"MultiplayerOptiMatchResults.bed",
+	"MultiplayerLobby.bed",
+	"OnlineOptionsLayout.bed",
+	"OnlineOptions.bed",
+	"MultiplayerViewTournament.bed",
+	"MultiplayerTournamentStandings.bed",
+	"MultiplayerBuildTournament.bed",
+	"MultiplayerRaceMenu.bed",
+
+	--//"PressBuild.bed",
+	--//"FocusTest.bed",
+}
+
+local pc_menufiles = {
+	"GameSpy.bed",
+	"GameSpyQuickMatch.bed",
+	"LanGame.bed",
+}
+
+local xbox_menufiles = {
+	"XBoxLive.bed",
+	"QuickMatch.bed",
+	"AuthOneUser.bed",
+	"PlayersMenu.bed",
+	"MultiPlayerProfile.bed",
+	"SendVoice.bed",
+	"SendFeedback.bed",
+	"CrossGameInvite.bed",
+	"MultiplayerScoreboards.bed",
+}
+
+local ps2_menufiles = {
+	"NetworkConfiguration.bed",
+	"DNAS.bed",
+	"GameSpyLogin.bed",
+	"GameSpy.bed",
+	"GameSpyQuickMatch.bed",
+	"MultiPlayerProfile.bed",
+}
+
+
+local globalresources = {
+
+
+	--// name = image("filename.tga"),
+
+}
+
+local eventhandler
+local timerhandle
+
+
+local function race_finished()
+
+	Event:PostEvent(event(EVENT_MUSIC_MENU))
+
+	if XBOX then
+		GUI:AllowOnlineOptionsMenu(true)
+		if Network ~= nil then
+			GUI:EnableOnlineOptionsMenu(true)
+		end
+		XBoxLiveUpdateStatus()
+	end
+		
+	if XBOX and Friends and Friends.ShouldJoinFriend() then
+		MultiplayerMode = MPMODE_XBOXLIVE
+		EnterMenu("menu_xboxlive")
+		return
+	end
+
+	if db.GameFlow.PreRace.Mode == GM_PARTY then
+		EnterMenu("menu_partymode_results")
+	elseif db.GameFlow.PreRace.Mode == GM_SPLITSCREEN then
+		SplitScreenSelectNextRace()
+	elseif db.GameFlow.PreRace.Mode == GM_CAREER then
+--//			EnterMenu("menu_career_cup_racerewards")
+		PrepareRewardMenuQueue(entermenu("menu_career"))
+		NextRewardMenu()
+	elseif db.GameFlow.PreRace.Mode == GM_ONLINE_MULTIPLAYER then
+		if Session then
+			if Session:IsLive() then
+				MultiplayerMode = MPMODE_XBOXLIVE
+				if Network:GetShouldExitLive() then
+					Network:SetShouldExitLive(false)
+					Session:DeleteSession()
+					EnterMenu("menu_mainmenu")
+				elseif Network:GetShouldExitSession() then
+					Network:SetShouldExitSession(false)
+					EnterMenu("menu_xboxlive")
+				else
+					if Session:GetNumRaces() > 1 then
+						ShowTournamentStandings("menu_xboxlive")
+					else
+						ShowLobby("menu_xboxlive")
+					end
+				end
+			elseif Session:IsGameSpy() then
+				MultiplayerMode = MPMODE_GAMESPY
+				if Network:GetShouldExitSession() then
+					Network:SetShouldExitSession(false)
+					EnterMenu("menu_multiplayer_gamespy")
+				else
+					if Session:GetNumRaces() > 1 then
+						ShowTournamentStandings("menu_multiplayer_gamespy")
+					else
+						ShowLobby("menu_multiplayer_gamespy")
+					end
+				end
+			else
+				MultiplayerMode = MPMODE_LAN
+				if Network:GetShouldExitSession() then
+					Network:SetShouldExitSession(false)
+					EnterMenu("menu_lan_modeselect")
+				else
+					if Session:GetNumRaces() > 1 then
+						ShowTournamentStandings("menu_lan_modeselect")
+					else
+						ShowLobby("menu_lan_modeselect")
+					end
+				end
+			end
+		else
+			EnterMenu("menu_mainmenu")
+		end
+	elseif db.GameFlow.PreRace.Mode == GM_TEST then
+		ReturnFromTestTrack()
+	elseif db.GameFlow.PreRace.Mode == GM_SINGLE_RACE then
+		PrepareRewardMenuQueue(entermenu("menu_singleplayer"))
+		NextRewardMenu()
+		--//EnterMenu("menu_singleplayer")
+	elseif db.GameFlow.PreRace.Mode == GM_INSTANT_ACTION then
+		PrepareRewardMenuQueue(entermenu("menu_mainmenu"))
+		NextRewardMenu()
+		--//EnterMenu("menu_mainmenu")
+	else
+		EnterMenu("menu_mainmenu")
+	end
+
+
+end
+
+local function race_aborted()
+	Event:PostEvent(event(EVENT_MUSIC_MENU))
+
+	if XBOX then
+		GUI:AllowOnlineOptionsMenu(true)
+		if Network ~= nil then
+			GUI:EnableOnlineOptionsMenu(true)
+		end
+		XBoxLiveUpdateStatus()
+	end
+		
+	if XBOX and Friends and Friends.ShouldJoinFriend() then
+		MultiplayerMode = MPMODE_XBOXLIVE
+		EnterMenu("menu_xboxlive")
+		return
+	end
+
+	local mode=db.GameFlow.PreRace.Mode
+	if mode == GM_CAREER then
+		PrepareRewardMenuQueue(entermenu("menu_career"),true)
+		NextRewardMenu()
+		--//EnterMenu("menu_career")
+	elseif mode == GM_PARTY then
+		EnterPartyModeMenu(false)
+	elseif mode == GM_SINGLE_RACE then
+		PrepareRewardMenuQueue(entermenu("menu_singleplayer"),true)
+		NextRewardMenu()
+		--//EnterMenu("menu_singleplayer")
+	elseif mode == GM_INSTANT_ACTION then
+		PrepareRewardMenuQueue(entermenu("menu_mainmenu"),true)
+		NextRewardMenu()
+	elseif mode == GM_TEST then
+		ReturnFromTestTrack()
+	elseif mode == GM_ONLINE_MULTIPLAYER then
+		Network:SetShouldExitSession(false)
+		if Session then
+			if Session:IsLive() then
+				if Network:GetShouldExitLive() then
+					Network:SetShouldExitLive(false)
+					Session:DeleteSession()
+					EnterMenu("menu_mainmenu")
+				else
+					MultiplayerMode = MPMODE_XBOXLIVE
+					EnterMenu("menu_xboxlive")
+				end
+			elseif Session:IsGameSpy() then
+				MultiplayerMode = MPMODE_GAMESPY
+				EnterMenu("menu_multiplayer_gamespy")
+			else
+				MultiplayerMode = MPMODE_LAN
+				EnterMenu("menu_lan_modeselect")
+			end
+		else
+			EnterMenu("menu_mainmenu")
+		end
+	else
+		EnterMenu("menu_mainmenu")
+	end
+end
+
+
+local raceresult={
+	[RESULT_NONE] = entermenu("menu_mainmenu"),
+	[RESULT_FINISHED] = race_finished,
+	[RESULT_ABORTED] = race_aborted,
+}
+
+local statustexts={
+	"NOT SIGNED IN",
+	"SIGNED IN",
+	"MAYBE SIGNED IN",
+	"NOT QUITE SIGNED IN",
+	"HMM...",
+    "SIGNING IN (THE RAIN)...",
+	"HELLO WORLD!",
+	"SIGNED OUT",
+	"NOT SINGING",
+	"NI DENGIS TON",
+	"SIGNING IN WORLD TOUR 2005",
+}
+
+
+local eventhandlers = {
+	[EVENT_MENU_LOADED] = function(event)
+							if not IsGameStarted() then
+								if not CommandLine["-host"] and not CommandLine["-join"] and not CommandLine["-profilenr"] then
+									EnterMenu("menu_startscreen")
+								else
+									StartGame()
+									EnterMenu("menu_profiles")
+								end
+							else
+								local result=raceresult[db.GameFlow.PostRace.Result]
+								if result then 
+									result()
+								else
+									LOG("invalid db.GameFlow.PostRace.Result")
+									EnterMenu("menu_mainmenu")
+								end
+							end
+						  end,
+	[EVENT_MENU_MENUENTERED] = function(event)
+								if NewMenuEntered(event.data) then
+									CurrentMenu=event.data
+								end
+							end,
+	[EVENT_TIMER] = function(event)
+					end,
+	[EVENT_MENU_TRIGGER_REF] = function(event)
+						local menu=getref(event.data)						
+						if menu and menu.trigger then
+							menu:trigger(event.arg)
+						end
+					end,
+	[EVENT_MENU_MONEY_UPDATED] = function(event)
+						MenubarMoneyUpdate()
+					end,
+}
+
+
+function SetEventHandler(eventid,handler)
+	eventhandlers[eventid]=handler
+end
+
+
+function EventHandler(event)
+	local handler=eventhandlers[event.id]
+
+	if handler then
+		handler(event)
+	end
+
+	if CurrentMenu and _G[CurrentMenu] then
+		local menu=_G[CurrentMenu]
+		if menu.eventhandler then
+			menu:eventhandler(event)
+		end
+	end
+end
+
+
+function LoadMenuFiles()
+	local k,v
+
+	local numfiles
+
+	numfiles=table.getn(resourcefiles) + table.getn(menufiles)
+
+	if XBOX then
+		numfiles = numfiles + table.getn(xbox_menufiles)
+	elseif PS2 then
+		numfiles = numfiles + table.getn(ps2_menufiles)
+	elseif PC then
+		numfiles = numfiles + table.getn(pc_menufiles)
+	end
+
+
+	for k,v in pairs(resourcefiles) do
+		dofile("data/menu/"..v)
+
+		UpdateLoadingBar(1.0 / numfiles)
+	end
+
+	if PC then
+		dofile("data/menu/pc_buttons.bed")
+
+		control_keys.button_ok=enter_btn
+		control_keys.button_back=esc_btn
+	elseif XBOX then
+		control_keys.button_ok=ps2_cross
+		control_keys.button_back=ps2_triangle
+	elseif PS2 then
+		control_keys.button_ok=ps2_cross
+		control_keys.button_back=ps2_triangle
+	end
+
+	MergeTable(globalresources,CreateSubImages("common.tga",common,common_size))
+	MergeTable(globalresources,CreateSubImages("menu_bars.tga",menu_bars,menu_bars_size))
+	MergeTable(globalresources,CreateSubImages("control_keys.tga",control_keys,control_keys_size))
+	MergeTable(globalresources,CreateSubImages("menu_icons_normal.tga",menu_icons_normal,menu_icons_normal_size,BITMAP_INACTIVE))
+	MergeTable(globalresources,CreateSubImages("menu_icons_normal_2.tga",menu_icons_normal_2,menu_icons_normal_2_size,BITMAP_INACTIVE))
+	MergeTable(globalresources,CreateSubImages("menu_icons_glow.tga",menu_icons_glow,menu_icons_glow_size,BITMAP_ACTIVE))
+	MergeTable(globalresources,CreateSubImages("menu_icons_glow_2.tga",menu_icons_glow_2,menu_icons_glow_2_size,BITMAP_ACTIVE))
+	MergeTable(globalresources,CreateSubImages("keyboard.tga",keyboard,keyboard_size))
+
+	if PC then
+		MergeTable(globalresources,CreateSubImages("pc_buttons.tga",pc_buttons,pc_buttons_size))
+	end
+
+	for k,v in pairs(menufiles) do
+		dofile(menufilepath..v)
+
+		UpdateLoadingBar(1.0 / numfiles)
+	end
+	
+	if XBOX then
+		for k,v in pairs(xbox_menufiles) do
+			dofile(menufilepath..v)
+
+			UpdateLoadingBar(1.0 / numfiles)
+		end
+	elseif PS2 then
+		for k,v in pairs(ps2_menufiles) do
+			dofile(menufilepath..v)
+
+			UpdateLoadingBar(1.0 / numfiles)
+		end
+	elseif PC then
+		for k,v in pairs(pc_menufiles) do
+			dofile(menufilepath..v)
+
+			UpdateLoadingBar(1.0 / numfiles)
+		end
+	end	
+end
+
+function InitGlobalResources()
+	LoadResources(globalresources)
+	LOG("Global resources loaded")
+end
+
+
+function musictest()
+	Event:PostEvent(event(EVENT_MUSIC_SHOWARTIST))
+end
+
+function BuildClassLevelReferences()
+	
+	for _,cur_class in pairs(Classes) do
+		cur_class.ClassLevels={}
+		cur_class.Levels={}
+		for __,cup in pairs(cur_class.Cups or {}) do
+		for k,race in pairs(cup.Races or {}) do
+				table.insert(cur_class.Levels,race.Level)
+				cur_class.ClassLevels[race.Level]=true
+			end
+		end
+		for __,event in pairs(cur_class.Events or {}) do
+				for k,race in pairs(event.Races or {}) do
+				table.insert(cur_class.Levels,race.Level)
+				cur_class.ClassLevels[race.Level]=true
+			end
+		end
+	end
+
+end
+
+function BuildCarClassReferences()
+
+	StuntCars={}
+
+	local classes = {
+		["beginner"] = Classes[1],
+		["amateur"] = Classes[2],
+		["professional"] = Classes[3],
+	}
+
+	local function SplitString(str)
+		local t={}		
+		for w in string.gfind(str,"(%w+)%.?") do
+			table.insert(t,w)
+		end
+		return t
+	end
+
+	--//get stunt cars
+	for i=0,db.FlatOut2.Cars:GetPropertyArraySize("Car")-1 do
+		local car=db.FlatOut2.Cars:GetProperty("Car",i)
+		
+		local path=SplitString(string.lower(car:GetFullPath()))
+
+		if path[3] == "stunt" then
+			table.insert(StuntCars,i)
+		else
+			local cur_class=classes[path[3]]
+			if cur_class then
+				cur_class.ClassCars = cur_class.ClassCars or {}
+				table.insert(cur_class.ClassCars,i)
+			end
+		end
+	end
+end
+
+
+function main()
+
+	--//menu_entered=true
+
+	if PS2 then 
+		BUTTON_OK=BUTTON_PS2_CROSS
+		BUTTON_BACK=BUTTON_PS2_TRIANGLE
+		BUTTON_EXTRA=BUTTON_PS2_SQUARE
+		BUTTON_INFO=BUTTON_PS2_SQUARE
+		KeyCodes.BUTTON_INFO=KeyCodes.BUTTON_X
+		KeyCodes.BUTTON_EXTRA=KeyCodes.BUTTON_X
+	elseif XBOX then
+		BUTTON_OK=BUTTON_XBOX_A
+		BUTTON_BACK=BUTTON_XBOX_B
+		BUTTON_EXTRA=BUTTON_XBOX_Y
+		BUTTON_INFO=BUTTON_XBOX_Y
+		KeyCodes.BUTTON_INFO=KeyCodes.BUTTON_Y
+		KeyCodes.BUTTON_EXTRA=KeyCodes.BUTTON_Y
+	elseif PC then
+		BUTTON_OK=BUTTON_PC_ENTER
+		BUTTON_BACK=BUTTON_PC_ESC
+		BUTTON_EXTRA=BUTTON_PC_DELETE
+		BUTTON_INFO=BUTTON_PC_DELETE
+		KeyCodes.BUTTON_INFO=KeyCodes.BUTTON_X
+		KeyCodes.BUTTON_EXTRA=KeyCodes.BUTTON_X
+	end
+
+	BuildClassLevelReferences()
+	BuildCarClassReferences()
+
+	LoadMenuFiles()
+	InitGlobalResources()
+
+	BuildUpgradeCategories()
+
+	Save.UpdateSaveGameInfo()
+
+	eventhandler=Event:AddListener(EventHandler,EVENTTYPE_ALL)
+	
+	--//timerhandle=Event:AddTimer(EventHandler,5000)
+	
+end
+
+main()
+
+
+
+
+
+
+

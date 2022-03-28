@@ -1,0 +1,16 @@
+car_icons_2_locked_size = { 512,256 }
+car_icons_2_locked = {
+	
+	car_28_icon_locked = {  3, 3, 110, 70 },   
+	car_29_icon_locked = {  116, 3, 110, 70 }, 
+	car_30_icon_locked = {  229, 3, 110, 70 }, 
+	car_31_icon_locked = {  342, 3, 110, 70 }, 
+	car_32_icon_locked = {  3, 76, 110, 70 },
+	car_33_icon_locked = {  116, 76, 110, 70 },
+	car_34_icon_locked = {  229, 76, 110, 70 }, 
+	car_35_icon_locked = {  342, 76, 110, 70 }, 
+	car_36_icon_locked = {  3, 149, 110, 70 }, 
+	car_37_icon_locked = {  116, 149, 110, 70 }, 
+	car_38_icon_locked = {  229, 149, 110, 70 }, 
+
+}
