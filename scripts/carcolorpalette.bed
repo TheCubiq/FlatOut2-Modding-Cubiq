@@ -1,0 +1,246 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CarColorPalette.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2021 Cubiq. 
+--// All Rights Reserved.
+--// 
+--// Created on 14.8.2021
+--// 
+--// Mod by Cubiq The Creator 
+--//  -  info.cubiqnation@gmail.com 
+--//  -  vk.com/cubiqthecreator 
+--//  -  cubiq#3296)
+--// Thanks for using it <3
+--///////////////////////////////////////////////////////////////////////////
+
+-- /!\    note: this file loads automatically and you don't have to define it in main.bed
+
+--[[
+    you can define how much the car has skins and then you can use them
+    for example if you want to have 7 skins on chilli, 
+    just in CarPalette database bellow navigate to where 
+    the chilli car is (second one) and add your "skins" 
+    there using color preview :)
+    
+    --Chilli (2)
+    {
+        "#1D4F5D",	"#682C18",	"#3A0C07",	"#3D3F3D",	"#252725", "#EF3555", "#D6AF27",
+    },
+
+    you can either get the color of the texture using any color picker or 
+    generate it with any color generator
+    quick note: color is stored in hex format :)
+    make sure that the skins were added to locations:
+    \data\menu\cars\car[id]
+    \data\cars\car[id]
+--]]
+
+CubiqsColorPalette = true -- enables the custom color palette :)
+
+CarPalette = {
+
+    --CTR (1)
+    {
+        "#9D3B0F",	"#234052",	"#172633",	"#69241E",	"#4D130C",
+    },
+    --Chilli (2)
+    {
+        "#1D4F5D",	"#682C18",	"#3A0C07",	
+        --"#3D3F3D",	"#252725",
+    },
+    --Boxer (3)
+    {
+        "#7F2B27",	"#285B6F",	"#163A49",	"#D6AF27",	"#81520F",
+    },
+    --Lancea (4)    
+    {
+        "#836733",	"#7F837D",	"#907238",	"#5E5945",	"#282B1D",
+    },
+    --Mad Rash (5)    
+    {
+        "#1D4248",	"#948D84",	"#1F262A",	"#751F23",	"#4F0F00",
+    },
+    --Malice (6)  
+    {
+        "#252724",	"#814621",	"#5E2E13",	"#3C3520",	"#3B331D",
+    },
+    --Fortune (7)    
+    {
+        "#263A26",	"#112831",	"#234858",	"#520007",	"#320810",
+    },
+    --Banger (8)
+    {
+        "#1E2425",	"#8A3B29",	"#5D291D",	"#8A7966",	"#7A3B24",
+    },
+    --SparrowHawk (9)
+    {
+        "#6F0F17",	"#B78317",	"#975B00",	"#889898",	"#080C08",
+    },
+    --Insetta (10)
+    {
+        "#202C48",	"#080C10",	"#606C68",	"#989CA0",	"#606C68",
+    },
+    --Sunray (11)
+    {
+        "#081C30",	"#90A0A0",	"#010001",	"#500000",	"#160000",
+    },
+    --Vexter XS	(12)    
+    {
+        "#979FA7",	"#B7430F",	"#681800",	"#7F9337",	"#606C28",
+    },
+    --Shaker (13) 
+    {
+        "#813B29",	"#54636D",	"#434E4E",	"#7E6334",	"#734E32",
+    },
+    --Splitter (14)   
+    {
+        "#944530",	"#242322",	"#838C8B",	"#902E2B",	"#642823",
+    },
+    --Terrator (15)  
+    {
+        "#060606",	"#0F4B77",	"#002C48",	"#9FA39F",	"#373E3E",
+    },
+    --Bullet (16)
+    {
+        "#16485A",	"#8E9184",	"#50201B",	"#7B250A",	"#85272D",
+    },
+    --SwitchBlade (17)	
+    {
+        "#6484A0",	"#968941",	"#7F7039",	"#667C5B",	"#4E5D2D",
+    },
+    --Venom (18)
+    {
+        "#211715",	"#602923",	"#451613",	"#886E29",	"#244959",
+    },
+    --Nevada (19)	    
+    {
+        "#151C1A",	"#636360",	"#0C212A",	"#5D3621",	"#4D2816",
+    },
+    --Blaster XL (20)	
+    {
+        "#8C8874",	"#2A2C2A",	"#2B3427",	"#784B1C",	"#45270D",
+    },
+    --Crusader (21)
+    {
+        "#000000",	"#171737",	"#070B1F",	"#360005",	"#1E0000",
+    },
+    --Canyon (22)  
+    {
+        "#00232E",	"#B6410E",	"#871F00",	"#06170F",	"#C1A218",
+        "#004276",
+    },
+    --Roamer (23)    
+    {
+        "#621C11",	"#4B110B",	"#2D465F",	"#1E2D3C",	"#1C160B",
+    },
+    --Lentus (24)
+    {
+        "#9A6C14",	"#163A49",	"#2D5864",	"#1F332A",	"#384C35",
+        --custom
+        --"#D55912",	"#501010",	"#030303",	"#080808",  "#987415",  "#12A1E2",  "#E8E8E8",  "#DB7D05",  "#32402A",  "#33031B",  "#0C7257",  "#063D78",  "#840204",  "#882F73",  "#43970F",  "#5B5785",  "#DB4D00",  "#C849B0",  "#C0C0B8",
+    },
+    --Road King (25)    
+    {
+        "#B68217",	"#6F060F",	"#370006",	"#9FA39F",	"#060606",
+    },
+    --Ventura (26) 
+    {
+        "#923921",	"#191919",	"#2F2F31",	"#1E2F1E",	"#314533",
+    },
+    --CTR Sport	(27)   
+    {
+        "#B68217",	"#0F130F",	"#879797",	"#0D465F",	"#002B3E",
+    },
+    --Chili Pepper (28) 
+    {
+        "#002A3E",	"#6F0E16",	"#370005",	"#B58216",	"#975B00",
+    },
+    --Bullet GT	(29)
+    {
+        "#000000",	"#170006",	"#370927",	"#AFB4B6",	"#004278",
+    },
+    --Scorpion (30)
+    {
+        "#000000",	"#979797",	"#676B6F",	"#67020F",	"#370006",
+    },
+    --Insetta Sport	(31)
+    {
+        "#6F0F17",	"#B68217",	"#B6730F",	"#460217",	"#373E3E",
+    },
+    --Speedshifter (32)
+    {
+        "#6E0D16",	"#0D475F",	"#002B3F",	"#274736",	"#0D1F14",
+    },
+    --Daytana (33) 
+    {
+        "#6E141B",	"#1E4A5D",	"#112E3B",	"#141410",	"#7D8581",
+    },
+    --SpeedDevil (34)	
+    {
+        "#B6420F",	"#000606",	"#879797",	"#0F465F",	"#00232F",
+    },
+    --TrailBlazer (35)
+    {
+        "#A02B28",
+    },				
+    --Afterburner (36)
+    {
+        "#007297",
+    },				
+    --Rocket (37)
+    {
+        "#C7CBBE",
+    },				
+    --StarFlight (38)	
+    {
+        "#002F5F",
+    },				
+    --Nucleon (39)
+    {
+        "#9F9305",
+    },				
+    --Pimpster (40)   
+    {
+        "#000004",	"#46000F",	"#46000F",	"#7E7A6F",	"#7E7A6F",
+    },
+    --Flatmobile (41)	
+    {
+        "#000000",	"#8E979F",	"#676A6E",	"#143243",	"#001427",
+    },
+    --Mobcar (42)
+    {
+        "#270307",	"#000100",	"#000100",	"#06061F",	"#06061F",
+    },
+    --SchoolBus	(43)    
+    {
+        "#C69625",	"#A5A196",	"#1A1612",	"#A48253",	"#373728",
+    },
+    --Rocket (45)	
+    {
+        "#C7CBBE",	"#173737",	"#5F6B67",	"#0F0F0F",	"#5F6B67",
+    },
+    --Truck	(46)   
+    {
+        "#000000",	"#210C2B",	"#1E0000",	"#001A27",	"#000B1F",
+    },
+}   
+
+
+function from255to1(color)
+	local c = color
+	for i=1,4 do
+		c[i] = color[i]/256
+	end
+	return(c)
+end
+
+function hex2rgb2(hex)
+    hex = hex:gsub("#","")
+    local c = {}
+    for i = 1, 3 do
+        local ay = 2*i
+        c[i] = tonumber("0x"..hex:sub(ay-1,ay))
+    end
+    c[4] = 255
+    return c
+end

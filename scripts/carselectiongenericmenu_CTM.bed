@@ -1,0 +1,1371 @@
+--///////////////////////////////////////////////////////////////////////////
+--// CarSelectionGenericMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2005 Bugbear Entertainment ltd. 
+--// All Rights Reserved.
+--// 
+--// Created on 8.9.2005 14:58:54
+--// 
+--// @Author Mikko Sivulainen, 
+--// modded by Cubiq The Creator 
+--///////////////////////////////////////////////////////////////////////////
+
+dofile("data/menu/garage_elements1.bed")
+
+dofile("data/scripts/carcolorpalette.bed")
+
+menu_carselection = CreateMenuFromTemplate("template_cars")
+
+local tirerippermenu = false
+
+local EnableTuneMenu = true
+
+
+local tunepos 
+tunepos = {
+	1, -- y
+	1, -- x
+	0, -- pos
+	1, -- multiplier
+	1, -- page
+}
+
+local crashwarning = true -- if true, displays warning message
+
+local cd,props	-- car directory and properties
+
+local bgframe
+
+local hidecarwnds = false
+
+inmycareditmenu = false
+
+local temppos
+
+local testid = 1
+
+local oldcarid = 1
+
+local max_skins
+	if CubiqsColorPalette then
+		max_skins = 20	-- how many items to load when palette script is enabled
+	else
+		max_skins = 5	-- how many items to load when palette script is disabled
+	end
+
+local CarPaletteProps = {
+	Size = SIZE(20,75),
+	Position = {
+		POS(590,200), -- show
+		POS(650,200), -- hide
+	},
+	Padding = 3, -- padding between y items
+	ItemSize = SIZE(14,9),
+	anim = false, -- if moving too fast through cars, it gets a bit buggy
+}
+
+
+--menu_carselection.SelectedCar = 1
+
+function IsStuntCar(car)
+	local cars=StuntCars
+
+	if not cars then return false end
+
+	for k,v in pairs(cars) do
+		if car == v then return true end
+	end
+
+end
+
+function CarlistAllCars()
+	local cars={}
+	local locked={}
+
+	for i=0,Garage:GetNumCars()-1 do
+		local t={}
+		t.index=i
+		if Garage:IsCarLocked(i) then
+			table.insert(locked,t)
+		else
+			table.insert(cars,t)
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(cars,v)
+	end
+
+	return cars	
+end
+
+function CarlistUnpurchasedFromClass(index)
+	local cars=Classes[index].ClassCars
+
+	local t={}
+	local locked={}
+
+	if not cars then LOG("CarlistUnpurchasedFromClass: class %d doesn't have ClassCars",index); return t; end
+
+	for k,v in pairs(cars) do
+		if not Garage:IsCarPurchased(v) then
+			if Garage:IsCarLocked(v) then
+				table.insert(locked,{index=v})
+			else
+				table.insert(t,{ index=v })
+			end
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(t,v)
+	end
+
+	return t
+end
+
+
+function CarlistFromClass(index,only_purchased,all_cars)
+	local cars=Classes[index].ClassCars
+
+	local t={}
+	local locked={}
+
+
+	if not cars then LOG("CarlistFromClass: class %d doesn't have ClassCars",index); return t; end
+
+	for k,v in pairs(cars) do
+		if only_purchased then
+			if Garage:IsCarPurchased(v) then
+				table.insert(t,{ index=v })
+			end
+		else
+			if all_cars or not Garage:IsCarLocked(v) then
+				if Garage:IsCarLocked(v) then
+					table.insert(locked,{index=v})
+				else
+					table.insert(t,{ index=v })
+				end
+			end
+		end
+	end
+
+	for k,v in pairs(locked) do
+		table.insert(t,v)
+	end
+
+	return t
+end
+
+function CarlistAllUnlocked()
+	local t={}
+
+	for i=0,db.FlatOut2.Cars:GetPropertyArraySize("Car")-1 do
+
+		if not Garage:IsCarLocked(i) and not IsStuntCar(i) then
+			table.insert(t,{ index=i })
+		end
+	end
+
+	return t
+end
+
+function CarlistStuntCars()
+	local cars=StuntCars
+
+	local t={}
+
+	if not cars then LOG("CarlistStuntCars: StuntCars not defined."); return t; end
+
+	for k,v in pairs(cars) do
+		table.insert(t,{ index=v })
+	end
+
+	return t
+end
+
+
+function CarlistAllPurchased()
+	local cars={}
+
+	for i=0,Garage:GetNumCars()-1 do
+		if Garage:IsCarPurchased(i) then
+			local t={}
+			t.index=i
+			table.insert(cars,t)
+		end
+	end
+
+	return cars
+end
+
+function GetCarDataIndex(car_idx)
+
+	local car_data=db.FlatOut2.Cars:GetProperty("Car",car_idx)
+
+	local _,__,index=string.find(car_data.DataPath,"_(%d+)/")
+
+
+	return index
+end
+
+
+function EnterCarSelection(okaction,backaction,carlist,purchase,all_available,only_description,show_tutorial,background,testtrack_menudata,show_class,title,hide_menubar_car)
+	menu_carselection.carlist=carlist or CarlistAllCars()
+	menu_carselection.back=backaction
+	menu_carselection.okaction=okaction
+	menu_carselection.shop_mode=purchase
+	menu_carselection.show_class=show_class
+	menu_carselection.show_tutorial=show_tutorial
+	menu_carselection.all_available=all_available
+	menu_carselection.only_description=only_description
+	menu_carselection.background=background
+
+	menu_carselection.testtrack_menudata=testtrack_menudata
+	menu_carselection.title=title
+	menu_carselection.hide_menubar_car=hide_menubar_car
+	EnterMenu("menu_carselection")
+end
+
+function EnterPlayerCarSelection(okaction,backaction,carlist,purchase,all_available,only_description,show_tutorial,background,testtrack_menudata,show_class,title,hide_menubar_car)
+	menu_carselection.carlist=carlist or CarlistAllCars()
+	menu_carselection.back=backaction
+	menu_carselection.okaction=okaction
+	menu_carselection.shop_mode=purchase
+	menu_carselection.show_class=show_class
+	menu_carselection.show_tutorial=show_tutorial
+	menu_carselection.all_available=all_available
+	menu_carselection.only_description=only_description
+	menu_carselection.background=background
+	menu_carselection.testtrack_menudata=testtrack_menudata
+	menu_carselection.title=title
+	menu_carselection.hide_menubar_car=hide_menubar_car
+	EnterMenu("menu_carselection")
+end
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// palette selector
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+function CreatePaletteSelector(menu)
+
+	local w=Frame{Name="car_palette",Position=CarPaletteProps.Position,Size=CarPaletteProps.Size}
+	w:AttachResource(menu:getResource("black_transparent_50"))
+	--w:SetSize(20,50)
+
+	local cpp = CarPaletteProps
+	w.show=function(self)
+		AnimateWindowPos(self,cpp.Position[2],cpp.Position[1],0.2)
+	end
+
+	w.hide=function(self)
+		AnimateWindowPos(self,{ self:GetPosition() }, cpp.Position[2],0.2)
+	end
+
+	w.setSelected = function(self,itemnum)
+		self.selector:setSelected(itemnum)
+	end
+
+	local white=menu:getResource("white_transparent")
+	
+	local pxp = ((cpp.Size[1] - cpp.ItemSize[1])/2)
+	local pos= POS(pxp,cpp.Padding)
+	
+	local size=cpp.ItemSize
+
+	w.childs={}
+	local spacing = ((69 - (9*max_skins))/(max_skins-1))
+	for i=1,max_skins do --fix for skins slots
+		w.childs[i]=Frame{Position=pos,Size=size,Color=GetPaletteColor(1),Parent=w}:AttachResource(white)
+		--w.childs[i]=Frame{Size=size,Color=GetPaletteColor(1),Parent=w}:AttachResource(white)
+		
+		pos[2] = pos[2]+size[2]+spacing
+	end
+
+	w.selector = Frame{Name="car_palette_selector",Position=POS(0,0),Parent=w,Size=SIZE(3+size[1]+3,3+size[2]+3)}
+	w.selector.parent=w
+
+	w.selector.childs={}
+
+	w.selector.childs[1]=Frame{Position=POS(0,1),Size=SIZE(3,size[2]+2+2),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	--w.selector.childs[2]=Frame{Position=POS(1,0),Size=SIZE(size[1]+2+2,3),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	w.selector.childs[3]=Frame{Position=POS(3+size[1],1),Size=SIZE(3,size[2]+2+2),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+	--w.selector.childs[4]=Frame{Position=POS(1,3+size[2]),Size=SIZE(size[1]+2+2,3),Parent=w.selector,Color=GetPaletteColor(3)}:AttachResource(white)
+
+	w.selector.setSelected=function(self,itemnum)
+		local items=self.parent.childs
+		local item=items[itemnum]
+		local pos = { item:GetPosition() }
+		self:SetPosition(pos[1]-3,pos[2]-3)
+		if CubiqsColorPalette then
+			local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
+			local sn, rsn
+			sn = table.getn(CarPalette[d])
+			rsn = sn
+			if rsn < 2 then rsn = 2 end
+			local bs = CarPaletteProps.Size[2]
+			local p = CarPaletteProps.Padding
+			local is = CarPaletteProps.ItemSize[2]
+			local spacing = (((bs-(p*2))-(is*rsn))/(rsn-1))
+			local pxp = ((cpp.Size[1] - cpp.ItemSize[1])/2)
+			for i=1,max_skins do --fix for 7 skins slots
+				local a = w.childs[i]:GetAlpha()
+				if i <= sn then
+					w.childs[i]:SetColor(from255to1(hex2rgb2(CarPalette[d][i])),true)
+					
+					w.childs[i]:SetPosition(pxp,((p)+(((i-1)*(is+spacing)) ))) -- please don't try to understand this crazy math shit xd
+					if CarPaletteProps.anim then
+						AnimateWindowAlpha(w.childs[i],a,1.0,0.5)
+					else
+						w.childs[i]:SetAlpha(1)
+					end
+				else
+					if CarPaletteProps.anim then
+						AnimateWindowAlpha(w.childs[i],a,0.0,0.2)
+					else
+						w.childs[i]:SetAlpha(0)
+					end
+				end
+			end
+		end
+	end
+
+
+
+
+end
+
+function SetPaletteSelector(item)
+	local w=W("car_palette")
+
+	if w then
+		w:setSelected(item)
+		return true
+	end
+end
+
+
+function ShowPaletteSelector()
+	local w=W("car_palette")
+
+	if w then
+		w:show()
+	end
+end
+
+function HidePaletteSelector()
+	local w=W("car_palette")
+
+	if w then
+		w:hide()
+	end
+end
+
+function hidecarlogo()
+	AnimateWindowAlpha(W("car_logo"),1.0,0.0,0.2)
+	AnimateWindowAlpha(W("car_class_text"),1.0,0.0,0.2)
+	
+end
+
+function showcarlogo()
+	AnimateWindowAlpha(W("car_logo"),0.0,1.0,0.2)
+	AnimateWindowAlpha(W("car_class_text"),0.0,1.0,0.2)
+end
+
+function hidestripes()
+	local w=GetWindow("menubar_top")
+	local xs,ys=w:GetSize()
+	local t = {w:GetPosition()}
+	AnimateWindowPos(w,POS(unpack(t)),POS(t[1],-ys),0.50)
+	w=GetWindow("menubar_bottom")
+	xs,ys=w:GetSize()
+	t = {w:GetPosition()}
+	AnimateWindowPos(w,POS(unpack(t)),POS(t[1],480),0.50)
+end
+
+function showstripes()
+	local w=GetWindow("menubar_top")
+	local xs,ys=w:GetSize()
+	local t = {w:GetPosition()}
+	local bar_pos=POS(-110,-22.5)
+	w:ShowWindow()
+	AnimateWindowPos(w,POS(t[1],-ys),bar_pos,0.2)
+
+	w=GetWindow("menubar_bottom")
+	t = {w:GetPosition()}
+	w:ShowWindow()
+	xs,ys=w:GetSize()
+	--local bar_size=SIZE(860,ys+26.5)
+	local bar_pos=POS(-110,505-ys)
+	--w:SetPosition(t[1],480)
+	AnimateWindowPos(w,POS(t[1],480),bar_pos,0.2)
+end
+
+
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--// 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+local classes = { TRANSLATOR(TITLE_DERBYCLASS),TRANSLATOR(TITLE_STREETCLASS),TRANSLATOR(TITLE_RACINGCLASS),TRANSLATOR(TITLE_BONUS),TRANSLATOR(TITLE_STUNT) }
+local drive = { TRANSLATOR(TITLE_RWD), TRANSLATOR(TITLE_FWD), TRANSLATOR(TITLE_4WD) }
+
+
+function menu_carselection.create(self)
+	self.parent:create(self)
+
+	self:addResource("car_icons.tga",car_icons,car_icons_size)
+	self:addResource("car_icons_locked.tga",car_icons_locked,car_icons_locked_size)
+	self:addResource("garage_elements1.tga",garage_elements1,garage_elements1_size)
+
+	self:loadResources()
+
+	if menu_carselection.shop_mode then
+		menu_carselection.options.title=TRANSLATOR(TITLE_SELECTCAR)
+	else
+		menu_carselection.options.title=menu_carselection.title or TRANSLATOR(TITLE_GARAGE)
+	end
+
+	self.items = {}
+
+end
+
+local function whichway(id, old_id, carcount)
+	local dir
+	if id == carcount and oldcarid == 1 then
+		dir = true
+	elseif id == 1 and oldcarid == carcount then
+		dir = false
+	elseif oldcarid <= id then
+		dir = false
+	else
+		dir = true
+	end
+	return(dir)
+end
+
+function replacedata(from, field, pos, value, abs)
+	local endpos
+	local tbl = from[field]
+	local proptype = type(tbl)
+	if proptype == "table" then
+		if pos==0 then
+			pos = 1
+			endpos = table.getn(tbl)
+		else
+			endpos = pos
+		end
+		if pos <= table.getn(tbl) then
+			for i = pos, endpos do
+				if abs then
+					tbl[i] = value
+				else
+					tbl[i] = tbl[i] + value
+				end
+			end
+		end
+	elseif proptype == "number" then
+		tbl = tbl + value
+	elseif proptype == "boolean" then
+		tbl = not(tbl)
+	end
+
+    from[field] = tbl
+end
+
+local mymenubuttons={
+	function ()
+		tunepos[1] = tunepos[1] - 1
+	end,
+	function ()
+		tunepos[1] = tunepos[1] + 1
+	end,
+	function ()
+		tunepos[2] = -1
+	end,
+	function ()
+		tunepos[2] = 1
+	end,
+}
+
+local function updatecartunemenu(dir)
+	--[[
+		up - 1
+		down - 2
+		left - 3
+		right - 4
+		esc - 5
+		del - 6
+		enter - 7
+	--]]
+	if dir == 6 then
+		cd = db.FlatOut2.Cars:GetProperty("Car",temppos)
+		props = {
+			{
+				["pagename"] = "Main", -- page name is set here.
+				--{ Location, Property, Comment/Hint } / { Function, Title, Comment/Hint }
+				{cd,"SpeedLimit","Speed Limit limits your speed :OOOOOOO big brain"},
+				{cd,"Durability","How durable the car should be"},
+				{cd,"SubjectiveHandling","How great should it steer"},
+				{cd,"WindowBrightness","Why not to make a limo from your car? :D"}, -- some cars don't contain this property
+				{cd,"Mass","How heavy the car should be"},
+				{cd,"CenterOfMass","Where should it be"},
+				-- {cd,"Class","test"}, -- probably not possible..
+				
+			},
+			{
+				["pagename"] = "Engine",
+				{cd.Engine,"NitroAcceleration","How much faster should it go with nitro"},
+				{cd.Engine,"NitroStorage","How much nitro can it store"},
+				{cd.Engine,"TurboAcceleration","how strong should the car be"},
+				{cd.Engine,"RpmLimit",""},
+				{cd.Engine,"PeakPower",""},
+				{cd.Engine,"PeakPowerRpm",""},
+				{cd.Engine,"RedLineRpm",""},
+			},
+			{
+				["pagename"] = "Gearbox",
+				{cd.Gearbox,"NumGears","The number of gears that car can shift to"},
+				{cd.Gearbox,"Gear1","timings for gear1"},
+				{cd.Gearbox,"Gear2","timings for gear2"},
+				{cd.Gearbox,"Gear3","timings for gear3"},
+				{cd.Gearbox,"Gear4","timings for gear4"},
+				{cd.Gearbox,"Gear5","timings for gear5"},
+				{cd.Gearbox,"Gear6","timings for gear6"},
+				{cd.Gearbox,"ClutchEngageTime","the higher the number is, the shower will it shift"},
+				{cd.Gearbox,"ClutchReleaseTime","the higher the number is, the shower will it shift"},
+			},
+			{
+				["pagename"] = "Tires",
+				{cd.Tires,"XFriction","negative values make the car spin lol"},
+				{cd.Tires,"ZFriction","negative values make the car spin lol"},
+				--{cd.Tires,"OptimalSlipRatio",""},
+				--{cd.Tires,"OptimalSlipAngle",""},
+				{cd.Tires,"FrontMass",""},
+				{cd.Tires,"RearMass",""},
+				{cd.Tires,"FrontSuspensionLift","how high, or low should be the car's front wheels"},
+				{cd.Tires,"RearSuspensionLift","how high, or low should be the car's rear wheels"},
+				{cd.Tires,"FrontRadius","how big the front wheels theoretically should be"},
+				{cd.Tires,"RearRadius","how big the rear wheels theoretically should be"},
+			},
+			{
+				["pagename"] = "Body",
+				{cd.Body,"FrontTraction","Front-wheel drive"},
+				{cd.Body,"RearTraction","Rear-wheel drive"},
+				{cd.Body,"BrakeBalance",""},
+				{cd.Body,"BrakeTorque","How strong will be the brake"},
+				{cd.Body,"HandBrakeTorque","How strong will be the hand-brake"},
+				{cd.Body,"SuspensionBalance",""},
+				{cd.Body,"SlideControlBalance",""},
+				{cd.Body,"AeroDrag",""},
+				{cd.Body,"TireTurnAngleIn","Steer angle In"},
+				{cd.Body,"TireTurnAngleOut","Steer angle Out"},
+			},
+			{
+				["pagename"] = "Fun Stuff",
+				--{ Location, Property, Comment/Hint } / { Function, Title, Comment/Hint }
+				{cd.Tires,"MeshId","model id for tire, Proper Tire Ripper soon"},
+				{cd.Tires,"SkinId","skin id for this tire, Proper Tire Ripper soon"},
+				--{function() LOG("test") end, "test function","test desc"},
+				{function() ToggleTuneMenu("tr") end, "Tire Ripper","Hell yeah baby!"},
+				--{cd.Body,"",""},
+				--{cd.Body,"",""},
+				--{cd.Body,"",""},
+				--{cd.Body,"",""},
+				--{cd.Body,"",""},
+				--{cd.Body,"",""},
+			},
+		}
+		
+	end
+	
+	local TheTuneMenu = {}
+
+	if dir <= 4 then	
+		mymenubuttons[dir]()
+	end
+
+	if dir == 3 or dir == 4 then
+		if tunepos[1] <= table.getn(props[tunepos[5]]) and tunepos[1] >= 1 then
+			if type(props[ tunepos[5] ][tunepos[1]][1]) == "function" then
+				MessageBox(L"this doesn't make sense, sorry",MESSAGEBOX_OK,ok)
+			else
+				replacedata(props[tunepos[5]][tunepos[1]][1], props[tunepos[5]][tunepos[1]][2], tunepos[3],tunepos[2]*tunepos[4],false)
+			end
+			updatecartunemenu(8)
+		else
+			if tunepos[1] == table.getn(props[tunepos[5]])+1 then
+					tunepos[4] = tunepos[4] * math.pow(10,tunepos[2])
+			elseif tunepos[1] == table.getn(props[tunepos[5]])+2 then
+				tunepos[3] = tunepos[3] + tunepos[2]
+				if tunepos[3] < 0 then
+					tunepos[3] = 0
+				end
+			elseif tunepos[1] == table.getn(props[tunepos[5]])+3 then
+				tunepos[5] = tunepos[5] + tunepos[2]
+				if tunepos[5] <= 0 then
+					tunepos[5] = table.getn(props)
+				elseif tunepos[5] > table.getn(props) then
+					tunepos[5] = 1
+				end
+				tunepos[1] = 1
+			end
+		end
+	end
+	
+	
+	for i = 1, table.getn(props[tunepos[5] ]) do
+		--if table.getn(props[tunepos[5]][i]) == 2 then
+		--	table.insert(TheTuneMenu,props[ tunepos[5] ][i][2])
+		--else
+		local l
+		if type(props[ tunepos[5] ][i][1]) =="function" then
+			l = props[ tunepos[5] ][i][2]
+		else
+			local proptype = type(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ])
+			if  proptype == "table" then
+				l = "#71 {"..table.concat(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ],"; ").."}"
+			elseif proptype == "number" or proptype == "string" then
+				l = "#3 "..props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ]
+			elseif proptype == "boolean" then
+				l = "#35 "..tostring(props[ tunepos[5] ][i][1][ props[ tunepos[5] ][i][2] ])
+			end
+			l = props[ tunepos[5] ][i][2].." : "..l
+		end
+		table.insert(TheTuneMenu,l)
+	end
+
+	local modmode = tunepos[4]
+	table.insert(TheTuneMenu,"Modifier : "..modmode)
+
+	modmode = tunepos[3] 
+	if tunepos[3] == 0 then
+		modmode = "All"
+	end
+	table.insert(TheTuneMenu,"ModifyPos : "..modmode)
+	
+	modmode = tunepos[5]
+	table.insert(TheTuneMenu,"Page : "..modmode.."/"..table.getn(props))
+
+	if tunepos[1] > table.getn(TheTuneMenu) then
+		tunepos[1] = 1 
+	elseif tunepos[1] < 1 then 
+		tunepos[1] = table.getn(TheTuneMenu)
+	end
+
+	
+	
+	
+	TheTuneMenu[tunepos[1]] = "#69"..TheTuneMenu[tunepos[1]]
+
+	local tunehint
+
+	if tunepos[1] <= table.getn(props[tunepos[5]]) then
+		tunehint = props[tunepos[5]][tunepos[1]][3]
+	elseif tunepos[1] == table.getn(props[tunepos[5]])+3 then
+		local l = "#35 "..props[tunepos[5]]["pagename"].."#20 "
+		if tunepos[5] > 1 then
+			l = props[tunepos[5]-1]["pagename"].."\t\t<-\t"..l
+		end
+		if tunepos[5] < table.getn(props) then
+			l = l.."\t->\t\t"..props[tunepos[5]+1]["pagename"]
+		end
+
+		tunehint = l
+	else
+		tunehint = ""
+	end
+
+	if props[tunepos[5]]["pagename"] == "Fun Stuff" then
+		if hidecarwnds == false then
+			HideCarInfoWindows()
+			hidecarwnds = true
+			AnimateWindowAlpha(W("CubiqTireStuff"),0.0,1.0,0.2,0.2)
+		end
+	else
+		if hidecarwnds == true then
+			ShowCarInfoWindows()
+			hidecarwnds = false
+			AnimateWindowAlpha(W("CubiqTireStuff"),1.0,0.0,0.2)
+		end
+	end
+
+	wm.GetWindow( "CubiqHint" ):SetTitle(L(tunehint))
+	wm.GetWindow( "CubiqMenu" ):SetTitle(L("#999 [Cubiq's Tuning Menu]#34\n "..table.concat(TheTuneMenu,"\n#34 ")))
+	UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,true,menu_carselection.SelectedSkin)
+	if tunepos[1] <= table.getn(props[tunepos[5]]) and dir == 7 then
+		if type(props[ tunepos[5] ][tunepos[1]][1]) == "function" then
+			props[ tunepos[5] ][tunepos[1]][1]()
+		end
+	end
+	playmenusound_move()
+end
+
+--[[
+function editcarproperty(r,cd,pe,pp,val,abs)
+	-- r = return?
+	-- cd = car data
+	-- pe = parameter to edit
+	-- pp = parameter position
+	-- val = value to be added
+	-- abs = absolute or relative?
+	if cd == nil then
+		cd = {}
+	end
+
+	local props = {
+		--{ Location, Property, Multiplier }
+		{cd,"SpeedLimit",10},
+		{cd,"SubjectiveHandling",1},
+		{cd.Engine,"NitroAcceleration",1},
+		{cd,"Mass",1},
+	}
+
+	if r then 
+		return(props[tunepos[5] ])
+	else 
+		if pe <= table.getn(props[tunepos[5] ]) and pe >= 1 then
+			--replacedata(props[tunepos[5] ][pe][1], props[tunepos[5] ][pe][2], pp, val*props[tunepos[5] ][pe][3])
+			--wm.GetWindow("CubiqMenu"):SetTitle(L("[ menu ]\n"..props[tunepos[5] ][pe][2].."\n#35 "..val.."\n"..table.concat(props[tunepos[5] ][pe][1][props[tunepos[5] ][pe][2] ],"; ")))
+			--playmenusound_move()
+		else
+			--wm.GetWindow("CubiqMenu"):SetTitle(L("[ menu ]\nunknown element\n #35nothing"))
+		end
+	end
+end
+--]]
+
+
+local function GetTireMap()
+	local tiremap = {
+		{8,4,"CTR"},
+		{1,1,"Chilli"},
+		{3,5,"Boxer"},
+		{4,5,"Lancea"},
+		{2,7,"Mad Rash"},
+		{3,2,"Malice"},
+		{3,4,"Fortune"},
+		{3,1,"Banger"},
+		{19,9,"SparrowHawk"},
+		{4,8,"Insetta"},
+		{12,10,"Sunray"},
+		{13,8,"Vexter XS"},
+		{2,2,"Shaker"},
+		{2,2,"Splitter"},
+		{13,8,"Terrator"},
+		{3,4,"Bullet"},
+		{7,2,"SwitchBlade"},
+		{7,2,"Venom"},
+		{9,6,"Nevada"},
+		{18,3,"Blaster XL"},
+		{15,11,"Crusader"},
+		{5,11,"Canyon"},
+		{5,3,"Roamer"},
+		{10,6,"Lentus"},
+		{12,10,"Road King"},
+		{2,7,"Ventura"},
+		{1,8,"CTR Sport"},
+		{1,8,"Chili Pepper"},
+		{2,7,"Bullet GT"},
+		{2,7,"Scorpion"},
+		{13,8,"Insetta Sport"},
+		{2,7,"Speedshifter"},
+		{2,7,"Daytana"},
+		{7,9,"SpeedDevil"},
+		{3,4,"TrailBlazer"},
+		{10,6,"Afterburner"},
+		{2,7,"Rocket"},
+		{12,10,"StarFlight"},
+		{12,10,"Nucleon"},
+		{17,16,"Pimpster"},
+		{4,16,"Flatmobile"},
+		{15,11,"Mobcar"},
+		{6,7,"SchoolBus"},
+		{12,10,"Rocket"},
+		{16,16,"Truck"},
+	}
+
+	local l = "meshid, skinid, car"
+	
+	for i = 1, table.getn(tiremap) , 6 do
+		l = l.."\n"
+		for k = 0,5 do
+			for j = 1, 3 do
+				if i+k <= table.getn(tiremap) then l = l.."#"..(k+1).."\t"..tiremap[i+k][j] end
+			end
+		end
+	end
+
+	return(l)
+end
+
+function menu_carselection.init(self)
+	self.parent:init(self)
+	StaticText { Name=(	"CubiqMenu" ), Title=L("[ Press DEL to open TuneMenu ]"), Position=POS(250,70), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(34), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
+	StaticText { Name=(	"CubiqHint" ), Title=L(""), Position=POS(320,380), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(20), Align=FONTF_CENTER, TitleCentering=TITLECENTER_Y, Layer=2 }
+	local modsloaded = "CubiqTools v1.1 loaded!"
+	if CubiqsColorPalette then modsloaded = modsloaded.."\n".."CarPalette Loaded!" end
+	StaticText { Name=(	"CubiqInfo" ), Title=L(modsloaded), Position=POS(500,60), Size=SIZE(560,12), Font=fontsmall(), Color=GetPaletteColor(20), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
+	StaticText { Name=(	"CubiqTireStuff" ), Title=L(""), Position=POS(0,200), Size=SIZE(560,12), Font=fontsmall(), Color=GetPaletteColor(20), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
+	wm.GetWindow( "CubiqTireStuff" ):SetTitle(L(GetTireMap())) -- show tire map
+	wm.GetWindow( "CubiqTireStuff" ):SetAlpha(0)
+	wm.GetWindow( "CubiqInfo" ):SetAlpha(0.3)
+	Frame{Name="garage_cars_bg",Position=POS(0,335),Size=SIZE(640,64)}:AttachResource(self:getResource("selection_bg"))
+	local parent=ButtonBar{ Slots=7,Name="garage_cars",Padding=0,SlotSize=SIZE(107,56),
+							SelectedSlotSize=SIZE(107,56),Position=POS(-60,337),Size=SIZE(640+50,60),
+							ButtonBackground=self:getResource("selection_window"),
+							ButtonSelection=self:getResource("buttonbar_select_glow"),
+							}
+
+	
+	menu_carselection.goingforward=nil
+	menu_carselection.goingback=nil
+
+	parent.HideButtons = function(self)
+		local pos={ self:GetPosition() }
+		self.origpos={ -60,337 }
+		AnimateWindowPos(self,pos,POS(self.origpos[1],self.origpos[2]+141),0.2)
+		local w=W("garage_cars_bg")
+		w.origpos={ 0,335 }
+		AnimateWindowPos(w,pos,POS(w.origpos[1],w.origpos[2]+150),0.2)
+	end
+
+	parent.ShowButtons = function(self)
+		local pos={ self:GetPosition() }
+		AnimateWindowPos(self,{ self:GetPosition() },self.origpos or POS(-60,337),0.3)
+
+		local w=W("garage_cars_bg")
+		AnimateWindowPos(w,{ w:GetPosition() },w.origpos or POS(0,335),0.3)
+	end
+
+	parent.onButtonChange = function(self,id)
+		testid = id
+		if menu_carselection.goingback or menu_carselection.goingforward then
+			return
+		end
+		if inmycareditmenu then
+			local carcount = table.getn(menu_carselection.carlist)
+			--local cardata = db.FlatOut2.Cars:GetProperty("Car",temppos)
+
+			if whichway(id,oldcarid,carcount) then
+				--on left action
+				--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35left#34\n"..id.."/"..carcount	)	)
+				updatecartunemenu(3)
+				--addtune = addtune - 0.1
+				--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35modified\n"..addtune )	)
+			else
+				--on right action
+				--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35right#34\n"..id.."/"..carcount	)	)
+				--addtune = addtune + 0.1
+				updatecartunemenu(4)
+				--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35modified\n"..addtune )	)
+			end
+			--editcarproperty[1](addtune,cardata,1)
+
+			--cardata.SubjectiveHandling[1] = addtune
+			--cardata.SubjectiveHandling[2] = 0
+			--replacedata(cardata, "SubjectiveHandling", 1, addtune)
+			--local toreplace = "NitroAcceleration"
+			--replacedata(cardata.Engine, toreplace, 1, addtune)
+			--replacedata(cardata, 1, 1, addtune)
+			--cardata.SubjectiveHandling[1] = "test"
+			--cardata.SubjectiveHandling = {addtune,0}
+			
+			--editcarproperty(false,cardata,tunepos,-1,addtune)
+			oldcarid = id
+		else
+
+			playmenusound_move()
+
+			if not Garage:IsCarPurchased(menu_carselection.SelectedCar) then
+				Garage:SetCarSkinIndex(menu_carselection.SelectedCar,1)
+			end
+
+			menu_carselection.SelectedCar=menu_carselection.GarageCars[id].index
+			menu_carselection.SelectedSkin=1 --//Garage:GetCarSkinIndex(menu_carselection.SelectedCar)+1
+			SetPaletteSelector(menu_carselection.SelectedSkin)
+
+			if menu_carselection.only_description then
+				SetCarDescription(menu_carselection.SelectedCar) -- name
+			end
+		
+			if menu_carselection.testtrack_menudata and not Garage:IsCarLocked(menu_carselection.SelectedCar) then
+				GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR),TRUE)
+			else
+				GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+			end
+		
+		
+			UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+			if tirerippermenu then
+				tireripperupdate()
+				GUI:SetCarPose(3)
+				GUI:SetCarRotate(FALSE)
+			end
+			
+		end
+	end
+
+	function applytires()
+		-- current car directory
+		local ccd = db.FlatOut2.Cars:GetProperty("Car",temppos)
+		-- selected car directory
+		local scd = db.FlatOut2.Cars:GetProperty("Car",testid-1)
+		replacedata(ccd.Tires, "MeshId",tunepos[3], scd.Tires.MeshId,true)
+		replacedata(ccd.Tires, "SkinId",tunepos[3], scd.Tires.SkinId,true)
+	end
+
+	function tireripperupdate()
+		local l = "#71 TireRipper by Cubiq\n"
+		local cd = db.FlatOut2.Cars:GetProperty("Car",testid-1)
+		l = l.."#34 ".."original id".."#35 "..tostring(temppos).."\n"
+		l = l.."#34 ".."car id".."#35 "..tostring(testid-1).." #34(car_"..tostring(GetCarDataIndex(testid-1))..")\n"
+		l = l.."#34 ".."MeshId:".."#35 "..tostring(cd.Tires.MeshId).."\n"
+		l = l.."#34 ".."SkinId:".."#35 "..tostring(cd.Tires.SkinId).."\n"
+		wm.GetWindow( "CubiqMenu" ):SetTitle(L("#999 [Cubiq's Tunning Menu]#34\n "..l))
+	end
+
+	parent.onMoveUp = function(self,id)
+		
+		if inmycareditmenu then
+			--up action
+			updatecartunemenu(1)
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35up")	)
+			--tunepos = tunepos + 1
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35up\n"..tunepos)	)
+			--playmenusound_action()
+		else
+			if menu_carselection.goingforward or menu_carselection.goingback then
+				return
+			end
+		
+			if menu_carselection.only_description then return end
+		
+			if menu_carselection.SelectedSkin then
+				if menu_carselection.SelectedSkin > 1 then
+					menu_carselection.SelectedSkin = menu_carselection.SelectedSkin - 1
+				else
+					local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
+					local n
+					if CubiqsColorPalette then
+						n = table.getn(CarPalette[d])
+					else
+						n = max_skins
+					end
+					if n < 1 then n = 1 end
+					if n > max_skins then n = max_skins end
+					menu_carselection.SelectedSkin = n --fix for skins slots 
+				end
+				SetPaletteSelector(menu_carselection.SelectedSkin)
+				--if SetPaletteSelector(menu_carselection.SelectedSkin) then
+					GUI:LoadCarSkin(menu_carselection.SelectedSkin)
+					--Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin)
+					playmenusound_move()
+				--end
+			end
+		end
+	end
+
+	parent.onMoveDown = function(self,id)
+		if inmycareditmenu then
+			-- down action
+			updatecartunemenu(2)
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35down")	)
+			--tunepos = tunepos - 1
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35down\n"..tunepos)	)
+			--playmenusound_action()
+		else
+			if menu_carselection.goingforward or menu_carselection.goingback then
+				return 
+			end
+
+			if menu_carselection.only_description then return end
+
+			if menu_carselection.SelectedSkin then
+				local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
+				local n
+				if CubiqsColorPalette then
+					n = table.getn(CarPalette[d])
+				else
+					n = max_skins
+				end
+				if n > max_skins then n = max_skins end
+				if menu_carselection.SelectedSkin < n then --fix for skins slots
+					menu_carselection.SelectedSkin = menu_carselection.SelectedSkin + 1
+				else
+					menu_carselection.SelectedSkin = 1
+				end
+				--MessageBox(L"Test",MESSAGEBOX_OK,ok)
+				SetPaletteSelector(menu_carselection.SelectedSkin)
+--//				if SetPaletteSelector(menu_carselection.SelectedSkin) then
+				GUI:LoadCarSkin(menu_carselection.SelectedSkin)
+--//					Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin-1)
+					playmenusound_move()
+--//				end
+			end		
+		end
+	end
+
+	parent.onChildAction = function(self,id)
+		if inmycareditmenu then
+			--enter action
+			updatecartunemenu(7)
+			--local l = "#35 "
+			--local cardata = db.FlatOut2.Cars:GetProperty("Car",temppos)
+			--carproperts = editcarproperty(true)
+			--local editingpath = cardata.Engine.TurboAcceleration
+			--local performance=Garage:GetCarPerformanceLevel(temppos,0)
+			--for key,value in pairs(performance) do
+			--	l = (l..tostring(key)..":"..tostring(value*100).."\n")
+			--end
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n"..l	)	)
+			--playmenusound_action()
+		elseif tirerippermenu then
+			applytires()
+			parent:SetSelectedButton(temppos,true)
+			ToggleTuneMenu()
+			tirerippermenu = false
+		else
+
+			local menucar=menu_carselection.GarageCars[id]
+			local index=menucar.index
+
+			if menu_carselection.shop_mode then
+				local value=Garage:GetCarValue(index)
+				if Garage:IsCarLocked(index) then
+					playmenusound_error()
+				else
+					if PlayerProfile:EnoughMoney(value) and menu_carselection.okaction then
+						playmenusound_action()
+
+						local function confirmation_end(value)
+							if value==TRUE then
+								menu_carselection.goingforward=true
+								menu_carselection.okaction(index,menu_carselection.SelectedSkin)
+							else
+								W("garage_cars"):ShowButtons()
+								if menu_carselection.testtrack_menudata then
+									GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR))
+								else
+									GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+								end
+							end
+						end
+						W("garage_cars"):HideButtons()
+						GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_YES),BUTTON_BACK,TRANSLATOR(UI_NO))
+						ConfirmationDialog(TRANSLATOR(MESSAGE_BUYCARQUERY),confirmation_end)
+					else
+						playmenusound_error()
+						W("garage_cars"):HideButtons()
+						MessageBox(TRANSLATOR(MESSAGE_NOTENOUGHMONEY),MESSAGEBOX_OK,function() ShowCarInfoWindows(); W("garage_cars"):ShowButtons() end)
+					end
+				end
+			else
+				if (menu_carselection.all_available or not Garage:IsCarLocked(index)) and menu_carselection.okaction then
+					playmenusound_action()
+					menu_carselection.goingforward=true
+					menu_carselection.okaction(index, menu_carselection.SelectedSkin)
+				end
+			end
+		end
+	end
+
+	function parent.onBack(self)
+		if inmycareditmenu then
+			-- back action
+			updatecartunemenu(5)
+			W("CubiqHint"):SetTitle(L("free function key :) you can use it for anything"))
+			--ShowPath()
+			--("debug_string"):ShowWindow()
+			--W("debug_string"):SetTitle(L("test"))
+			--omfg = omfg + 1
+			--LOG("test "..omfg)
+
+			--w("debug_string"):SetTitle(L(MenuState.MenuString or "no menupath"))
+
+			--randomstuff()
+			--ShowConsole()
+			--require("io")
+			--W("CubiqHint"):SetTitle(L(table.concat(db)))
+			--local temppos = menu_carselection.SelectedCar
+			--W("CubiqHint"):SetTitle(L(car_data.Name.." "..GetCarDataIndex(menu_carselection.SelectedCar+1)))
+			--db.Data.Cars.Professional.Car29Bonus.DataPath = "data/Cars/ford_mustang/"
+			--W("CubiqHint"):SetTitle(L("datapath for bullet gt was set to \"data/Cars/ford_mustang/\""))
+
+
+			--W("CubiqHint"):SetTitle(L(tostring(GUI)))
+			
+			
+
+			--nanulu(1000,temppos)
+			--nanulu(1000.00,menu_carselection.SelectedCar)
+			--UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,true,menu_carselection.SelectedSkin)
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35back")	)
+			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n#35Car Info Updated :)")	)
+			--playmenusound_action()
+			--playmenusound_error()
+		else
+			if menu_carselection.goingback or menu_carselection.goingforward then
+				return
+			end
+
+			--//Garage:SetCarSkinIndex(menu_carselection.SelectedCar,1)
+			if menu_carselection.show_tutorial and Garage:GetNumCarsPurchased() == 0 then
+				playmenusound_back()
+				menu_carselection.goingback=true
+				EnterMenu("menu_singleplayer")
+			else
+				playmenusound_back()
+				menu_carselection.goingback=true
+				menu_carselection.SelectedCar=nil
+				menu_carselection.SelectedSkin=nil
+				menu_carselection.back()
+			end
+		end
+	end
+
+	function ToggleTuneMenu(cond)
+		cond = cond or nil
+		if cond == nil then
+			if inmycareditmenu == false then
+				inmycareditmenu = true
+				--temppos = menu_carselection.SelectedCar
+				if not(tirerippermenu) then
+					temppos = testid-1
+				end
+				--local car_data=db.FlatOut2.Cars:GetProperty("Car",temppos)
+				updatecartunemenu(6)
+				--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu #35open #34action ]\n"..string.upper(car_data.Name).."\ntable length:"..table.getn(editcarproperty(true,nil,nil,nil,nil)))	)
+				--HideCarInfoWindows()
+				oldcarid = temppos + 1
+				playmenusound_move()
+				UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+				GUI:SetCarRotate(FALSE)
+				GUI:SetCarPose(3)
+				--GUI:ShowCar()
+				--GUI:HideCar()
+				bgframe = Frame { Name="change_upgrades_bg", Position=POS(-110,0), Size=SIZE(860,480), DrawBackgroundColor=FALSE, Layer=1}
+				bgframe:AttachResource(wm.GetResource("black_transparent_50"))
+				wm.ActivateWindow(bgframe)
+				--SGUI:SetHelpButtons(BUTTON_OK,L"SELECT",BUTTON_BACK,L"BACK") -- trying custom text
+				GUI:SetBackgroundVideo("data/video/congdinl")
+				--GUI:SetBackground("data/cars/ford_mustang/white.tga")
+
+				HidePaletteSelector()
+				--HideCarInfoWindows()
+				hidecarlogo()
+				if crashwarning then W("CubiqHint"):SetTitle(L"#6[!!Warning!!] #20your game may crash. You should run at least one stock race before editing stuff here! #6[!!Warning!!]") end
+				--W("CubiqHint"):SetAlpha(55)
+				AnimateWindowAlpha(W("CubiqMenu"),0.0,1.0,0.2,0.5)
+				AnimateWindowAlpha(W("CubiqHint"),0.0,1.0,0.2,0.2)
+				--hidestripes()
+				W("garage_cars"):HideButtons()
+			else
+				inmycareditmenu = false
+				--props = {}
+				wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ Press DEL to open TuneMenu ]"	)	)
+				--ShowCarInfoWindows()
+				parent:SetSelectedButton(temppos,true)
+				--parent:onButtonChange(temppos+1)
+				playmenusound_back()
+				UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+				GUI:SetCarRotate(TRUE)
+				GUI:SetCarPose(2)
+				--GUI:SetBackgroundVideo("data/video/bg_main")
+				wm.RemoveWindow(bgframe)
+				GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+				ShowPaletteSelector()
+				showcarlogo()
+				W("garage_cars"):ShowButtons()
+				--showstripes()
+				AnimateWindowAlpha(W("CubiqHint"),1.0,0.0,0.2)
+				if hidecarwnds == true then
+					ShowCarInfoWindows()
+					hidecarwnds = false
+					AnimateWindowAlpha(W("CubiqTireStuff"),1.0,0.0,0.2)
+				end
+			end
+		else
+			if cond == "tr" then
+				inmycareditmenu = false
+				tirerippermenu = true
+				props = {}
+				----ShowCarInfoWindows()
+				parent:SetSelectedButton(temppos,true)
+				----parent:onButtonChange(temppos+1)
+				--playmenusound_back()
+				
+				--GUI:SetBackgroundVideo("data/video/bg_main")
+				GUI:SetBackground("data/menu/carshop_street_bg.tga")
+				wm.RemoveWindow(bgframe)
+				--GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+				--ShowPaletteSelector()
+				--showcarlogo()
+				W("garage_cars"):ShowButtons()
+				----showstripes()
+				AnimateWindowAlpha(W("CubiqHint"),1.0,0.0,0.2)
+				wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ Select your fav wheels! ]"	)	)
+				--if hidecarwnds == true then
+				--ShowCarInfoWindows()
+				hidecarwnds = false
+				AnimateWindowAlpha(W("CubiqTireStuff"),1.0,0.0,0.2)
+				--end
+				UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+				GUI:SetCarPose(3)
+				GUI:SetCarRotate(FALSE)
+			elseif type(cond) == "boolean" then
+				inmycareditmenu = not(cond)
+				ToggleTuneMenu()
+			end
+		end
+	end
+
+	function parent.onButtonY(self)
+		--on delete
+		if menu_carselection.goingforward or menu_carselection.goingback then
+			return
+		end
+
+		if menu_carselection.testtrack_menudata then 
+			if not Garage:IsCarLocked(menu_carselection.SelectedCar) then
+				playmenusound_action()
+				menu_carselection.goingforward=true
+				EnterTestTrack(menu_carselection.SelectedCar,menu_carselection.testtrack_menudata,menu_carselection.SelectedSkin)
+			else 
+				playmenusound_error()
+			end
+		end
+		ToggleTuneMenu()
+		--AnimateWindowAlpha(W("CubiqMenu"),1.0,0.0,0.5)
+		--W("CubiqHint"):SetAlpha(255)
+	end
+	
+
+	if PS2 or PC then
+		parent.onButtonX = parent.onButtonY
+		parent.onButtonY=nil
+	end
+
+	StaticText{Name="car_logo",Position=POS(580,257),Align=FONTF_RIGHT,Font=fonthuge()}
+
+	local pos=POS(50,66)
+
+	if self.only_description then
+		HideMenuBarMoney()
+		HideMenuBarCar()
+		StaticText{Name="car_description",Position=POS(50,80),Size=SIZE(200,400),Font=fontsmall(),Color=GetPaletteColor(34)}
+	else
+		CreateCarInfoWindows(self,pos,false,false,menu_carselection.shop_mode or menu_carselection.show_class)		
+		if self.hide_menubar_car then
+			HideMenuBarCar()
+		end
+	end
+
+	CreatePaletteSelector(self)
+
+
+
+	if self.shop_mode then
+		StaticText{Name="car_price",Title=L"$ERR",Position=POS(578,298),Font=fontlarge(),Align=FONTF_RIGHT,Color=GetPaletteColor(34)}
+	end
+
+
+
+	if menu_carselection.show_tutorial then
+		if menu_carselection.testtrack_menudata then
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR))
+		else
+			GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT))
+		end
+	elseif menu_carselection.testtrack_menudata then
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK),BUTTON_EXTRA,TRANSLATOR(UI_TESTCAR),TRUE)
+	else
+		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
+	end
+	
+
+	local cars={}
+	local id,button
+	local first
+
+	local i
+	local cars={}
+	for i=1,table.getn(self.carlist) do
+		local car=self.carlist[i]
+		if car then
+			local iconname
+
+			if not menu_carselection.all_available and Garage:IsCarLocked(car.index) then
+				iconname=string.format("car_%d_icon_locked",GetCarDataIndex(car.index))
+			else
+				iconname=string.format("car_%d_icon",GetCarDataIndex(car.index))
+			end
+
+			local id,button=parent:AddButton(self:getResource(iconname)) --//ICON(self,iconname))
+			table.insert(cars,id,{ index=car.index,button=button})
+			
+			if not first then first=id end
+		end
+	end
+
+	self.GarageCars=cars
+
+	local cur_car=self.SelectedCar or PlayerProfile:GetActiveCar()
+	if cur_car < 0 or self.shop_mode then
+		cur_car=self.GarageCars[first].index
+	end
+	self.SelectedCar=cur_car
+	self.SelectedSkin=1 --//Garage:GetCarSkinIndex(self.SelectedCar)
+
+	if menu_carselection.only_description then
+		SetCarDescription(cur_car)
+	end		
+	
+	SetPaletteSelector(self.SelectedSkin)
+	parent:SetSelectedButton(0,FALSE)
+	parent:onButtonChange(1)
+
+	
+	GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+
+end
+
+function menu_carselection.update(self,time)
+	self.parent:update(self,time)
+end
+
+function menu_carselection.deinit(self)
+	self.parent:deinit(self)
+
+end
+
+function menu_carselection.startshow(self)
+	self.parent:startshow(self)
+
+	if self.show_tutorial and not PlayerProfile:IsCareerWelcome3Displayed() then
+		W("garage_cars"):HideButtons()
+		MessageBox(TRANSLATOR(CAREER_WELCOME_CARSHOP), MESSAGEBOX_OK,function() W("garage_cars"):ShowButtons() end)
+		PlayerProfile:SetCareerWelcome3Displayed(true)
+	end
+	--MessageBox(L"test",MESSAGEBOX_BUTTON_OK,ok)
+	ShowPaletteSelector()
+
+end
+
+function menu_carselection.starthide(self)
+	self.parent:starthide(self)
+
+	GUI:HideCar()
+	HidePaletteSelector()
+
+end
+
+function menu_carselection.eventhandler(self,event)
+	if event.id == EVENT_MENU_MENUCAR_LOADED then
+		GUI:ShowCar()
+	end
+end
+
+
+
