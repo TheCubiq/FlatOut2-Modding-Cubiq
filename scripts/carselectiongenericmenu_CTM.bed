@@ -634,14 +634,14 @@ local function updatecartunemenu(dir)
 		end
 	end
 	
-	
-	for i = 1, table.getn(props[ct_Menu.pg ]) do
+	-- load all items on current page
+	for i = 1, table.getn(props[ct_Menu.pg]) do
 		--if table.getn(sel_pg[i]) == 2 then
 		--	table.insert(TheTuneMenu,props[ ct_Menu.pg ][i][2])
 		--else
 		local l
-		if type(props[ ct_Menu.pg ][i][1]) =="function" then
-			l = props[ ct_Menu.pg ][i][2]
+		if type(props[ct_Menu.pg][i][1]) =="function" then
+			l = props[ct_Menu.pg][i][2]
 		else
 			local property_pos = props[ct_Menu.pg][i]
 			local propertyname = property_pos[2]
@@ -665,10 +665,9 @@ local function updatecartunemenu(dir)
 	local modmode = ct_Menu.mul
 	table.insert(TheTuneMenu,"Modifier : "..modmode)
 
-	modmode = ct_Menu.pos 
-	if ct_Menu.pos == 0 then
-		modmode = "All"
-	end
+	-- if the level is 0, then set modmode to all. if not, set modmode to current level
+	modmode = (ct_Menu.pos == 0) and "All" or ct_Menu.pos
+
 	table.insert(TheTuneMenu,"ModifyPos : "..modmode)
 	
 	modmode = ct_Menu.pg
