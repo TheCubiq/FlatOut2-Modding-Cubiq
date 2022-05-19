@@ -18,7 +18,7 @@ menu_carselection = CreateMenuFromTemplate("template_cars")
 
 local tirerippermenu = false
 
-TuneMenuActive = false
+TuneMenuActive = true
 
 local ct_Menu 
 ct_Menu = {
