@@ -18,8 +18,7 @@ menu_carselection = CreateMenuFromTemplate("template_cars")
 
 local tirerippermenu = false
 
-local EnableTuneMenu = true
-
+TuneMenuActive = false
 
 local ct_Menu 
 ct_Menu = {
@@ -886,10 +885,16 @@ end
 
 function menu_carselection.init(self)
 	self.parent:init(self)
-	StaticText { Name=(	"CubiqMenu" ), Title=L("[ Press DEL to open TuneMenu ]"), Position=POS(250,70), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(34), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
+	StaticText { Name=(	"CubiqMenu" ), Title=L(""), Position=POS(250,70), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(34), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
 	StaticText { Name=(	"CubiqHint" ), Title=L(""), Position=POS(320,380), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(20), Align=FONTF_CENTER, TitleCentering=TITLECENTER_Y, Layer=2 }
-	local modsloaded = "CubiqTools v1.1 loaded!"
-	if CubiqsColorPalette then modsloaded = modsloaded.."\n".."CarPalette Loaded!" end
+	local modsloaded = ""
+	if TuneMenuActive then
+		wm.GetWindow( "CubiqMenu" ):SetTitle(L"[ Press DEL to open TuneMenu ]")
+		modsloaded = modsloaded.."\n".."CubiqTools v1.1 loaded!" 
+	end
+	if CubiqsColorPalette then 
+		modsloaded = modsloaded.."\n".."CarPalette Loaded!" 
+	end
 	StaticText { Name=(	"CubiqInfo" ), Title=L(modsloaded), Position=POS(500,60), Size=SIZE(560,12), Font=fontsmall(), Color=GetPaletteColor(20), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
 	StaticText { Name=(	"CubiqTireStuff" ), Title=L(""), Position=POS(0,200), Size=SIZE(560,12), Font=fontsmall(), Color=GetPaletteColor(20), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
 	wm.GetWindow( "CubiqTireStuff" ):SetTitle(L(GetTireMap())) -- show tire map
@@ -928,7 +933,7 @@ function menu_carselection.init(self)
 		if menu_carselection.goingback or menu_carselection.goingforward then
 			return
 		end
-		if inmycareditmenu then
+		if inmycareditmenu and TuneMenuActive then
 			local carcount = table.getn(menu_carselection.carlist)
 			--local cardata = db.FlatOut2.Cars:GetProperty("Car",temppos)
 
@@ -968,7 +973,7 @@ function menu_carselection.init(self)
 
 			menu_carselection.SelectedCar=menu_carselection.GarageCars[id].index
 			menu_carselection.SelectedSkin=1 --//Garage:GetCarSkinIndex(menu_carselection.SelectedCar)+1
-			SetPaletteSelector(menu_carselection.SelectedSkin)
+			SetPaletteSelector(menu_carselection.SelectedSkin) -- Enable Palette Selector
 
 			-- set background depending on the class of current car
 			if CarshopBgMode == 2 then
@@ -1329,7 +1334,7 @@ function menu_carselection.init(self)
 				playmenusound_error()
 			end
 		end
-		ToggleTuneMenu()
+		if TuneMenuActive then ToggleTuneMenu() end
 		--AnimateWindowAlpha(W("CubiqMenu"),1.0,0.0,0.5)
 		--W("CubiqHint"):SetAlpha(255)
 	end
@@ -1355,7 +1360,7 @@ function menu_carselection.init(self)
 		end
 	end
 
-	CreatePaletteSelector(self)
+	CreatePaletteSelector(self) -- Enable Palette Selector
 
 
 
