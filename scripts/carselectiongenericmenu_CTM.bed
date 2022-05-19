@@ -64,6 +64,24 @@ local CarPaletteProps = {
 	anim = false, -- if moving too fast through cars, it gets a bit buggy
 }
 
+local old_random_bg
+local function setRandomBg()
+	local bgs = {
+		"carshop_bg",
+		"carshop_derby_bg",
+		"carshop_racing_bg",
+		"carshop_street_bg",
+	}
+	-- prevent repeating the same bg 
+	local random_bg
+	repeat
+		random_bg = bgs[math.random(1,table.getn(bgs))]
+	until random_bg ~= old_random_bg
+	old_random_bg = random_bg
+	random_bg = "data/menu/"..random_bg..".tga"
+	return random_bg
+end
+
 
 --menu_carselection.SelectedCar = 1
 
@@ -1204,7 +1222,7 @@ function menu_carselection.init(self)
 				GUI:SetCarPose(2)
 				--GUI:SetBackgroundVideo("data/video/bg_main")
 				wm.RemoveWindow(bgframe)
-				GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+				GUI:SetBackground(self.background or setRandomBg())
 				ShowPaletteSelector()
 				showcarlogo()
 				W("garage_cars"):ShowButtons()
@@ -1357,7 +1375,7 @@ function menu_carselection.init(self)
 	parent:onButtonChange(1)
 
 	
-	GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
+	GUI:SetBackground(self.background or setRandomBg())
 
 end
 
