@@ -239,7 +239,7 @@ local function SetReady(Ready, AllowReady)
 	if Ready and AllowReadyIn > 0 then
 		return
 	end
-	
+
 
 	if not AllowReady then
 		AllowReadyIn=2
@@ -253,7 +253,7 @@ local function SetReady(Ready, AllowReady)
 		if  not WaitReadyState then
 			player:SetReady(true)
 			ReadyState = Ready
-		end			
+		end	
 	else
 		--Changing to unready
 		player:SetReady(false)
@@ -395,12 +395,14 @@ local function SetEvents(events)
 	end
 	info.NextRace = 1
 	
-	if info.Races[1].EventType == ReplicatedSession.GAMETYPE_STUNT and info.CarClass >= 5 and not IsStuntCar(info.CarClass - 5) then
-		ChangeCar()
-		return
-	elseif info.Races[1].EventType ~= ReplicatedSession.GAMETYPE_STUNT and info.CarClass >= 5 and IsStuntCar(info.CarClass - 5) then
-		ChangeCar()
-		return
+	if not(IWantAllCars) then
+		if info.Races[1].EventType == ReplicatedSession.GAMETYPE_STUNT and info.CarClass >= 5 and not IsStuntCar(info.CarClass - 5) then
+			ChangeCar()
+			return
+		elseif info.Races[1].EventType ~= ReplicatedSession.GAMETYPE_STUNT and info.CarClass >= 5 and IsStuntCar(info.CarClass - 5) then
+			ChangeCar()
+			return
+		end
 	end
 	
 	EnterMenu("menu_multiplayer_lobby")
@@ -414,7 +416,7 @@ local function BuildTournament()
 		tournamenttype,
 		SetEvents,
 		entermenu("menu_multiplayer_lobby"),
-		info.MaxPublicSlots + info.MaxPrivateSlots,
+--.		info.MaxPublicSlots + info.MaxPrivateSlots,
 		true
 	)
 end
@@ -438,7 +440,7 @@ local function ChangeTrack()
 			SetEvents( { event } )
 		end,
 		entermenu("menu_multiplayer_lobby"),
-		info.MaxPublicSlots + info.MaxPrivateSlots
+		--[[info.MaxPublicSlots +--]] info.MaxPrivateSlots
 	)
 end
 
@@ -2075,127 +2077,130 @@ function menu_multiplayer_lobby.update(self, time)
 		local changeCarMsg
 		local nextEventType = LatestSessionInfo.Races[LatestSessionInfo.NextRace].EventType
 		local eventTypeChanged = false
-		if nextEventType == ReplicatedSession.GAMETYPE_STUNT then
-			if not IsStuntCar(player.Car) then
-				-- Player does not have a stunt car, so the event type must have been race or derby previously
-				-- Event type changed from non-stunt to stunt
-				eventTypeChanged = true
-				if LatestSessionInfo.CarClass >= 5 then
-					if IsStuntCar(LatestSessionInfo.CarClass - 5) then
-						-- Same as host, host has selected a stunt car
-						player.Car = LatestSessionInfo.CarClass - 5
-					else
-						-- Same as host, host has changed game type and is selecting a car, set temporarily to 1st stunt car
-						player.Car = CarlistStuntCars()[1].index
-					end
-					if not player.CarValid then
-						player.CarValid = true
-						GUI:CloseMessageBox()
-					end
-					mustChangeCar = false
-					setbuttons = true
-				else
-					-- Any car class, must have a stunt car regardless of the class
-					player.Car = CarlistStuntCars()[1].index
-					changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_STUNT)
-					mustChangeCar = true
-				end
-			elseif Session:HasCarClassChanged() then
-				-- Player has a stunt car, event type must have been stunt
-				-- Stunt event, car class has changed
-				if LatestSessionInfo.CarClass >= 5 and IsStuntCar(LatestSessionInfo.CarClass - 5) then
-					-- Same as host
-					player.Car = LatestSessionInfo.CarClass - 5
-					if not player.CarValid then
-						player.CarValid = true
-						GUI:CloseMessageBox()
-					end
-					mustChangeCar = false
-					setbuttons = true
-				else
-					player.Car = CarlistStuntCars()[1].index
-					if PrevCarClass ~= nil and PrevCarClass >= 5 and LatestSessionInfo.CarClass < 5 then
-						changeCarMsg = TRANSLATOR(MULTIPLAYER_CARCHANGE)
-						mustChangeCar = true
-					else
-						mustChangeCar = false
-					end
-				end
-			end
-		elseif IsStuntCar(player.Car) or Session:HasCarClassChanged() then
-			-- Non-stunt event, previous event was a stunt or car class has changed
-			local cars = nil
-			
-			if IsStuntCar(player.Car) then
-				eventTypeChanged = true
-				if nextEventType == ReplicatedSession.GAMETYPE_RACE then
-					changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_RACE)
-				else
-					changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_DERBY)
-				end
-			else
-				changeCarMsg = TRANSLATOR(MULTIPLAYER_CARCHANGE)
-			end
-			
-			if LatestSessionInfo.CarClass == SessionInfo.CarClass.Any then
-				-- Reset car only if it is a stunt car
-				if IsStuntCar(player.Car) then
-					player.Car = 0
-				end
-				mustChangeCar = true
-			elseif LatestSessionInfo.CarClass < 5 then
-				cars = CarlistFromClass(LatestSessionInfo.CarClass, false, true)
-				mustChangeCar = true
-			else
-				if IsStuntCar(LatestSessionInfo.CarClass - 5) then
-					-- Same as host, host has changed game type and is selecting a car, set temporarily to 1st car
-					player.Car = 0
-				else
-					player.Car = LatestSessionInfo.CarClass - 5
-				end
-				if not player.CarValid then
-					GUI:CloseMessageBox()
-				end
-				setbuttons = true
-				mustChangeCar = false
-				player.CarValid = true
-			end
-			
-			if cars then
-				-- Check if the player's car is still valid, and if not, make it valid
-				local carvalid = false
-				for k,car in pairs(cars) do
-					if car.index == player.Car then
-						carvalid = true
-						break
-					end
-				end
-				if not carvalid then
-					player.Car = cars[1].index
-				end
-			end
-		end
 		
-		if mustChangeCar then
-			if OptionsPopup.PopupActive or  VoiceSettingsActive then
-				ChangeCarMessagePending = true
-				ChangeCarMessage = changeCarMsg
-				player.CarValid = false
-				if not Session:IsHost() then
-					SetReady(false, false)
+		if not(IWantAllCars) then
+			if nextEventType == ReplicatedSession.GAMETYPE_STUNT then
+				if not IsStuntCar(player.Car) then
+					-- Player does not have a stunt car, so the event type must have been race or derby previously
+					-- Event type changed from non-stunt to stunt
+					eventTypeChanged = true
+					if LatestSessionInfo.CarClass >= 5 then
+						if IsStuntCar(LatestSessionInfo.CarClass - 5) then
+							-- Same as host, host has selected a stunt car
+							player.Car = LatestSessionInfo.CarClass - 5
+						else
+							-- Same as host, host has changed game type and is selecting a car, set temporarily to 1st stunt car
+							player.Car = CarlistStuntCars()[1].index
+						end
+						if not player.CarValid then
+							player.CarValid = true
+							GUI:CloseMessageBox()
+						end
+						mustChangeCar = false
+						setbuttons = true
+					else
+						-- Any car class, must have a stunt car regardless of the class
+						player.Car = CarlistStuntCars()[1].index
+						changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_STUNT)
+						mustChangeCar = true
+					end
+				elseif Session:HasCarClassChanged() then
+					-- Player has a stunt car, event type must have been stunt
+					-- Stunt event, car class has changed
+					if LatestSessionInfo.CarClass >= 5 and IsStuntCar(LatestSessionInfo.CarClass - 5) then
+						-- Same as host
+						player.Car = LatestSessionInfo.CarClass - 5
+						if not player.CarValid then
+							player.CarValid = true
+							GUI:CloseMessageBox()
+						end
+						mustChangeCar = false
+						setbuttons = true
+					else
+						player.Car = CarlistStuntCars()[1].index
+						if PrevCarClass ~= nil and PrevCarClass >= 5 and LatestSessionInfo.CarClass < 5 then
+							changeCarMsg = TRANSLATOR(MULTIPLAYER_CARCHANGE)
+							mustChangeCar = true
+						else
+							mustChangeCar = false
+						end
+					end
 				end
-			else
-				if ChangeCarMessageShowing then
-					GUI:CloseMessageBox()
+			elseif IsStuntCar(player.Car) or Session:HasCarClassChanged() then
+				-- Non-stunt event, previous event was a stunt or car class has changed
+				local cars = nil
+
+				if IsStuntCar(player.Car) then
+					eventTypeChanged = true
+					if nextEventType == ReplicatedSession.GAMETYPE_RACE then
+						changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_RACE)
+					else
+						changeCarMsg = TRANSLATOR(MULTIPLAYER_NEXTEVENT_DERBY)
+					end
+				else
+					changeCarMsg = TRANSLATOR(MULTIPLAYER_CARCHANGE)
 				end
-				player.CarValid = false
-				if Mode == LOBBY then
+
+				if LatestSessionInfo.CarClass == SessionInfo.CarClass.Any then
+					-- Reset car only if it is a stunt car
+					if IsStuntCar(player.Car) then
+						player.Car = 0
+					end
+					mustChangeCar = true
+				elseif LatestSessionInfo.CarClass < 5 then
+					cars = CarlistFromClass(LatestSessionInfo.CarClass, false, true)
+					mustChangeCar = true
+				else
+					if IsStuntCar(LatestSessionInfo.CarClass - 5) then
+						-- Same as host, host has changed game type and is selecting a car, set temporarily to 1st car
+						player.Car = 0
+					else
+						player.Car = LatestSessionInfo.CarClass - 5
+					end
+					if not player.CarValid then
+						GUI:CloseMessageBox()
+					end
 					setbuttons = true
+					mustChangeCar = false
+					player.CarValid = true
 				end
-				if not Session:IsHost() or eventTypeChanged then
-					MessageBox(changeCarMsg, MESSAGEBOX_OK, function() ChangeCarMessageShowing = false; end)
-					ChangeCarMessageShowing = true
-					SetReady(false, false)
+
+				if cars then
+					-- Check if the player's car is still valid, and if not, make it valid
+					local carvalid = false
+					for k,car in pairs(cars) do
+						if car.index == player.Car then
+							carvalid = true
+							break
+						end
+					end
+					if not carvalid then
+						player.Car = cars[1].index
+					end
+				end
+			end
+
+			if mustChangeCar then
+				if OptionsPopup.PopupActive or  VoiceSettingsActive then
+					ChangeCarMessagePending = true
+					ChangeCarMessage = changeCarMsg
+					player.CarValid = false
+					if not Session:IsHost() then
+						SetReady(false, false)
+					end
+				else
+					if ChangeCarMessageShowing then
+						GUI:CloseMessageBox()
+					end
+					player.CarValid = false
+					if Mode == LOBBY then
+						setbuttons = true
+					end
+					if not Session:IsHost() or eventTypeChanged then
+						MessageBox(changeCarMsg, MESSAGEBOX_OK, function() ChangeCarMessageShowing = false; end)
+						ChangeCarMessageShowing = true
+						SetReady(false, false)
+					end
 				end
 			end
 		end
