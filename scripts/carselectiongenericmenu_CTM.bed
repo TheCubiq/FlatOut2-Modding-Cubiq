@@ -200,6 +200,7 @@ function CarlistAllPurchased()
 end
 
 function GetCarDataIndex(car_idx)
+	local index=1
 
 	local car_data=db.FlatOut2.Cars:GetProperty("Car",car_idx)
 
@@ -505,6 +506,7 @@ local function updatecartunemenu(dir)
 			{
 				["pagename"] = "Main", -- page name is set here.
 				--{ Location, Property, Comment/Hint } / { Function, Title, Comment/Hint }
+				{cd,"Name","just test the name"},
 				{cd,"SpeedLimit","Speed Limit limits your speed :OOOOOOO big brain"},
 				{cd,"Durability","How durable the car should be"},
 				{cd,"SubjectiveHandling","How great should it steer"},
@@ -923,6 +925,7 @@ function menu_carselection.init(self)
 		
 		
 			UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
+
 			if tirerippermenu then
 				tireripperupdate()
 				GUI:SetCarPose(3)
@@ -1046,11 +1049,13 @@ function menu_carselection.init(self)
 			--end
 			--wm.GetWindow( "CubiqMenu" ):SetTitle(	L(	"[ menu ]\n"..l	)	)
 			--playmenusound_action()
+--[[
 		elseif tirerippermenu then
 			applytires()
 			parent:SetSelectedButton(temppos,true)
 			ToggleTuneMenu()
 			tirerippermenu = false
+--]]
 		else
 
 			local menucar=menu_carselection.GarageCars[id]
