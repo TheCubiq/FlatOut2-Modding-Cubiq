@@ -11,6 +11,8 @@
 
 dofile("data/menu/garage_elements1.bed")
 
+local IWantAllCars = true
+
 local Layout={
 	TrackFramePos=POS(284,84),
 	GameTypePos=POS(311,89),
@@ -278,64 +280,72 @@ local function ChangeCar()
 	local description = false
 	
 	LeavingLobby = true
-	
-	if info.Races[info.NextRace].EventType == ReplicatedSession.GAMETYPE_STUNT then
-		-- Only stunt cars are valid in stunt events
-		if carclass >= 5 and not Session:IsHost() then
-			carlist = { { index = carclass - 5 } }
+
+	-- get all cars in multiplayer
+	if not(IWantAllCars) then
+		
+		if info.Races[info.NextRace].EventType == ReplicatedSession.GAMETYPE_STUNT then
+			-- Only stunt cars are valid in stunt events
+			if carclass >= 5 and not Session:IsHost() then
+				carlist = { { index = carclass - 5 } }
+			else
+				carlist = CarlistStuntCars()
+			end
+			bg = "data/menu/stunt_car_selection_bg.tga"
+			description = true
+		elseif carclass == SessionInfo.CarClass.Any then
+			-- Any car; includes derby, racing, street and bonus cars
+			local function SplitString(str)
+				local t={}	
+	---@diagnostic disable-next-line: undefined-field
+				for w in string.gfind(str,"(%w+)%.?") do
+					table.insert(t,w)
+				end
+				return t
+			end
+			for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
+				local car = db.FlatOut2.Cars:GetProperty("Car", i)
+
+				local path = SplitString(string.lower(car:GetFullPath()))
+
+				if path[3] ~= "stunt" then
+					table.insert(carlist, {index = i} )
+				end
+			end
+		elseif carclass < 5 then
+			-- A specific car class
+			carlist = CarlistFromClass(carclass, false, true)
+		elseif Session:IsHost() then
+			-- "Same as host" car setting
+			local function SplitString(str)
+				local t={}		
+	---@diagnostic disable-next-line: undefined-field
+				for w in string.gfind(str,"(%w+)%.?") do
+					table.insert(t,w)
+				end
+				return t
+			end
+			for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
+				local car = db.FlatOut2.Cars:GetProperty("Car", i)
+
+				local path = SplitString(string.lower(car:GetFullPath()))
+
+				if path[3] ~= "stunt" then
+					table.insert(carlist, {index = i})
+				end
+			end
 		else
-			carlist = CarlistStuntCars()
-		end
-		bg = "data/menu/stunt_car_selection_bg.tga"
-		description = true
-	elseif carclass == SessionInfo.CarClass.Any then
-		-- Any car; includes derby, racing, street and bonus cars
-		local function SplitString(str)
-			local t={}	
----@diagnostic disable-next-line: undefined-field
-			for w in string.gfind(str,"(%w+)%.?") do
-				table.insert(t,w)
-			end
-			return t
-		end
-		for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
-			local car = db.FlatOut2.Cars:GetProperty("Car", i)
-			
-			local path = SplitString(string.lower(car:GetFullPath()))
-
-			if path[3] ~= "stunt" then
-				table.insert(carlist, {index = i} )
-			end
-		end
-	elseif carclass < 5 then
-		-- A specific car class
-		carlist = CarlistFromClass(carclass, false, true)
-	elseif Session:IsHost() then
-		-- "Same as host" car setting
-		local function SplitString(str)
-			local t={}		
----@diagnostic disable-next-line: undefined-field
-			for w in string.gfind(str,"(%w+)%.?") do
-				table.insert(t,w)
-			end
-			return t
-		end
-		for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
-			local car = db.FlatOut2.Cars:GetProperty("Car", i)
-			
-			local path = SplitString(string.lower(car:GetFullPath()))
-
-			if path[3] ~= "stunt" then
-				table.insert(carlist, {index = i})
+			-- "Same as host" car setting for non-hosts, can only change the car skin
+			carlist = { { index = carclass - 5 } }
+			if IsStuntCar(carclass - 5) then
+				bg="data/menu/stunt_car_selection_bg.tga"
+				description=true
 			end
 		end
 	else
-		-- "Same as host" car setting for non-hosts, can only change the car skin
-		carlist = { { index = carclass - 5 } }
-		if IsStuntCar(carclass - 5) then
-			bg="data/menu/stunt_car_selection_bg.tga"
-			description=true
-		end
+		for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
+			table.insert(carlist, {index = i} )
+		end	
 	end
 
 	Session:GetLocalPlayer(1).Status = ReplicatedPlayer.STATUS_CHANGING_CAR
