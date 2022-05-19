@@ -64,22 +64,56 @@ local CarPaletteProps = {
 	anim = false, -- if moving too fast through cars, it gets a bit buggy
 }
 
-local old_random_bg
-local function setRandomBg()
+--[[
+	CarshopBgMode:
+	1: backround will work as in the stock game
+	2: background will change depending on car class
+	3: background will be chonsen randomly
+--]]
+local CarshopBgMode = 2
+
+local old_default_bg, old_random_bg
+local function setCarshopBg(default_bg,class)
 	local bgs = {
-		"carshop_bg",
 		"carshop_derby_bg",
 		"carshop_racing_bg",
 		"carshop_street_bg",
+		"carshop_bg",
 	}
-	-- prevent repeating the same bg 
-	local random_bg
-	repeat
-		random_bg = bgs[math.random(1,table.getn(bgs))]
-	until random_bg ~= old_random_bg
-	old_random_bg = random_bg
-	random_bg = "data/menu/"..random_bg..".tga"
-	return random_bg
+
+	--//
+	--// CarshopBgMode 1 : backround will work as in the stock game
+	--//
+	if CarshopBgMode == 1 or class == 100 then
+		-- for some reason class 100 is used for stunt cars
+		
+		default_bg = default_bg or old_default_bg
+		old_default_bg = default_bg
+		GUI:SetBackground(default_bg or ("data/menu/"..bgs[4]..".tga"))
+		return
+	end
+
+	--//
+	--// CarshopBgMode 2 : background will change depending on car class
+	--//
+	if CarshopBgMode == 2 then
+		chosen_bg = bgs[4]
+		if class and bgs[class] then
+			chosen_bg = bgs[class]
+		end
+
+	--//
+	--// CarshopBgMode 3: background will be chonsen randomly
+	--//
+	elseif CarshopBgMode == 3 then
+		-- prevent for repeating the same bg 
+		repeat
+			chosen_bg = bgs[math.random(1,table.getn(bgs))]
+		until chosen_bg ~= old_random_bg
+		old_random_bg = chosen_bg
+	end
+	chosen_bg = "data/menu/"..chosen_bg..".tga"
+	GUI:SetBackground(chosen_bg)
 end
 
 
@@ -931,6 +965,12 @@ function menu_carselection.init(self)
 			menu_carselection.SelectedSkin=1 --//Garage:GetCarSkinIndex(menu_carselection.SelectedCar)+1
 			SetPaletteSelector(menu_carselection.SelectedSkin)
 
+			-- set background depending on the class of current car
+			if CarshopBgMode == 2 then
+				local carclass = Garage:GetCarClass(menu_carselection.SelectedCar)
+				setCarshopBg(nil,carclass)
+			end
+
 			if menu_carselection.only_description then
 				SetCarDescription(menu_carselection.SelectedCar) -- name
 			end
@@ -1222,7 +1262,7 @@ function menu_carselection.init(self)
 				GUI:SetCarPose(2)
 				--GUI:SetBackgroundVideo("data/video/bg_main")
 				wm.RemoveWindow(bgframe)
-				GUI:SetBackground(self.background or setRandomBg())
+				setCarshopBg(self.background)
 				ShowPaletteSelector()
 				showcarlogo()
 				W("garage_cars"):ShowButtons()
@@ -1374,8 +1414,8 @@ function menu_carselection.init(self)
 	parent:SetSelectedButton(0,FALSE)
 	parent:onButtonChange(1)
 
-	
-	GUI:SetBackground(self.background or setRandomBg())
+	local carclass = Garage:GetCarClass(menu_carselection.SelectedCar)
+	setCarshopBg(self.background, carclass)
 
 end
 
