@@ -52,6 +52,9 @@ local max_skins
 		max_skins = 5	-- how many items to load when palette script is disabled
 	end
 
+-- SinglePlayer: unlock all cars including stunt cars
+SR_unlockAllCars = true
+
 local CarPaletteProps = {
 	Size = SIZE(20,75),
 	Position = {
@@ -69,7 +72,7 @@ local CarPaletteProps = {
 	2: background will change depending on car class
 	3: background will be chonsen randomly
 --]]
-local CarshopBgMode = 2
+local CarshopBgMode = 1
 
 local old_default_bg, old_random_bg
 local function setCarshopBg(default_bg,class)
@@ -83,9 +86,14 @@ local function setCarshopBg(default_bg,class)
 	--//
 	--// CarshopBgMode 1 : backround will work as in the stock game
 	--//
-	if CarshopBgMode == 1 or class == 100 then
+	if CarshopBgMode == 1 then
 		-- for some reason class 100 is used for stunt cars
-		
+		GUI:SetBackground(default_bg or ("data/menu/"..bgs[4]..".tga"))
+		return
+	end
+
+	if class == 100 then
+		-- for some reason class 100 is used for stunt cars
 		default_bg = default_bg or old_default_bg
 		old_default_bg = default_bg
 		GUI:SetBackground(default_bg or ("data/menu/"..bgs[4]..".tga"))
@@ -1272,7 +1280,8 @@ function menu_carselection.init(self)
 				GUI:SetCarPose(2)
 				--GUI:SetBackgroundVideo("data/video/bg_main")
 				wm.RemoveWindow(bgframe)
-				setCarshopBg(self.background)
+				local carclass = Garage:GetCarClass(menu_carselection.SelectedCar)
+				setCarshopBg(self.background, carclass)
 				ShowPaletteSelector()
 				showcarlogo()
 				W("garage_cars"):ShowButtons()

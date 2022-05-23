@@ -668,7 +668,8 @@ function menu_singleplayer_trackselection.init(self)
 				bg="data/menu/stunt_car_selection_bg.tga"
 				description=true
 			else
-				carlist=CarlistAllUnlocked()
+				-- [cond]? [yes]:[no] in lua is basically [cond] and [yes] or [no]
+				carlist=(SR_unlockAllCars and CarlistAllCars() or CarlistAllUnlocked())
 			end
 
 				EnterCarSelection(carselected,
