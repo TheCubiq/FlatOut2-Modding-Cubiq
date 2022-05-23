@@ -1,0 +1,6 @@
+HUD_stunt_color_size = { 128,128 }
+HUD_stunt_color = {
+	
+  HUD_stunt_color = {  4, 5, 97, 97 }
+
+}

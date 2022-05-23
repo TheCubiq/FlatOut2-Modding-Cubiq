@@ -1,0 +1,21 @@
+ai_damage_meter_size = { 256,256 }
+ai_damage_meter = {
+	
+  ai_face_0 = {  1, 1, 63, 68 },
+  ai_face_3 = {  65, 1, 63, 68 },
+  ai_face_2 = {  129, 1, 63, 68 },
+  ai_face_1 = {  193, 1, 63, 68 },
+  ai_face_4 = {  0, 71, 63, 68 },
+  ai_face_5 = {  65, 71, 63, 68 },
+  ai_face_6 = {  129, 71, 63, 68 },
+  ai_face_player = { 193, 71, 63, 68 },
+  ai_map_icon = { 230, 222, 20, 24 },  
+  ai_damage_bar_additive = { 2, 140, 195, 20 },
+  ai_damage_bar_face_bg_flat = { 2, 218, 133, 37 },
+  ai_damage_bar_name_bg = { 2, 199, 190, 18 },
+  ai_damage_bar = {  2, 161, 195, 16 },
+  ai_damage_bar_bg = {  2, 180, 197, 18 },
+  ai_damage_bar_cap = { 251, 161, 3, 18 },
+
+
+}

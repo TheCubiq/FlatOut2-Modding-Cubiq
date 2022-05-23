@@ -1,0 +1,4 @@
+
+
+ResetMapTopLeft = { -288.0,288.0 }
+ResetMapBottomRight = { 288.0,-288.0 }

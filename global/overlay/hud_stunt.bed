@@ -1,0 +1,29 @@
+HUD_stunt_size = { 256,128 }
+HUD_stunt = {
+	
+  HUD_stunt_meter_base = {  4, 2, 101, 101 },
+  HUD_stunt_meter_needle = {  249, 42, 5, 85 },
+  HUD_stunt_meter = {  107, 4, 97, 97 },
+  HUD_stunt_aerobatics_up = {  2, 109, 22, 11 },
+  HUD_stunt_aerobatics_down = {  27, 109, 22, 11 },
+  HUD_stunt_aerobatics_left = {  52, 109, 18, 14 },
+  HUD_stunt_aerobatics_right = {  73, 109, 18, 14 },
+  HUD_stunt_aerobatics_up_hilight = {  94, 109, 22, 11 },
+  HUD_stunt_aerobatics_down_hilight = {  119, 109, 22, 11 },
+  HUD_stunt_aerobatics_left_hilight = {  144, 109, 18, 14 },
+  HUD_stunt_aerobatics_right_hilight = {  165, 109, 18, 14 },
+  HUD_stunt_numbers = {
+	{  210, 54, 10, 10 },	-- 0
+	{  206, 41, 18, 10 },	-- 20
+	{  206, 27, 18, 10 },	-- 40
+	{  206, 15, 18, 10 },	-- 60
+	{  205, 2, 19, 10 },	-- 80
+  },
+  HUD_stunt_numbers_dark = {
+	{  232, 54, 10, 10 },	-- 0
+	{  228, 41, 18, 10 },	-- 20
+	{  228, 27, 18, 10 },	-- 40
+	{  228, 15, 18, 10 },	-- 60
+	{  227, 2, 19, 10 },	-- 80
+  },
+}

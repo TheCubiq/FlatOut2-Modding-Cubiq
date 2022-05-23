@@ -1,0 +1,56 @@
+HUD_stunt_elements_1_size = { 256,256 }
+HUD_stunt_elements_1 = {
+	
+ card_empty = {  2, 2, 31, 48 },
+ card_bg = {  37 , 2, 31, 48 },
+ card_joker = {  71, 2, 25, 42 },
+ card_suit = {
+ 	{  98, 2, 12, 11 },		-- hearts
+ 	{  112, 2, 12, 12 },	-- clubs
+ 	{  99, 16, 9, 13 },		-- diamonds
+ 	{  112, 16, 12, 12 },	-- spades
+ },
+ card_number = {
+ 	{  127, 2, 14, 21 },	-- 2
+ 	{  143, 2, 14, 21 },	-- 3
+ 	{  159, 2, 15, 21 },	-- 4
+ 	{  176, 2, 14, 21 },	-- 5
+ 	{  192, 2, 15, 21 },	-- 6
+ 	{  209, 2, 15, 21 },	-- 7
+ 	{  225, 2, 15, 21 },	-- 8
+ 	{  241, 2, 14, 21 },	-- 9
+ 	{  127, 26, 23, 21 },	-- 10
+ 	{  153, 26, 16, 22 },	-- jack
+ 	{  171, 26, 21, 27 },	-- queen
+ 	{  194, 26, 22, 22 },	-- king
+ 	{  219, 26, 22, 22 },	-- ace
+ },
+ curling_player = {  2, 55, 10, 10 },
+ curling_player_current = {  41, 81, 16, 16 },
+ soccer_previous_hit = {  2, 81, 17, 17 },
+ soccer_current_hit = {  21, 81, 17, 17 },
+ soccer_corner = {  17, 55, 22, 22 },
+ bowling_empty = {  2, 100, 23, 23 },
+ bowling_full = {  27, 100, 23, 23 },
+ darts_valid = {
+ 	{  166, 55, 88, 88 },	-- singles
+ 	{  152, 152, 102, 102 },-- doubles
+ 	{  102, 55, 62, 62 },	-- triples
+ 	{  86, 55, 14, 14 },	-- bullseye
+ },
+ darts_target = {
+ 	{  62, 82, 16, 39 },	-- singles
+ 	{  83, 82, 16, 9 },	-- doubles
+ 	{  85, 93, 12, 10 },	-- triples
+ 	{  84, 105, 14, 14 },	-- bullseye
+ },
+ darts_target_glow = {
+ 	{  81, 132, 20, 44 },	-- singles
+ 	{  113, 134, 22, 14 },	-- doubles
+ 	{  115, 152, 18, 16 },	-- triples
+ 	{  115, 170, 18, 18 },	-- bullseye
+ },
+ soccer = {  4, 192, 123, 63 },
+ soccer_goalie = {  1, 126, 65, 63 },
+
+}

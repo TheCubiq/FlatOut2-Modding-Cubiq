@@ -1,0 +1,61 @@
+ingame_options_glow_size = { 512, 256 }
+ingame_options_glow = {
+	
+	-- multiplayer friend/player option buttons
+	
+	icon_xbl_friends_s = {  0, 0, 51, 51 },
+	icon_xbl_recent_players_s = {  50, 0, 51, 51 },
+	icon_player_profile_s = {  100, 0, 51, 51 },
+	icon_cancel_friend_request_s = {  150, 0, 51, 51 },
+	icon_join_friend_s = {  200, 0, 51, 51 },
+	icon_remove_friend_s = {  250, 0, 51, 51 },
+	icon_play_s = {  300, 0, 51, 51 },
+	icon_stop_s = {  350, 0, 51, 51 },
+	icon_send_s = { 400, 0, 51, 51 },
+	icon_record_s = { 450, 0, 51, 51 },
+	
+	icon_send_game_invite_with_voice_message_s = {  0, 50, 51, 51 },
+	icon_accept_game_invite_s = {  50, 50, 51, 51 },
+	icon_decline_game_invite_s = {  100, 50, 51, 51 },
+	icon_decline_friend_request_s = {  150, 50, 51, 51 },
+	icon_block_friend_request_s = {  200, 50, 51, 51 },
+	icon_player_details_s = {  250, 50, 51, 51 },
+	icon_voice_through_tv_s = {  300, 50, 51, 51 },
+	icon_voice_through_comms_s = {  350, 50, 51, 51 },
+	icon_appear_online_s = {  400, 50, 51, 51 },
+	icon_appear_offline_s = {  450, 50, 51, 51 },
+	
+	icon_mute_player_s = {  0, 100, 51, 51 },
+	icon_unmute_player_s = {  50, 100, 51, 51 },
+	icon_send_game_invite_s = {  100, 100, 51, 51 },
+	icon_send_friend_request_with_voice_message_s = {  150, 100, 51, 51 },
+	icon_send_feedback_s = {  200, 100, 51, 51 },
+	icon_add_player_s = {  250, 100, 51, 51 },
+	icon_select_player_s = {  300, 100, 51, 51 },
+	icon_cancel_game_invite_s = {  350, 100, 51, 51 },
+	icon_ingame_listen_voice_message_s = { 400, 100, 51, 51 },
+	icon_ingame_accept_friend_request_s = { 450, 100, 51, 51 },
+	
+	icon_online_options_s = { 400, 150, 51, 51 },
+	icon_ingame_send_friend_request_non_voice_s = { 450, 150, 51, 51 },
+	
+	xbox_voice_communicator_s = { 12, 174, 19, 19 },
+	xbox_voice_tv_s = {  32, 174, 19, 19 },
+	xbox_voice_muted_s = {  52, 174, 19, 19 },
+	xbox_friend_invite_received_s = { 13, 196, 20, 19 },
+	xbox_friend_invite_sent_s = { 35, 196, 20, 19 },
+	xbox_game_invite_received_s = { 58, 196, 20, 19 },
+	xbox_game_invite_sent_s = { 80, 196, 20, 19 },
+	xbox_friend_online_s = { 106, 198, 9, 13 },
+	
+	option_arrow_l_s = { 73, 177, 6, 13 },
+	option_arrow_r_s = { 81, 177, 6, 13 },
+	scroll_arrow_up_s = {  92, 185, 11, 5 },
+	scroll_arrow_down_s = {  92, 177, 11, 5 },
+	scroll_arrow_right_s = {  109, 178, 5, 11 },
+	scroll_arrow_left_s = {  117, 178, 5, 11 },
+	
+	ingame_friend_invite_received_s = { 12, 217, 32, 31 },
+	ingame_game_invite_received_s = { 45, 217, 32, 31 },
+	
+}

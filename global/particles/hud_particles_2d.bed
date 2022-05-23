@@ -1,0 +1,11 @@
+HUD_particles_2d_size = { 64, 64 }
+HUD_particles_2d =
+{
+  nitro_flare_1 = {  0, 0, 15, 15 },
+  nitro_flare_2 = {  16, 0, 24, 24 },
+  impact_spark1 = {  0, 32, 16, 16 },
+  impact_spark2 = {  16, 32, 16, 16 },
+  impact_piece1 = {  0, 48, 16, 16 },
+  impact_piece2 = {  16, 48, 16, 16 },
+  impact_piece3 = {  32, 48, 16, 16 },
+}

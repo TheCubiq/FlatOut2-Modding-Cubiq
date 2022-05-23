@@ -1,0 +1,9 @@
+HUD_nitro_text_size = { 128,128 }
+HUD_nitro_text = {
+	
+  HUD_nitro_text = {  9, 1, 69, 18 },
+  HUD_nitro_text_additive = {  1, 20, 84, 42 },
+  HUD_flatout_text = {  8, 62, 98, 24 },
+  HUD_flatout_text_additive = {  1, 86, 111, 42 },
+  
+}

@@ -1,0 +1,8 @@
+splitscreen_nitro_size = { 256, 64 }
+splitscreen_nitro = {
+	
+  splitscreen_nitro = { 3, 0, 201, 16 },
+  splitscreen_nitro_additive = { 1, 19, 208, 24 },
+  splitscreen_nitro_bg = { 2, 45, 204, 18 },
+
+}

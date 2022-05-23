@@ -1,0 +1,51 @@
+Loop	= {
+	Count = 8,
+	[1] = {
+		File		= "data/songs1/04.ogg",
+		Artist 	= "Supergrass",
+		Song		= "Road To Rouen",
+		StartPos	= 0,
+	},
+	[2] = {
+		File		= "data/songs1/05.ogg",
+		Artist 	= "Alkaline Trio",
+		Song		= "Mercy Me",
+		StartPos	= 0,
+	},
+	[3] = {
+		File		= "data/songs1/06.ogg",
+		Artist 	= "Nickelback",
+		Song		= "Believe It or Not",
+		StartPos	= 0,
+	},
+	[4] = {
+		File		= "data/songs1/07.ogg",
+		Artist 	= "Megadeth",
+		Song		= "Symphony of Destruction",
+		StartPos	= 0,
+	},
+	[5] = {
+		File		= "data/songs1/09.ogg",
+		Artist 	= "Yellowcard",
+		Song		= "Breathing",
+		StartPos	= 0,
+	},
+	[6] = {
+		File		= "data/songs1/24.ogg",
+		Artist 	= "The Vines",
+		Song		= "Don't Listen To The Radio",
+		StartPos	= 0,
+	},
+	[7] = {
+		File		= "data/songs2/36.ogg",
+		Artist 	= "Audioslave",
+		Song		= "Your Time Has Come",
+		StartPos	= 0,
+	},
+	[8] = {
+		File		= "data/songs1/14.ogg",
+		Artist 	= "Underoath",
+		Song		= "Reinventing Your Exit",
+		StartPos	= 0,
+	},
+}

@@ -1,0 +1,10 @@
+HUD_derby_size = { 128,128 }
+HUD_derby = {
+	
+  HUD_derby_player_damage_meter_bg = {  2, 2, 92, 20 },
+  HUD_derby_player_damage_meter_overlay = {  2, 26, 92, 20 },
+  HUD_derby_vehicle_damage_triangle = {  2, 50, 46, 22 },
+  HUD_derby_timer = {  52, 50, 54, 54 },
+  HUD_derby_timer_needle = {  110, 50, 4, 29 },
+
+}

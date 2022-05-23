@@ -1,0 +1,10 @@
+HUD_stunt_darts_size = { 128,128 }
+HUD_stunt_darts = {
+	
+  HUD_stunt_darts_target_outer = {  11, 6, 107, 107 },
+  HUD_stunt_darts_target_inner = {  11, 120, 65, 65 },
+  HUD_stunt_darts_target_bullseye = {  11, 190, 17, 17 },
+  HUD_stunt_darts_target_sector = {  11, 211, 18, 44 },
+
+
+}

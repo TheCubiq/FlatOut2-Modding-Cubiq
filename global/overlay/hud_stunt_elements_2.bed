@@ -1,0 +1,7 @@
+HUD_stunt_elements_2_size = { 256,128 }
+HUD_stunt_elements_2 = {
+	
+  darts = {  1, 1, 114, 114 },
+  curling = {  118, 2, 115, 115 },
+
+}

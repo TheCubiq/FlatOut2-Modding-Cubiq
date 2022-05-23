@@ -1,0 +1,59 @@
+Loop	= {
+	Count = 9,
+	[1] = {
+		File		= "data/songs2/25.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 11052,
+	},
+	[2] = {
+		File		= "data/songs2/26.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 40031,
+	},
+	[3] = {
+		File		= "data/songs2/27.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 10959,
+	},
+	[4] = {
+		File		= "data/songs2/28.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 6965,
+	},
+	[5] = {
+		File		= "data/songs2/29.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 62972,
+	},
+	[6] = {
+		File		= "data/songs2/30.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 38429,
+	},
+	[7] = {
+		File		= "data/songs2/31.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 14953,
+	},
+	[8] = {
+		File		= "data/songs2/32.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 29257,
+	},
+	[9] = {
+		File		= "data/songs2/34.ogg",
+		Artist 	= "Henri",
+		Song		= "Henri",
+		StartPos	= 8916,
+	},
+
+}
+	

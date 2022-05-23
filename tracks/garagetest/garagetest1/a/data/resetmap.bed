@@ -1,0 +1,4 @@
+
+
+ResetMapTopLeft = { -408.0,408.0 }
+ResetMapBottomRight = { 408.0,-408.5 }
