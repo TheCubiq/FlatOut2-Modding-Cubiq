@@ -1,0 +1,33 @@
+function floor(n)
+    return math.floor(n)
+end
+
+function getn(t)
+    return table.getn(t)
+end
+
+--function table.getn(t)
+--    local n = 0
+--    for k, v in t do
+--        n = n + 1
+--    end
+--    return n
+--end
+
+function mod(n)
+    return math.mod(n)
+end
+
+function math.mod(n)
+    return n % 1
+end
+
+function abs(n)
+    return math.abs(n)
+end
+
+function table.foreach(t,func)
+    for i,v in pairs(t) do
+        func(i,v)
+    end
+end

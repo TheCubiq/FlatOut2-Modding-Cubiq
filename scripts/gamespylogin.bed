@@ -947,6 +947,7 @@ function menu_multiplayer_gamespy_create_account.init(self)
 
 		ListLeft=2,
 		ListTop=36,
+---@diagnostic disable-next-line: duplicate-index
 		ListFont=fontmedium(),
 		RowWidth=460,
 		RowHeight=18,
@@ -962,6 +963,7 @@ function menu_multiplayer_gamespy_create_account.init(self)
 		OptionPos=POS(425,0),
 		OptionSize=SIZE(328,18),
 		
+---@diagnostic disable-next-line: duplicate-index
 		ListFont = fontmedium(),
 		ListProfileColor=GetPaletteColor(34),
 		ListSelectedItemColor=GetPaletteColor(14),
@@ -1244,6 +1246,7 @@ function menu_multiplayer_gamespy_account_options.init(self)
 
 		ListLeft=2,
 		ListTop=36,
+---@diagnostic disable-next-line: duplicate-index
 		ListFont=fontmedium(),
 		RowWidth=460,
 		RowHeight=18,
@@ -1259,6 +1262,7 @@ function menu_multiplayer_gamespy_account_options.init(self)
 		OptionPos=POS(425,0),
 		OptionSize=SIZE(328,18),
 		
+---@diagnostic disable-next-line: duplicate-index
 		ListFont = fontmedium(),
 		ListProfileColor=GetPaletteColor(34),
 		ListSelectedItemColor=GetPaletteColor(14),
