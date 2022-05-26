@@ -22,11 +22,11 @@ TuneMenuActive = true
 
 local ct_Menu 
 ct_Menu = {
-	["y"] = 1, -- y
-	["x"] = 1, -- x
-	["pos"] = 0, -- pos
-	["mul"] = 1, -- multiplier
-	["pg"] = 1, -- page
+	y = 1, -- y
+	x = 1, -- x
+	pos = 0, -- pos
+	mul = 1, -- multiplier
+	pg = 1, -- page
 }
 
 local crashwarning = true -- if true, displays warning message
