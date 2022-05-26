@@ -66,12 +66,12 @@ local CarPaletteProps = {
 	anim = false, -- if moving too fast through cars, it gets a bit buggy
 }
 
---[[
-	CarshopBgMode:
-	1: backround will work as in the stock game
-	2: background will change depending on car class
-	3: background will be chonsen randomly
---]]
+
+
+-- ### Carshop Bg Modes:
+-- > 1. backround will work as in the stock game   
+-- > 2. background will change depending on car class  
+-- > 3. background will be chonsen randomly  
 local CarshopBgMode = 1
 
 local old_default_bg, old_random_bg
@@ -84,7 +84,7 @@ local function setCarshopBg(default_bg,class)
 	}
 
 	--//
-	--// CarshopBgMode 1 : backround will work as in the stock game
+	--// CarshopBgMode 1 : backround will work as in the stock game  
 	--//
 	if CarshopBgMode == 1 then
 		-- for some reason class 100 is used for stunt cars
@@ -101,7 +101,7 @@ local function setCarshopBg(default_bg,class)
 	end
 
 	--//
-	--// CarshopBgMode 2 : background will change depending on car class
+	--// CarshopBgMode 2 : background will change depending on car class  
 	--//
 	if CarshopBgMode == 2 then
 		chosen_bg = bgs[4]
@@ -110,7 +110,7 @@ local function setCarshopBg(default_bg,class)
 		end
 
 	--//
-	--// CarshopBgMode 3: background will be chonsen randomly
+	--// CarshopBgMode 3: background will be chonsen randomly  
 	--//
 	elseif CarshopBgMode == 3 then
 		-- default background has privilege over random background
