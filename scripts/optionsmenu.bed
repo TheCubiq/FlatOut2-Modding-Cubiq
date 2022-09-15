@@ -7,6 +7,7 @@
 --// Created on 7.11.2005 17:37:35
 --// 
 --// @Author Mikko Sivulainen (mikko.sivulainen@bugbear.fi)
+--// modded by Cubiq The Creator 
 --///////////////////////////////////////////////////////////////////////////
 
 
@@ -18,6 +19,7 @@ end
 
 dofile("data/menu/profile_elements.bed")
 
+local enable_scrolling = true
 
 local controller = {
 	pad=1,
@@ -184,20 +186,125 @@ local options_controller = {
 	[6] = { title=TRANSLATOR(OPTIONS_CONTROLLER), type=TYPE_VALUE, category="Control", setting="Controller", action=change_controller_actionmap, data = { } },
 }
 
+Input.CONTROLLER_BUTTON_SONG_SHOW = 16
+Input.CONTROLLER_BUTTON_SONG_SKIP = 17
+
 local key_config = {
-	[1] = { title=TRANSLATOR(CONFIG_THROTTLE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_UP } },
-	[2] = { title=TRANSLATOR(CONFIG_BRAKE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_DOWN } },
-	[3] = { title=TRANSLATOR(CONFIG_STEERLEFT), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_LEFT } },
-	[4] = { title=TRANSLATOR(CONFIG_STEERRIGHT), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_RIGHT } },
-	[5] = { title=TRANSLATOR(CONFIG_GEARUP), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_RIGHT_TRIGGER } },
-	[6] = { title=TRANSLATOR(CONFIG_GEARDOWN), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_LEFT_TRIGGER } },
-	[7] = { title=TRANSLATOR(CONFIG_NITRO), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_B } },
-	[8] = { title=TRANSLATOR(CONFIG_HANDBRAKE), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_A } },
-	[9] = { title=TRANSLATOR(CONFIG_CAMERA), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_Y } },
-	[10] = { title=TRANSLATOR(CONFIG_RESET), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA2 } },
-	[11] = { title=TRANSLATOR(CONFIG_PLAYERLIST), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA4 } },
-	[12] = { title=TRANSLATOR(CONFIG_LOOK), type=TYPE_KEY, data = { Input.CONTROLLER_BUTTON_EXTRA1 } },
+	[1] = {
+		title=TRANSLATOR(CONFIG_THROTTLE),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_UP }
+	},
+	[2] = {
+		title=TRANSLATOR(CONFIG_BRAKE),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_DOWN }
+	},
+	[3] = {
+		title=TRANSLATOR(CONFIG_STEERLEFT),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_LEFT }
+	},
+	[4] = {
+		title=TRANSLATOR(CONFIG_STEERRIGHT),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_RIGHT }
+	},
+	[5] = {
+		title=TRANSLATOR(CONFIG_GEARUP),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_RIGHT_TRIGGER }
+	},
+	[6] = {
+		title=TRANSLATOR(CONFIG_GEARDOWN),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_LEFT_TRIGGER }
+	},
+	[7] = {
+		title=TRANSLATOR(CONFIG_NITRO),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_B }
+	},
+	[8] = {
+		title=TRANSLATOR(CONFIG_HANDBRAKE),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_A }
+	},
+	[9] = {
+		title=TRANSLATOR(CONFIG_CAMERA),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_Y }
+	},
+	[10] = {
+		title=TRANSLATOR(CONFIG_RESET),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_EXTRA2 }
+	},
+	[11] = {
+		title=TRANSLATOR(CONFIG_PLAYERLIST),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_EXTRA4 }
+	},
+	[12] = {
+		title=TRANSLATOR(CONFIG_LOOK),
+		type=TYPE_KEY,
+		data = { Input.CONTROLLER_BUTTON_EXTRA1 }
+	},
+
+	-- [13] = {
+	-- 	title=L("Free Button1"),
+	-- 	type=TYPE_KEY,
+	-- 	data = { Input.CONTROLLER_BUTTON_SONG_SHOW }
+	-- },
+	-- [14] = {
+	-- 	title=L("Free Button2"),
+	-- 	type=TYPE_KEY,
+	-- 	data = { Input.CONTROLLER_BUTTON_SONG_SKIP }
+	-- },
+	-- [15] = {
+	-- 	title=L("Free Button3"),
+	-- 	type=TYPE_KEY,
+	-- 	data = { 18 }
+	-- }
 }
+
+--[[
+add n keys to the key config
+for i=1, 29 do
+	table.insert(key_config, 
+	{
+		title=L("Button" .. i),
+		type=TYPE_KEY,
+		data = { i }
+	})
+end
+--]]--
+
+--[[--/*
+
+	thanks, cubiq <3
+	@sdasda7777#2363 : 
+	I have literaly no idea how or why this works, but it does
+
+	Input._ = 0		=>		Input._ = Input.CONTROLLER_BUTTON_A
+	Input._ = 1		=>		Input._ = Input.CONTROLLER_BUTTON_B
+	Input._ = 2
+	Input._ = 3		=>		Input._ = Input.CONTROLLER_BUTTON_Y
+	Input._ = 4		=> 	Input._ = Input.CONTROLLER_BUTTON_EXTRA1
+	Input._ = 5		=>		Input._ = Input.CONTROLLER_BUTTON_EXTRA2
+	Input._ = 6
+	Input._ = 7		=>		Input._ = Input.CONTROLLER_BUTTON_EXTRA4
+	Input._ = 8
+	Input._ = 9
+	Input._ = 10		=> 	Input._ = Input.CONTROLLER_BUTTON_UP
+	Input._ = 11		=> 	Input._ = Input.CONTROLLER_BUTTON_DOWN
+	Input._ = 12		=> 	Input._ = Input.CONTROLLER_BUTTON_LEFT
+	Input._ = 13		=> 	Input._ = Input.CONTROLLER_BUTTON_RIGHT
+	Input._ = 14
+	Input._ = 15
+	Input._ = 16
+	Input._ = 17
+--]]--*/
 
 
 local options = {
@@ -627,32 +734,33 @@ local function create_options(options)
 end
 
 
+local function set_option_alpha(frame, alpha) 
+	if frame then
+		--frame.handle=AnimateWindowAlpha(frame,frame:GetAlpha(), alpha ,0.2,0.0,frame.handle)
+
+		frame.title.handle=AnimateWindowAlpha(frame.title,frame.title:GetAlpha(), alpha ,0.2,0.0,frame.title.handle)
+		frame.value.handle=AnimateWindowAlpha(frame.value,frame.value:GetAlpha(), alpha ,0.2,0.0,frame.value.handle)
+
+		if frame.value.textvalue then
+			frame.value.textvalue.handle=AnimateWindowAlpha(frame.value.textvalue,frame.value.textvalue:GetAlpha(), alpha ,0.2,0.0,frame.value.textvalue.handle)
+		end
+
+		if frame.value.leftarrow then
+			frame.value.leftarrow.handle=AnimateWindowAlpha(frame.value.leftarrow,frame.value.leftarrow:GetAlpha(), alpha ,0.2,0.0,frame.value.leftarrow.handle)
+			frame.value.rightarrow.handle=AnimateWindowAlpha(frame.value.rightarrow,frame.value.rightarrow:GetAlpha(), alpha ,0.2,0.0,frame.value.rightarrow.handle)
+		end
+
+		if frame.gfx[1] then
+			frame.gfx[1].handle=AnimateWindowAlpha(frame.gfx[1],frame.gfx[1]:GetAlpha(), alpha ,0.2,0.0,frame.gfx[1].handle)
+			frame.gfx[2].handle=AnimateWindowAlpha(frame.gfx[2],frame.gfx[2]:GetAlpha(), alpha ,0.2,0.0,frame.gfx[2].handle)
+			frame.gfx[3].handle=AnimateWindowAlpha(frame.gfx[3],frame.gfx[3]:GetAlpha(), alpha ,0.2,0.0,frame.gfx[3].handle)
+		end
+	end
+end
+
 local function hide_options(options)
 	for k,v in ipairs(options) do
-
-		local frame=v.frame
-
-		if frame then
-			frame.handle=AnimateWindowAlpha(frame,frame:GetAlpha(),0.0,0.2,0.0,frame.handle)
-
-			frame.title.handle=AnimateWindowAlpha(frame.title,frame.title:GetAlpha(),0.0,0.2,0.0,frame.title.handle)
-			frame.value.handle=AnimateWindowAlpha(frame.value,frame.value:GetAlpha(),0.0,0.2,0.0,frame.value.handle)
-
-			if frame.value.textvalue then
-				frame.value.textvalue.handle=AnimateWindowAlpha(frame.value.textvalue,frame.value.textvalue:GetAlpha(),0.0,0.2,0.0,frame.value.textvalue.handle)
-			end
-
-			if frame.value.leftarrow then
-				frame.value.leftarrow.handle=AnimateWindowAlpha(frame.value.leftarrow,frame.value.leftarrow:GetAlpha(),0.0,0.2,0.0,frame.value.leftarrow.handle)
-				frame.value.rightarrow.handle=AnimateWindowAlpha(frame.value.rightarrow,frame.value.rightarrow:GetAlpha(),0.0,0.2,0.0,frame.value.rightarrow.handle)
-			end
-
-			if frame.gfx[1] then
-				frame.gfx[1].handle=AnimateWindowAlpha(frame.gfx[1],frame.gfx[1]:GetAlpha(),0.0,0.2,0.0,frame.gfx[1].handle)
-				frame.gfx[2].handle=AnimateWindowAlpha(frame.gfx[2],frame.gfx[2]:GetAlpha(),0.0,0.2,0.0,frame.gfx[2].handle)
-				frame.gfx[3].handle=AnimateWindowAlpha(frame.gfx[3],frame.gfx[3]:GetAlpha(),0.0,0.2,0.0,frame.gfx[3].handle)
-			end
-		end
+		set_option_alpha(v.frame, 0.0)
 	end
 end
 
@@ -674,23 +782,7 @@ local function show_options(options,showall)
 
 			--//frame.handle=AnimateWindowAlpha(frame,frame:GetAlpha(),0.0,0.2,0.0,frame.handle)
 
-			frame.title.handle=AnimateWindowAlpha(frame.title,frame.title:GetAlpha(),alpha,0.2,0.0,frame.title.handle)
-			frame.value.handle=AnimateWindowAlpha(frame.value,frame.value:GetAlpha(),alpha,0.2,0.0,frame.value.handle)
-
-			if frame.value.textvalue then
-				frame.value.textvalue.handle=AnimateWindowAlpha(frame.value.textvalue,frame.value.textvalue:GetAlpha(),alpha,0.2,0.0,frame.value.textvalue.handle)
-			end
-
-			if frame.value.leftarrow then
-				frame.value.leftarrow.handle=AnimateWindowAlpha(frame.value.leftarrow,frame.value.leftarrow:GetAlpha(),alpha,0.2,0.0,frame.value.leftarrow.handle)
-				frame.value.rightarrow.handle=AnimateWindowAlpha(frame.value.rightarrow,frame.value.rightarrow:GetAlpha(),alpha,0.2,0.0,frame.value.rightarrow.handle)
-			end
-
-			if frame.gfx[1] then
-				frame.gfx[1].handle=AnimateWindowAlpha(frame.gfx[1],frame.gfx[1]:GetAlpha(),alpha,0.2,0.0,frame.gfx[1].handle)
-				frame.gfx[2].handle=AnimateWindowAlpha(frame.gfx[2],frame.gfx[2]:GetAlpha(),alpha,0.2,0.0,frame.gfx[2].handle)
-				frame.gfx[3].handle=AnimateWindowAlpha(frame.gfx[3],frame.gfx[3]:GetAlpha(),alpha,0.2,0.0,frame.gfx[3].handle)
-			end
+			set_option_alpha(frame, alpha)
 
 		end
 	end
@@ -740,6 +832,39 @@ end
 --// ---------------------------------------------------------------------------------------------------------------------------------
 --// 
 --// ---------------------------------------------------------------------------------------------------------------------------------
+
+
+function scrollItems(self, sel_item)
+	-- mod by Cubiq
+	-- scroll the menu
+	local spacing = 26 -- item spacing
+	local padding_top = 54
+	-- scroll only when the active item is higher than this:
+	local min_scroll_item = 8
+
+	local last_visible_item = 12
+
+	local offset = 0
+	if sel_item > min_scroll_item then
+		offset = sel_item-min_scroll_item
+	end
+
+	for i, v in ipairs(self.options) do
+		-- v.frame:SetPosition(0, padding_top+(-spacing*(offset))+(spacing*i))
+		-- using AnimateWindowPos() instead of SetPosition() to get a smooth scrolling
+		AnimateWindowPos(v.frame, {v.frame:GetPosition()}, {0,padding_top+(-spacing*(offset))+(spacing*i)}, 0.2)
+
+		if i-offset <= last_visible_item and i-offset > 0 then
+			-- v.frame:ShowWindow()
+			set_option_alpha(v.frame, 1.0)
+		else
+			-- v.frame:HideWindow()
+			set_option_alpha(v.frame, 0.0)
+		end
+
+	end
+
+end
 
 local function get_undo(options)
 	local t={}
@@ -1065,6 +1190,8 @@ function menu_options.init(self)
 		if virtualkey == KeyCodes.BUTTON_SELECT then
 			--//do_undo(self.options,self.undo)
 			menu_options.changed=menu_options.changed or settings_changed(self.options,self.undo)
+			-- scroll on top of the list 
+			self:activate(1)
 			show_options(options[self.category])
 			playmenusound_back()
 			GUI:SetActiveItem(self.category)
@@ -1142,6 +1269,7 @@ function menu_options.init(self)
 
 	input.activate = function(self,item)
 
+		if enable_scrolling then scrollItems(self,item) end
 		local old_type
 
 		if self.item then
