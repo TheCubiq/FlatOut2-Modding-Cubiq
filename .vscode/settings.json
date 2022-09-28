@@ -378,11 +378,17 @@
         "LIVELOBBY_TITLE",
         "LIVELOBBY_NAME",
         "LIVELOBBY_CAR",
-        "MODE_INACTIVE"
+        "MODE_INACTIVE",
+        "EVENT_MUSIC_TITLECHANGED",
+        "EVENT_MUSIC_PLAY_INGAME",
+        "EVENT_MUSIC_PAUSE",
+        "EVENT_MUSIC_UNPAUSE",
+        "EVENT_TOGGLE_FPS"
     ],
 	"Lua.diagnostics.disable": [
         "lowercase-global",
         "deprecated",
-        "redundant-parameter"
+        "redundant-parameter",
+        "redundant-value"
     ]
 }
