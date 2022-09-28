@@ -1,0 +1,64 @@
+--///////////////////////////////////////////////////////////////////////////
+--// soundMenu.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2022 Cubiq. 
+--// All Rights Reserved.
+--// 
+--// Created on 20 August 2022 22:21:24
+--// 
+--// @Author Cubiq, 
+--///////////////////////////////////////////////////////////////////////////
+
+
+menu_soundMenu = CreateMenuFromTemplate("template_basic")
+
+menu_soundMenu.options.title=L"Sound Control Menu"
+
+menu_soundMenu.back=entermenu("menu_mainmenu")
+
+
+
+local function otherShitEvents(ev)
+	Event:PostEvent(event(ev));
+    W("CubiqHint"):SetTitle(L("event: "..ev));
+end
+
+local function toggleShit(fc) 
+    -- W("CubiqHint"):SetTitle(L(fc or "oof"));
+    if fc == 0 then
+        fc = 1;
+    else
+        fc = 0;
+    end
+    W("CubiqHint"):SetTitle(L(fc));
+
+end
+
+function menu_soundMenu.create(self)
+    self.parent:create(self)
+    self:loadResources()
+    self.items={
+        MENUITEM(L("SKIP SONG"), function() otherShitEvents(EVENT_MUSIC_TITLECHANGED) end,	ICON(self,"icon_send_game_invite_with_voice_message")),
+		MENUITEM(L("PLAY INGAME SONGS"), function() otherShitEvents(EVENT_MUSIC_STOP) otherShitEvents(EVENT_MUSIC_PLAY_INGAME) end,	ICON(self,"icon_stunts")),
+		MENUITEM(L("PLAY TITLE SONGS"), function() otherShitEvents(EVENT_MUSIC_STOP) otherShitEvents(EVENT_MUSIC_PLAY_TITLE) end,	ICON(self,"icon_voice_tv")),
+		MENUITEM(L("ShowSongInfo"), function() otherShitEvents(EVENT_TIMER) end,	ICON(self,"icon_listen_to_voice_message")),
+		-- MENUITEM(L("ShowSongInfo"), function() otherShitEvents(EVENT_MUSIC_SHOWARTIST) end,	ICON(self,"icon_listen_to_voice_message")),
+        MENUITEM(L("Pause Music"), function() otherShitEvents(EVENT_MUSIC_PAUSE) end,	ICON(self,"icon_online_play")),
+		MENUITEM(L("Unpause Music"), function() otherShitEvents(EVENT_MUSIC_UNPAUSE) end,	ICON(self,"icon_online_play")),
+		MENUITEM(L("Stop Music"), function() otherShitEvents(EVENT_MUSIC_STOP) end,	ICON(self,"icon_online_stop")),
+		MENUITEM(L("FPS"), function() otherShitEvents(EVENT_TOGGLE_FPS) end,	ICON(self,"icon_online_stop")),
+		MENUITEM(L("fadeoff"), function() toggleShit(Settings.Dev.EnableAI) end,	ICON(self,"icon_car_stats")),
+    }
+end
+
+
+
+function menu_soundMenu.init(self) 
+    self.parent:init(self)
+    GUI:SetBackgroundVideo("data/video/bg_main")
+    StaticText { Name=(	"CubiqHint" ), Title=L(""), Position=POS(320,280), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(20), Align=FONTF_CENTER, TitleCentering=TITLECENTER_Y, Layer=2 }
+end
+
+function menu_soundMenu.deinit(self)
+    self.parent:deinit(self)
+end
