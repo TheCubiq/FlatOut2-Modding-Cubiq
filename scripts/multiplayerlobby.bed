@@ -822,20 +822,23 @@ local function SetSelectPlayerButtons(playerNum)
 	end
 
 	SelectedPlayerValid = true
-	local canKick=Session:IsHost() and playerNum ~= 1 and not Session:GetInfo().KickVote.VoteInProgress
-	if canKick then
-		if XBOX then
-			local info=XBoxLive.GetPlayersList():GetPlayerInfo(player.UId)
-			if info.TriedKickThisRace or info.Kicked then
-				canKick=false
-			end
-		else
-			local info=GameSpy.GetPlayersList():GetPlayerInfo(player.UId)
-			if info.TriedKickThisRace or info.Kicked then
-				canKick=false
-			end
-		end
-	end
+	-- local canKick=Session:IsHost() and playerNum ~= 1 and not Session:GetInfo().KickVote.VoteInProgress
+	
+	local canKick = not Session:GetInfo().KickVote.VoteInProgress
+
+	-- if canKick then
+	-- 	if XBOX then
+	-- 		local info=XBoxLive.GetPlayersList():GetPlayerInfo(player.UId)
+	-- 		if info.TriedKickThisRace or info.Kicked then
+	-- 			canKick=false
+	-- 		end
+	-- 	else
+	-- 		local info=GameSpy.GetPlayersList():GetPlayerInfo(player.UId)
+	-- 		if info.TriedKickThisRace or info.Kicked then
+	-- 			canKick=false
+	-- 		end
+	-- 	end
+	-- end
 	
 	if MultiplayerMode ~= MPMODE_LAN and Session:GetLocalPlayer(1).UId ~= player.UId then
 		local muted
@@ -853,11 +856,21 @@ local function SetSelectPlayerButtons(playerNum)
 			table.insert(menu_multiplayer_lobby.items, { ICON_MULTIPLAYER_PLAYER_MUTE, function() MutePlayer(playerNum) end, ICON(menu_multiplayer_lobby, "icon_mute_player") } )
 		end
 	end
-	if canKick then
+	if canKick and Session:GetLocalPlayer(1).UId ~= player.UId then
 		table.insert(menu_multiplayer_lobby.items, { ICON_MULTIPLAYER_PLAYER_KICK, function() StartKickVote(playerNum) end, ICON(menu_multiplayer_lobby, "icon_kick_player") } )
-	end
+	end 
 	if MultiplayerMode == MPMODE_XBOXLIVE then
 		table.insert(menu_multiplayer_lobby.items, { ICON_MULTIPLAYER_PLAYER_PROFILE, function() ShowPlayerProfile(playerNum) end, ICON(menu_multiplayer_lobby, "icon_player_profile") } )
+	end
+
+	if Session:IsHost() and Session:GetLocalPlayer(1).UId == player.UId then
+		table.insert(menu_multiplayer_lobby.items, { L"SHUFFLE CARS!", function() shuffleMpCars() end, ICON(menu_multiplayer_lobby, "icon_mixed_events") } )
+		if getPlayerNamesState() then
+			table.insert(menu_multiplayer_lobby.items, { L"SHUFFLE NAMES!", function() shuffleMpNames() end, ICON(menu_multiplayer_lobby, "icon_join_friend") } )
+			table.insert(menu_multiplayer_lobby.items, { L"HIDE NAMES!", function() hideMpNames() end, ICON(menu_multiplayer_lobby, "icon_appear_offline") } )
+		else
+			table.insert(menu_multiplayer_lobby.items, { L"REVERT NAMES!", function() revertMpNames() end, ICON(menu_multiplayer_lobby, "icon_xbl_friends") } )
+		end
 	end
 	
 	GUI:InitMenuButtons(menu_multiplayer_lobby.items)
@@ -935,7 +948,10 @@ local function SelectPlayer()
 	wm.GetWindow("list"):Refresh()
 end
 
-
+function proceedBack()
+	BuildLobbyMenuButtons()
+	SelectPlayer()
+end
 
 
 local LobbyEventListener
@@ -1281,10 +1297,15 @@ BuildLobbyMenuButtons = function(creating)
 	
 	local commonitems = { }
 	table.insert(commonitems, { ICON_MULTIPLAYER_CHANGECAR, function() ChangeCar() end, ICON(menu_multiplayer_lobby,"icon_change_car") } )
+
+	if Session:GetNumPlayers() < 2 then
+		table.insert(commonitems, { L"AI Players", function() addAiPlayers(3) end, ICON(menu_multiplayer_lobby,"icon_sp_crash_td") } )
+	end
+	table.insert(commonitems, { L"demofunc!", function() testFunc() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
 	if Session:GetInfo().CarUpgrades == SessionInfo.CarUpgrades.Any and Session:GetInfo().Races[Session:GetInfo().NextRace].EventType ~= ReplicatedSession.GAMETYPE_STUNT then
 		table.insert(commonitems, { ICON_MULTIPLAYER_CHANGEUPGRADE, function() ChangeUpgrades() end, ICON(menu_multiplayer_lobby,"icon_change_upgrade_level") } )
 	end
-	if Session:GetNumPlayers() > 1 and MultiplayerMode ~= MPMODE_LAN then
+	if Session:GetNumPlayers() > 1 and MultiplayerMode ~= MPMODE_XBOXLIVE then
 		table.insert(commonitems, { ICON_MULTIPLAYER_PLAYERDETAILS, function() SelectPlayer() end, ICON(menu_multiplayer_lobby,"icon_player_details") } )
 	end
 	
@@ -1871,6 +1892,8 @@ function menu_multiplayer_lobby.init(self)
 	VoiceSettingsActive		= false
 
 	SetLobbyHelpButtons()
+	StaticText { Name=(	"CubiqHelp" ), Title=L(""), --[[Position=POS(320,310),--]] Position=POS(2,5), Size=SIZE(560,12), Font=fontmedium(), Alpha=0.4, Color=GetPaletteColor(20),  Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=5 }
+	checkChatData()
 end
 
 function menu_multiplayer_lobby.deinit(self)

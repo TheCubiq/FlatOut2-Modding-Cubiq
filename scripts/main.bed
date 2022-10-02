@@ -89,6 +89,9 @@ local menufiles = {
 	"MultiplayerBuildTournament.bed",
 	"MultiplayerRaceMenu.bed",
 
+	"MpShuffler.bed",
+	"AiPlayers.bed",
+
 	--//"PressBuild.bed",
 	--//"FocusTest.bed",
 }

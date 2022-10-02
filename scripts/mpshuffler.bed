@@ -1,0 +1,169 @@
+--///////////////////////////////////////////////////////////////////////////
+--// MpShuffler.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2022 Cubiq.
+--// All Rights Reserved.
+--//
+--// Created on 01 October 2022 17:17:47
+--//
+--// @Author Cubiq The Creator,
+--///////////////////////////////////////////////////////////////////////////
+
+
+local namelist = {}
+
+local carlist = {}
+
+local tim = nil
+
+-- function shuffleMpCars()
+--     -- MessageBox(L"Shuffled!",MESSAGEBOX_OK,ok)
+--     local player = Session:GetPlayer(1)
+--     -- W("CubiqHelp"):SetTitle(player.Car)
+--     local player2 = Session:GetPlayer(2)
+--     W("CubiqHelp"):SetTitle(L(ConvertFromWString(player.Car)))
+--     player2.Car = player.Car
+--     -- player2.CarValid = false
+--     proceedBack()
+-- end
+
+function getPlayerNamesState()
+    return table.getn(namelist) < 1
+end
+
+function shuffleMpCars()
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+    end
+    proceedBack()
+end
+
+local textstr = ""
+
+local function sendChatText()
+    local textchat = Session:GetTextChat()
+
+    local numlines = textchat:GetNumLines()
+
+    --textchat:Update(0)
+    textchat:AddLocalLine(L(textstr), Session:GetLocalPlayer(1).UId)
+    -- textchat:AddLocalLine(L(string.len(textchat:GetLineText(numlines))), Session:GetLocalPlayer(1).UId)
+    textchat:AddLocalLine(L(tostring(Session:GetLocalPlayer(1).UId)), Session:GetLocalPlayer(1).UId)
+    textstr = textstr .. "I"
+end
+
+local function savePlayerStates()
+    local textchat = Session:GetTextChat()
+    textchat:AddLocalLine(L"savingLobbyState:", Session:GetLocalPlayer(1).UId)
+    textchat:AddLocalLine(L"<startStats>", Session:GetLocalPlayer(1).UId)
+    for i = 1, Session:GetNumPlayers(), 1 do
+       local player = Session:GetPlayer(i)
+       local name = ConvertFromWString(player.Name)
+       local car = player.CarValid and player.Car or -1
+       local skin = player.CarSkin
+
+       textchat:AddLocalLine(
+           L(name .. ";" .. car .. ";" .. skin),
+           Session:GetLocalPlayer(1).UId
+       )
+    end
+    textchat:AddLocalLine(L"<endStats>", Session:GetLocalPlayer(1).UId)
+
+    W("CubiqHelp"):SetTitle(L(textchat:GetLineText(textchat:GetNumLines())))
+end
+
+function testFunc()
+    savePlayerStates()
+    checkChatData()
+    -- W("CubiqHelp"):SetTitle(L("successfully saved all the players!"))
+    --proceedBack()
+end
+
+local function saveNames()
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+        namelist[i] = ConvertFromWString(player.Name)
+    end
+end
+
+function revertMpNames()
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+        if namelist[i] ~= nil then
+            player.Name = L(namelist[i])
+        end
+    end
+    namelist = {}
+    MessageBox(L "Reverted!", MESSAGEBOX_OK, ok)
+    proceedBack()
+end
+
+function shuffleMpNames()
+    saveNames()
+    local availablenames = { unpack(namelist) }
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+        local rndid = math.random(1, table.getn(availablenames))
+        -- check if the name is not the same as the player's name
+
+        player.Name = L(availablenames[rndid])
+        table.remove(availablenames, rndid)
+    end
+    MessageBox(L "Shuffled!", MESSAGEBOX_OK, ok)
+    proceedBack()
+end
+
+function hideMpNames()
+    saveNames()
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+        player.Name = L(" ")
+    end
+    MessageBox(L "Hidden!", MESSAGEBOX_OK, ok)
+    proceedBack()
+end
+
+
+function clearChat()
+    -- sort of clear chat by sending a lot of empty lines
+    local textchat = Session:GetTextChat()
+    for i = 1, 160, 1 do
+        textchat:AddLocalLine("", Session:GetLocalPlayer(1).UId)
+    end
+    --TODO: get chat messages and add them after the clear
+    --MessageBox(L "Cleared!", MESSAGEBOX_OK, ok)
+end
+
+function loadMpStats()
+    local textchat = Session:GetTextChat()
+    local numlines = textchat:GetNumLines()
+    local line = 0
+    local lineText = ""
+    local strTxt = ""
+    while(lineText ~= "<startStats>") 
+    do
+        line = line + 1
+        if line > 1 then 
+            strTxt = lineText .. "\n" .. strTxt
+        end
+        lineText = (ConvertFromWString(textchat:GetLineText(numlines-line)))
+    end
+    W("CubiqHelp"):SetTitle(L("loaded data of "..(line-1).." players:\n"..strTxt))
+    
+    clearChat()
+end
+
+
+function checkChatData()
+    W("CubiqHelp"):SetTitle(L("Checking chat data..."))
+    local textchat = Session:GetTextChat()
+    local numlines = textchat:GetNumLines()
+    local txt = ConvertFromWString(textchat:GetLineText(numlines))
+    W("CubiqHelp"):SetTitle(L("Checking chat data: '"..string.len(txt)..", " .. txt.. "'"))
+    if txt == "<endStats>" then
+        W("CubiqHelp"):SetTitle(L("Chat data found!"))
+        loadMpStats()
+    else
+        W("CubiqHelp"):SetTitle(L("Chat data not found!"))
+    end
+end

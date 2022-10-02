@@ -390,5 +390,16 @@
         "deprecated",
         "redundant-parameter",
         "redundant-value"
-    ]
+    ],
+    "files.exclude": {
+        "**/*.dds": true,
+        "**/*.tga": true,
+        "**/*.dat": true,
+        "**/*.bgm": true,
+        "**/tutorials": true,
+        "**/video": true,
+        "**/tracks": true,
+        
+        
+    },
 }

@@ -1,0 +1,47 @@
+--///////////////////////////////////////////////////////////////////////////
+--// AiPlayers.bed
+--///////////////////////////////////////////////////////////////////////////
+--// Copyright (c) 2022 Cubiq. 
+--// All Rights Reserved.
+--// 
+--// Created on 01 October 2022 15:54:17
+--// 
+--// @Author Cubiq The Creator, 
+--///////////////////////////////////////////////////////////////////////////
+
+local randomUpgrades = { SessionInfo.CarUpgrades.None, SessionInfo.CarUpgrades.Half, SessionInfo.CarUpgrades.All }
+
+function addAiPlayers(n, c)
+    for i = 2, n+1, 1 do
+        Session:CreateSession()
+
+
+        --Session:GetPlayer(i):GenerateUserId()
+
+        Session:GetPlayer(i)CharacterType = math.random(0,1)
+	
+
+		Session:GetPlayer(i).Status = ReplicatedPlayer.STATUS_IN_LOBBY
+
+		Session:GetPlayer(i).Name = L("("..(i-1)..") ".."JOIN FJR DISCORD")
+		Session:GetPlayer(i).Car = math.random(0,44)
+
+        if (Session:GetPlayer(i).Car < 34 and Session:GetPlayer(2).Car > 38) then
+			Session:GetPlayer(i).CarSkin = math.random(1,5)
+		else
+			Session:GetPlayer(i).CarSkin = 1
+		end
+         
+        if c then
+            Session:GetPlayer(i).Car = c;
+        end
+
+		Session:GetPlayer(i):SetReady(true)
+        
+		Session:GetPlayer(i).CarValid = true
+
+		Session:GetPlayer(i).Valid = true
+
+        Session:GetPlayer(i).UpgradeLevel = randomUpgrades[math.random(1,3)]
+    end    
+end
