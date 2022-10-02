@@ -866,6 +866,11 @@ local function SetSelectPlayerButtons(playerNum)
 	end
 
 	if Session:IsHost() and Session:GetLocalPlayer(1).UId == player.UId then
+		if not(mpCheckModes("f")) then
+			table.insert(menu_multiplayer_lobby.items, { L"FORCE SHUFFLE!", function() setMpModes("f") end, ICON(menu_multiplayer_lobby, "icon_ready") } )
+		else
+			table.insert(menu_multiplayer_lobby.items, { L"NO FORCE SHUFFLE!", function() setMpModes("f",false) end, ICON(menu_multiplayer_lobby, "icon_unready") } )
+		end
 		if not(mpCheckModes("c")) then
 			table.insert(menu_multiplayer_lobby.items, { L"SHUFFLE CARS!", function() setMpModes("c") end, ICON(menu_multiplayer_lobby, "icon_mixed_events") } )
 		else
@@ -1304,9 +1309,9 @@ BuildLobbyMenuButtons = function(creating)
 	local commonitems = { }
 	table.insert(commonitems, { ICON_MULTIPLAYER_CHANGECAR, function() ChangeCar() end, ICON(menu_multiplayer_lobby,"icon_change_car") } )
 
-	if Session:GetNumPlayers() < 2 then
-		table.insert(commonitems, { L"AI Players", function() addAiPlayers(3) end, ICON(menu_multiplayer_lobby,"icon_sp_crash_td") } )
-	end
+	-- if Session:GetNumPlayers() < 2 then
+	-- 	table.insert(commonitems, { L"AI Players", function() addAiPlayers(3,33) end, ICON(menu_multiplayer_lobby,"icon_sp_crash_td") } )
+	-- end
 	-- table.insert(commonitems, { L"print data!", function() saveMpStateData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
 	-- table.insert(commonitems, { L"check data!", function() checkChatData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
 	if Session:GetInfo().CarUpgrades == SessionInfo.CarUpgrades.Any and Session:GetInfo().Races[Session:GetInfo().NextRace].EventType ~= ReplicatedSession.GAMETYPE_STUNT then
@@ -1899,8 +1904,10 @@ function menu_multiplayer_lobby.init(self)
 	VoiceSettingsActive		= false
 
 	SetLobbyHelpButtons()
-	StaticText { Name=(	"CubiqHelp" ), Title=L(""), --[[Position=POS(320,310),--]] Position=POS(2,5), Size=SIZE(560,12), Font=fontmedium(), Alpha=0.4, Color=GetPaletteColor(20),  Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=5 }
-	checkChatData()
+	if Session:IsHost() then
+		StaticText { Name=(	"ShufflerInfo" ), Title=L(""), --[[Position=POS(320,310),--]] Position=POS(2,15), Size=SIZE(560,12), Font=fontmedium(), Alpha=0.6, Color=GetPaletteColor(20),  Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=5 }
+		checkChatData()
+	end
 end
 
 function menu_multiplayer_lobby.deinit(self)
