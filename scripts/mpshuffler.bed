@@ -10,21 +10,22 @@
 --///////////////////////////////////////////////////////////////////////////
 
 
--- local namelist = {}
+local namelist = {}
 local mpModes = ""
 
 local mpData = {}
 
--- function shuffleMpCars()
---     -- MessageBox(L"Shuffled!",MESSAGEBOX_OK,ok)
---     local player = Session:GetPlayer(1)
---     -- MpLoglayer.Car
---     local player2 = Session:GetPlayer(2)
---     MpLog(ConvertFromWString(player.Car))
---     player2.Car = player.Car
---     -- player2.CarValid = false
---     proceedBack()
--- end
+function shuffleMpCars()
+    -- MessageBox(L"Shuffled!",MESSAGEBOX_OK,ok)
+    --local player = Session:GetPlayer(1)
+    -- MpLoglayer.Car
+    --local player2 = Session:GetPlayer(2)
+    -- MpLog(ConvertFromWString(player.Car))
+    --player2.Car = player.Car
+    -- player2.CarValid = false
+    --proceedBack()
+    MpLog("cars shuffled")
+end
 
 function MpLog(text)
     W("CubiqHelp"):SetTitle(L(text))
@@ -32,6 +33,24 @@ end
 
 function mpGetMode(mode)
     return string.find(mpModes, mode)
+end
+
+function mpGetModesConcat()
+    local tbl = {}
+
+    local mode_list = {
+        { "c", "Shuffle Cars" },
+        { "n", "Shuffle Names" },
+        { "h", "Hidden Names" },
+    }
+
+    for i, v in ipairs(mode_list) do
+        if mpCheckModes(v[1]) then
+            table.insert(tbl, v[2])
+        end
+    end
+
+    return (table.getn(tbl) > 0 and "Modes: " or "") .. table.concat(tbl, ", ")
 end
 
 function stringToTable(str)
@@ -52,7 +71,7 @@ function mpCheckModes(modes)
 end
 
 function toggleMpMode(mode, state)
-    state = state == nil and mpGetMode(mode) == nil 
+    state = state == nil and mpGetMode(mode) == nil
     mpModes = state and mpModes .. mode or mpModes:gsub(mode, "")
 end
 
@@ -60,20 +79,39 @@ function setMpModes(modes, state)
     for i, mode in ipairs(stringToTable(modes)) do
         toggleMpMode(mode, state)
     end
-    MpLog(mpModes)
+    MpLog(mpGetModesConcat())
     proceedBack()
 end
 
 function applyMpModes()
-    -- check and apply the modes: (shuffle cars, hide player names, shuffle names) 
+    -- check and apply the modes: (shuffle cars, hide player names, shuffle names)
+    local mode_list = {
+        { "c", function() shuffleMpCars() end },
+        { "n", function() shuffleMpNames() end },
+        { "h", function() hideMpNames() end },
+    }
+    -- local mode_list = {
+    --     {"c"},
+    --     {"n"},
+    --     {"h"},
+    -- }
+    local m = ""
+    for i, v in ipairs(mode_list) do
+        if mpCheckModes(v[1]) then
+            -- v[2]()
+            m = m .. v[1] .. v[1]
+            v[2]()
+        end
+    end
+    --MpLog(m)
 end
 
-function shuffleMpCars()
-    for i = 1, Session:GetNumPlayers(), 1 do
-        local player = Session:GetPlayer(i)
-    end
-    proceedBack()
-end
+-- function shuffleMpCars()
+--     for i = 1, Session:GetNumPlayers(), 1 do
+--         local player = Session:GetPlayer(i)
+--     end
+--     proceedBack()
+-- end
 
 local textstr = ""
 
@@ -92,27 +130,27 @@ end
 local function savePlayerStates()
     -- prints all players to chat
     local textchat = Session:GetTextChat()
-    textchat:AddLocalLine(L"savingLobbyState:", Session:GetLocalPlayer(1).UId)
-    textchat:AddLocalLine(L"<endStats>", Session:GetLocalPlayer(1).UId)
+    textchat:AddLocalLine(L "savingLobbyState:", Session:GetLocalPlayer(1).UId)
+    textchat:AddLocalLine(L "<endStats>", Session:GetLocalPlayer(1).UId)
     for i = 1, Session:GetNumPlayers(), 1 do
-       local player = Session:GetPlayer(Session:GetNumPlayers()-i+1)
-       local name = ConvertFromWString(player.Name)
-       local car = player.CarValid and player.Car or -1
-       local skin = player.CarSkin
+        local player = Session:GetPlayer(Session:GetNumPlayers() - i + 1)
+        local name = ConvertFromWString(player.Name)
+        local car = player.CarValid and player.Car or -1
+        local skin = player.CarSkin
 
-       textchat:AddLocalLine(
-           L(name .. ";" .. car .. ";" .. skin),
-           Session:GetLocalPlayer(1).UId
-       )
+        textchat:AddLocalLine(
+            L(name .. ";" .. car .. ";" .. skin),
+            Session:GetLocalPlayer(1).UId
+        )
     end
-    textchat:AddLocalLine(L"<startStats>", Session:GetLocalPlayer(1).UId)
+    textchat:AddLocalLine(L "<startStats>", Session:GetLocalPlayer(1).UId)
 end
 
 function saveMpStateData()
     -- triggered before the game start
     savePlayerStates()
     -- MpLog("successfully saved all the players!")
-    --applyMpMode()
+    applyMpModes()
     --proceedBack()
 end
 
@@ -132,12 +170,27 @@ function revertMpNames()
     end
     namelist = {}
     MessageBox(L "Reverted!", MESSAGEBOX_OK, ok)
-    proceedBack()
+    -- proceedBack()
+end
+
+function getAvailableData(db, idx)
+    local names = {}
+    for i = 1, table.getn(db), 1 do
+        if db[i][idx] ~= nil then
+            table.insert(names, db[i][idx])
+        end
+    end
+    return names
 end
 
 function shuffleMpNames()
     saveNames()
+    -- local availablenames = getAvailableData(mpData, 1)
     local availablenames = { unpack(namelist) }
+
+
+    -- MpLog(table.concat(availablenames, ", "))
+
     for i = 1, Session:GetNumPlayers(), 1 do
         local player = Session:GetPlayer(i)
         local rndid = math.random(1, table.getn(availablenames))
@@ -146,20 +199,19 @@ function shuffleMpNames()
         player.Name = L(availablenames[rndid])
         table.remove(availablenames, rndid)
     end
-    MessageBox(L "Shuffled!", MESSAGEBOX_OK, ok)
-    proceedBack()
+    --MessageBox(L "Shuffled!", MESSAGEBOX_OK, ok)
+    -- proceedBack()
 end
 
 function hideMpNames()
-    saveNames()
+    --saveNames()
     for i = 1, Session:GetNumPlayers(), 1 do
         local player = Session:GetPlayer(i)
         player.Name = L(" ")
     end
-    MessageBox(L "Hidden!", MESSAGEBOX_OK, ok)
-    proceedBack()
+    --MessageBox(L "Hidden!", MESSAGEBOX_OK, ok)
+    --proceedBack()
 end
-
 
 function clearChat()
     -- sort of clear chat by sending a lot of empty lines
@@ -175,7 +227,7 @@ end
 
 function getPlayerData(txt)
     local mpD = {}
-    for d in txt:gmatch("([^;]+)") do 
+    for d in txt:gmatch("([^;]+)") do
         table.insert(mpD, d)
     end
 
@@ -202,32 +254,45 @@ function getMpDataFromChat()
     local line = 0
     local lineText = ""
     local strTxt = ""
-    while(lineText ~= "<endStats>") 
-    do
+    while (lineText ~= "<endStats>") do
         line = line + 1
-        if line > 1 then 
+        if line > 1 then
             strTxt = lineText .. "\n" .. strTxt
             table.insert(mpData, getPlayerData(lineText))
         end
-        lineText = (ConvertFromWString(textchat:GetLineText(numlines-line)))
+        lineText = (ConvertFromWString(textchat:GetLineText(numlines - line)))
     end
 
-    
+
     --clearChat()
 end
 
+function applyValidMpData()
+    -- apply the mpData to the players
+    for i = 1, Session:GetNumPlayers(), 1 do
+        local player = Session:GetPlayer(i)
+        player.Name = L(mpData[i][1])
+        if tonumber(mpData[i][2]) == -1 then
+            player.CarValid = false
+            player.Car = 0
+        else
+            player.CarValid = true
+            player.Car = tonumber(mpData[i][2])
+            player.CarSkin = tonumber(mpData[i][3])
+        end
+    end
+end
 
 function checkChatData()
     if table.getn(mpData) > 0 then
-        if table.getn(mpData) == Session:GetNumPlayers() then 
-            -- TODO: load the backed up mpData here
-            MpLog("valid data loaded: ("..table.getn(mpData).." Players)")
+        if table.getn(mpData) == Session:GetNumPlayers() then
+            MpLog("valid data loaded: (" .. table.getn(mpData) .. " Players)")
         else
             -- this might happen if the player (that's saved in the chat) leaves the lobby or new players join
-            MpLog("wrong data currently loaded:\n"..concatAllPlayerData(mpData))
+            MpLog("wrong data currently loaded:\n" .. concatAllPlayerData(mpData))
             -- TODO: message that the data is wrong, load even the corrupted data? y/n
         end
-        return 
+        return
     end
     mpData = {}
     dataTestText = ""
@@ -237,15 +302,16 @@ function checkChatData()
 
     -- TODO: check for all the lines in chat, not just the lowest one
     local txt = ConvertFromWString(textchat:GetLineText(numlines))
-    MpLog("Checking chat data: '"..string.len(txt)..", " .. txt.. "'")
+    MpLog("Checking chat data: '" .. string.len(txt) .. ", " .. txt .. "'")
 
     if txt == "<startStats>" then
         MpLog("Chat data found!")
         getMpDataFromChat()
 
         if table.getn(mpData) == Session:GetNumPlayers() then
-            MpLog("found data of "..table.getn(mpData).." Players:\n"..concatAllPlayerData(mpData))
+            MpLog("found data of " .. table.getn(mpData) .. " Players:\n" .. concatAllPlayerData(mpData))
             checkChatData()
+            applyValidMpData()
             return
         end
     else

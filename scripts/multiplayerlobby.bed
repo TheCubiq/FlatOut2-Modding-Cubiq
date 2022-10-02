@@ -159,6 +159,7 @@ local function SetNumRows(NumRows)
 end
 
 local function StartGameWithoutReadyPlayers()
+	saveMpStateData()
 	Session:StartRace()
 end
 
@@ -196,6 +197,7 @@ local function StartRace()
 				end
 			)
 		else
+			saveMpStateData()
 			Session:StartRace()
 		end
 	end
@@ -867,7 +869,7 @@ local function SetSelectPlayerButtons(playerNum)
 		if not(mpCheckModes("c")) then
 			table.insert(menu_multiplayer_lobby.items, { L"SHUFFLE CARS!", function() setMpModes("c") end, ICON(menu_multiplayer_lobby, "icon_mixed_events") } )
 		else
-			table.insert(menu_multiplayer_lobby.items, { L"REVERT CARS!", function() setMpModes("c",false) end, ICON(menu_multiplayer_lobby, "icon_xbl_friends") } )
+			table.insert(menu_multiplayer_lobby.items, { L"REVERT CARS!", function() setMpModes("c",false) end, ICON(menu_multiplayer_lobby, "icon_get_in") } )
 		end
 		if not(mpCheckModes("hn")) then
 			table.insert(menu_multiplayer_lobby.items, { L"SHUFFLE NAMES!", function() setMpModes("n") end, ICON(menu_multiplayer_lobby, "icon_join_friend") } )
@@ -1305,8 +1307,8 @@ BuildLobbyMenuButtons = function(creating)
 	if Session:GetNumPlayers() < 2 then
 		table.insert(commonitems, { L"AI Players", function() addAiPlayers(3) end, ICON(menu_multiplayer_lobby,"icon_sp_crash_td") } )
 	end
-	table.insert(commonitems, { L"print data!", function() saveMpStateData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
-	table.insert(commonitems, { L"check data!", function() checkChatData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
+	-- table.insert(commonitems, { L"print data!", function() saveMpStateData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
+	-- table.insert(commonitems, { L"check data!", function() checkChatData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
 	if Session:GetInfo().CarUpgrades == SessionInfo.CarUpgrades.Any and Session:GetInfo().Races[Session:GetInfo().NextRace].EventType ~= ReplicatedSession.GAMETYPE_STUNT then
 		table.insert(commonitems, { ICON_MULTIPLAYER_CHANGEUPGRADE, function() ChangeUpgrades() end, ICON(menu_multiplayer_lobby,"icon_change_upgrade_level") } )
 	end
