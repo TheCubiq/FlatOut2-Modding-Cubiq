@@ -15,9 +15,12 @@
     f: "force shuffle"  
     c: "car shuffle"  
     n: "name shuffle"  
-    h: "hide names"  
+    h: "hide names"
+    d: "dev mode" -- shows dev logs
+    a: "any player can shuffle mode" -- without this, only hosts will see the shuffle options
 --]]
-local mpModes = "t" 
+
+local mpModes = "da" 
 
 local mpData = {}
 
@@ -30,10 +33,12 @@ local carlist = {}
 --// ---------------------------------------------------------------------------------------------------------------------------------
 
 
-local function MpLog(text)
+local function MpLog(text, force)
     -- simple logger window
     local w = W("ShufflerInfo")
-    if w then w:SetTitle(L(text)) end
+    if w and (force or mpCheckModes("d")) then 
+        w:SetTitle(L(text)) 
+    end
 end
 
 local function storeCarsLocally()
@@ -176,11 +181,18 @@ end
 local function clearChat()
     -- sort of clear chat by sending a lot of empty lines
     local textchat = Session:GetTextChat()
+
+    -- save the chat here
+    local allchattext = {}
+    for i = 1, textchat:GetNumLines(), 1 do
+        local line = textchat:GetLineText(i)
+        table.insert(allchattext, line)
+    end
+
     for i = 1, 160, 1 do
         textchat:AddLocalLine("", Session:GetLocalPlayer(1).UId)
     end
-    -- / / MpLog("Chat cleared")
-    --TODO: get chat messages and add them after the clear (with the right player.uid)
+    MpLog("Chat cleared")
     --MessageBox(L "Cleared!", MESSAGEBOX_OK, ok)
 end
 
@@ -257,14 +269,14 @@ function setMpModes(modes, state)
     for i, mode in ipairs(stringToTable(modes)) do
         toggleMpMode(mode, state)
     end
-    MpLog(mpGetModesConcat())
+    MpLog(mpGetModesConcat(), true)
     proceedBack()
 end
 
 function saveMpStateData()
     -- triggered before the game start
     savePlayerStates()
-    -- / / MpLog("successfully saved all the players!")
+    MpLog("successfully saved all the players!")
     applyMpModes()
     --proceedBack()
 end
@@ -272,38 +284,66 @@ end
 function checkChatData()
     if table.getn(mpData) > 0 then
         if table.getn(mpData) == Session:GetNumPlayers() then
-            -- / / MpLog("valid data loaded: (" .. table.getn(mpData) .. " Players)")
+            MpLog("valid data loaded: (" .. table.getn(mpData) .. " Players)")
         else
             -- this might happen if the player (that's saved in the chat) leaves the lobby or new players join
-            -- / / MpLog("stored data are not right:\n" .. concatAllPlayerData(mpData))
+            MpLog("stored data are not right:\n" .. concatAllPlayerData(mpData))
         end
         return
     end
     mpData = {}
     dataTestText = ""
-    -- / / MpLog("Checking chat data...")
+    MpLog("Checking chat data...")
     local textchat = Session:GetTextChat()
     local numlines = textchat:GetNumLines()
 
     -- TODO: check for all the lines in chat, not just the lowest one
     local txt = ConvertFromWString(textchat:GetLineText(numlines))
-    -- / / MpLog("Checking chat data: '" .. string.len(txt) .. ", " .. txt .. "'")
+    MpLog("Checking chat data: '" .. string.len(txt) .. ", " .. txt .. "'")
 
     if txt == "<startStats>" then
-        -- / / MpLog("Chat data found!")
+        MpLog("Chat data found!")
         getMpDataFromChat()
 
         if table.getn(mpData) == Session:GetNumPlayers() then
-            -- / / MpLog("found data of " .. table.getn(mpData) .. " Players:\n" .. concatAllPlayerData(mpData))
+            MpLog("found data of " .. table.getn(mpData) .. " Players:\n" .. concatAllPlayerData(mpData))
             checkChatData()
             applyValidMpData()
             return
         else
             -- this might happen if the player (that's saved in the chat) leaves the lobby or new players join
-            -- / / MpLog("wrong data currently loaded:\n" .. concatAllPlayerData(mpData))
+            MpLog("wrong data currently loaded:\n" .. concatAllPlayerData(mpData))
             -- TODO: message that the data is wrong, load even the corrupted data? y/n
         end
     else
-        -- / / MpLog("Chat data not found!")
+        MpLog("Chat data not found!")
     end
 end
+
+-- playing with saveflow data. setsuit is free slot for saving small amount of information
+
+--[[
+
+    local suit = 0
+    local saveorload = true
+    
+    function demofunc()
+        local p = PlayerProfile
+        if saveorload then
+            local playerInfo = 
+        ConvertFromWString(p:GetName()) ..
+        "; " ..
+        p:GetSuit() .. 
+        "; " .. 
+        p:GetGender().."."
+        MpLog(playerInfo,true)
+        suit = suit + 1
+    else
+        p:SetSuit(suit)
+        ProfileSave(Save.GetLastSaveSlotUsed(),
+        EnterMenu("menu_multiplayer_lobby"),backmenu)
+    end
+    saveorload = not saveorload
+end
+
+--]]

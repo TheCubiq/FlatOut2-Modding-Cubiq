@@ -865,7 +865,7 @@ local function SetSelectPlayerButtons(playerNum)
 		table.insert(menu_multiplayer_lobby.items, { ICON_MULTIPLAYER_PLAYER_PROFILE, function() ShowPlayerProfile(playerNum) end, ICON(menu_multiplayer_lobby, "icon_player_profile") } )
 	end
 
-	if Session:IsHost() and Session:GetLocalPlayer(1).UId == player.UId then
+	if (Session:IsHost() or mpCheckModes("a")) and playerNum == 1 then
 		if not(mpCheckModes("f")) then
 			table.insert(menu_multiplayer_lobby.items, { L"FORCE SHUFFLE!", function() setMpModes("f") end, ICON(menu_multiplayer_lobby, "icon_ready") } )
 		else
@@ -993,6 +993,10 @@ local function LobbyEventListenerFunc(Event)
 			end
 		end
 	elseif Event.id==EVENT_RACE_ABOUT_TO_BEGIN then
+		if mpCheckModes("a") then
+			saveMpStateData()
+		end
+
 		if not Session:GetLocalPlayer(1):IsReady() then
 			return 
 		end
@@ -1309,10 +1313,11 @@ BuildLobbyMenuButtons = function(creating)
 	local commonitems = { }
 	table.insert(commonitems, { ICON_MULTIPLAYER_CHANGECAR, function() ChangeCar() end, ICON(menu_multiplayer_lobby,"icon_change_car") } )
 
-	-- if Session:GetNumPlayers() < 2 then
-	-- 	table.insert(commonitems, { L"AI Players", function() addAiPlayers(3,33) end, ICON(menu_multiplayer_lobby,"icon_sp_crash_td") } )
-	-- end
-	-- table.insert(commonitems, { L"print data!", function() saveMpStateData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
+	if Session:GetNumPlayers() < 2 then
+		table.insert(commonitems, { L "AI Players", function() addAiPlayers(3, 33) end, ICON(menu_multiplayer_lobby, "icon_sp_crash_td") })
+	end
+	table.insert(commonitems, { L"print and apply data!", function() saveMpStateData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
+	-- table.insert(commonitems, { L "testfunc", function() demofunc() end, ICON(menu_multiplayer_lobby, "icon_empty") })
 	-- table.insert(commonitems, { L"check data!", function() checkChatData() end, ICON(menu_multiplayer_lobby, "icon_empty") } )
 	if Session:GetInfo().CarUpgrades == SessionInfo.CarUpgrades.Any and Session:GetInfo().Races[Session:GetInfo().NextRace].EventType ~= ReplicatedSession.GAMETYPE_STUNT then
 		table.insert(commonitems, { ICON_MULTIPLAYER_CHANGEUPGRADE, function() ChangeUpgrades() end, ICON(menu_multiplayer_lobby,"icon_change_upgrade_level") } )
@@ -1904,7 +1909,7 @@ function menu_multiplayer_lobby.init(self)
 	VoiceSettingsActive		= false
 
 	SetLobbyHelpButtons()
-	if Session:IsHost() then
+	if Session:IsHost() or mpCheckModes("a") then
 		StaticText { Name=(	"ShufflerInfo" ), Title=L(""), --[[Position=POS(320,310),--]] Position=POS(2,15), Size=SIZE(560,12), Font=fontmedium(), Alpha=0.6, Color=GetPaletteColor(20),  Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=5 }
 		checkChatData()
 	end
@@ -1948,7 +1953,7 @@ function menu_multiplayer_lobby.update(self, time)
 	end
 	
 	LatestSessionInfo = Session:GetInfo()
-
+--[[
 	if Session:GetLocalPlayer(1).Kicked and not KickBoxActive then
 		KickBoxActive = true
 		GUI:HideMenuButtons()
@@ -2023,7 +2028,16 @@ function menu_multiplayer_lobby.update(self, time)
 	end
 
 	LastKickVoteActive = LatestSessionInfo.KickVote.VoteInProgress
-	
+--]]
+
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--//	antiKick by dominator
+--// ---------------------------------------------------------------------------------------------------------------------------------
+	if Session:GetLocalPlayer(1).Kicked then
+		Session:GetLocalPlayer(1).Kicked = false
+		MessageBox(L "ANTIKICK works!", MESSAGEBOX_OK, ok)
+	end
+
 	local numplayers = Session:GetNumPlayers()
 	SetNumRows(numplayers)
 	if not XBOX and (Mode == SELECT_PLAYER or Mode == PLAYER_OPTIONS) and numplayers == 1 then
