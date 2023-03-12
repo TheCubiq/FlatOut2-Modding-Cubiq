@@ -677,7 +677,7 @@ function menu_carselection.init(self)
 			end
 		else
 			-- Change skin
-			--[[
+			----[[
 			if menu_carselection.goingforward or menu_carselection.goingback then
 				return
 			end
@@ -710,7 +710,7 @@ function menu_carselection.init(self)
 			-- MessageBox(L(Garage:GetNumCars() ),MESSAGEBOX_OK,ok)
 			
 			-- MessageBox(L(usrOpt.lastMenuCar),MESSAGEBOX_OK,ok)
-
+			--[[
 			local str = ""
 			local m = menu_carselection
 			-- str = str..("currentRow: "..m.carRow.."/"..table.getn(customCarClassList).."\n")
@@ -727,7 +727,7 @@ function menu_carselection.init(self)
 
 
 			MessageBox(L(str),MESSAGEBOX_OK,ok)
-
+			--]]
 		end
 	end
 	
