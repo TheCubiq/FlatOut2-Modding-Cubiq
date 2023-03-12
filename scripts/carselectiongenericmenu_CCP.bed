@@ -10,9 +10,17 @@
 --// modded by Cubiq The Creator 
 --///////////////////////////////////////////////////////////////////////////
 
+useTestTrack = false
+
+CUSTOM_CAR_MIN = 25
+
+local currentlyLoadedCars = 0
+
 -- standalone palette selector mod
 -- removing this line will disable the color palette mod :)
 dofile("data/scripts/carcolorpalette.bed") 
+
+dofile("data/scripts/customCarClasses.bed")
 
 menu_carselection = CreateMenuFromTemplate("template_cars")
 local max_skins
@@ -317,6 +325,8 @@ end
 
 
 
+
+
 --// ---------------------------------------------------------------------------------------------------------------------------------
 --// 
 --// ---------------------------------------------------------------------------------------------------------------------------------
@@ -345,9 +355,22 @@ function menu_carselection.create(self)
 
 end
 
+function insertDataToMetatable(from, pos, value)
+	local tbl = from
+	table.insert(tbl,pos, value)
+	-- MessageBox(L(table.getn(tbl)), MESSAGEBOX_BUTTON_OK, ok)
+	-- from= tbl
+end
+
 
 function menu_carselection.init(self)
 	self.parent:init(self)
+
+	
+	--[BLO]
+	-- local usrOpt = db:GetTable("Settings.UserOptions")
+	local usrOpt = {}
+
     if CubiqsColorPalette then
         StaticText { Name=(	"CubiqInfo" ), Title=L("CarPalette Loaded!"), Position=POS(500,60), Size=SIZE(560,12), Font=fontsmall(), Color=GetPaletteColor(20), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y, Layer=2 }
         wm.GetWindow( "CubiqInfo" ):SetAlpha(0.3)
@@ -393,7 +416,11 @@ function menu_carselection.init(self)
 
 		menu_carselection.SelectedCar=menu_carselection.GarageCars[id].index
 		menu_carselection.SelectedSkin=1 --//Garage:GetCarSkinIndex(menu_carselection.SelectedCar)+1
-        SetPaletteSelector(menu_carselection.SelectedSkin) -- Enable Palette Selector
+        
+		--[BLO]
+		usrOpt.lastMenuCar = id;
+		
+		SetPaletteSelector(menu_carselection.SelectedSkin) -- Enable Palette Selector
 
 		if menu_carselection.only_description then
 			SetCarDescription(menu_carselection.SelectedCar)
@@ -409,65 +436,84 @@ function menu_carselection.init(self)
 		UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
 	end
 
-	parent.onMoveUp = function(self,id)
-		if menu_carselection.goingforward or menu_carselection.goingback then
-			return
+	local carCurrentRow = 0;
+
+	parent.onMoveDown = function(self,id)
+		-- local row = id
+		if carCurrentRow > 1 then
+			parent:removeAllButtons()
+			carCurrentRow = carCurrentRow - 1
+			parent:loadCarList(carCurrentRow)
 		end
+		
+		-- parent:onButtonChange(carButtonsRemoved)
+		-- messagebox
+		-- MessageBox(L(usrOpt.lastMenuCar),MESSAGEBOX_OK,ok)
+	end
 
-		if menu_carselection.only_description then return end
+	parent.onMoveUp = function(self,id)
+		-- parent:RemoveButton(2)
+		-- parent:loadCarList(0)
+		parent:removeAllButtons()
+		carCurrentRow = carCurrentRow + 1
+		parent:loadCarList(carCurrentRow)
+	end
 
-		if menu_carselection.SelectedSkin then
-			if menu_carselection.SelectedSkin > 1 then
-				menu_carselection.SelectedSkin = menu_carselection.SelectedSkin - 1
-			else
-                local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
-                local n
-                if CubiqsColorPalette then
-                    n = table.getn(CarPalette[d])
-                else
-                    n = max_skins
-                end
-                if n < 1 then n = 1 end
-                if n > max_skins then n = max_skins end
-                menu_carselection.SelectedSkin = n --fix for skins slots 
-            end
-            SetPaletteSelector(menu_carselection.SelectedSkin)
-            --if SetPaletteSelector(menu_carselection.SelectedSkin) then
-				GUI:LoadCarSkin(menu_carselection.SelectedSkin)
-    			--Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin)
-				playmenusound_move()
-            --end
+	function parent.removeAllButtons(self)
+		for i = parent:GetNumButtons()-1,0,-1 do
+			parent:RemoveButton(i)
 		end
 	end
 
-	parent.onMoveDown = function(self,id)
-		if menu_carselection.goingforward or menu_carselection.goingback then
-			return 
+	parent.testFunction = function(self, menu, demoTest)
+		-- MessageBox(L("table.getn(self.carlist)"),MESSAGEBOX_OK,ok)
+		local randomId = math.random(1,table.getn(menu.carlist))
+		local iconname=string.format("car_%d_icon",GetCarDataIndex(randomId))
+		-- parent:AddButton(menu:getResource(iconname)) -- this works
+		local id,button=parent:AddButton(menu:getResource(iconname))
+		insertDataToMetatable(menu.GarageCars,id, { index=randomId,button=button})
+				-- table.insert(menu.GarageCars,id,{ index=car.index,button=button})
+		MessageBox(L(id),MESSAGEBOX_OK,ok)
+	end
+
+	function parent.loadCarList(self, listIdx)
+		currentlyLoadedCars = 0
+		local menu = menu_carselection
+
+		
+		-- local mycarlist = customCarClassList
+		if listIdx then
+			-- MessageBox(L("listIdx"),MESSAGEBOX_OK,ok)
+			menu.carlist = customCarClassList[listIdx]
+		end
+		
+		local mycarlist = menu.carlist
+
+		-- local id = 1
+		local first
+		local cars={}
+		for i=1,table.getn(mycarlist) do
+			local car=mycarlist[i]
+			if car then
+				local iconname
+
+				if not menu_carselection.all_available and Garage:IsCarLocked(car.index) then
+					iconname=string.format("car_%d_icon_locked",GetCarDataIndex(car.index))
+				else
+					iconname=string.format("car_%d_icon",GetCarDataIndex(car.index))
+				end
+
+				
+				local id,button=parent:AddButton(menu:getResource(iconname)) --//ICON(self,iconname))
+				table.insert(cars,i,{ index=car.index,button=button})
+				currentlyLoadedCars = currentlyLoadedCars + 1
+				insertDataToMetatable(menu.GarageCars,id, { index=car.index,button=button})
+				
+				if not first then first=id end
+			end
 		end
 
-		if menu_carselection.only_description then return end
-
-		if menu_carselection.SelectedSkin then
-                local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
-				local n
-				if CubiqsColorPalette then
-					n = table.getn(CarPalette[d])
-				else
-					n = max_skins
-				end
-				if n > max_skins then n = max_skins end
-				if menu_carselection.SelectedSkin < n then --fix for skins slots
-				menu_carselection.SelectedSkin = menu_carselection.SelectedSkin + 1
-			else
-				menu_carselection.SelectedSkin = 1
-			end
-			SetPaletteSelector(menu_carselection.SelectedSkin)
---//			if SetPaletteSelector(menu_carselection.SelectedSkin) then
-				GUI:LoadCarSkin(menu_carselection.SelectedSkin)
---//				Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin-1)
-				playmenusound_move()
---//			end
-		end		
+		-- menu.GarageCars=cars
 	end
 
 	parent.onChildAction = function(self,id)
@@ -477,6 +523,8 @@ function menu_carselection.init(self)
 
 		local menucar=menu_carselection.GarageCars[id]
 		local index=menucar.index
+		--[BLO]
+		-- usrOpt.lastMenuCar = id;
 
 		if menu_carselection.shop_mode then
 			local value=Garage:GetCarValue(index)
@@ -536,18 +584,50 @@ function menu_carselection.init(self)
 		end
 	end
 
-	function parent.onButtonY(self)
-		if menu_carselection.goingforward or menu_carselection.goingback then
-			return
-		end
 
-		if menu_carselection.testtrack_menudata then 
-			if not Garage:IsCarLocked(menu_carselection.SelectedCar) then
-				playmenusound_action()
-				menu_carselection.goingforward=true
-				EnterTestTrack(menu_carselection.SelectedCar,menu_carselection.testtrack_menudata,menu_carselection.SelectedSkin)
-			else 
-				playmenusound_error()
+
+	function parent.onButtonY(self)
+		if useTestTrack then
+			if menu_carselection.goingforward or menu_carselection.goingback then
+				return
+			end
+
+			if menu_carselection.testtrack_menudata then 
+				if not Garage:IsCarLocked(menu_carselection.SelectedCar) then
+					playmenusound_action()
+					menu_carselection.goingforward=true
+					EnterTestTrack(menu_carselection.SelectedCar,menu_carselection.testtrack_menudata,menu_carselection.SelectedSkin)
+				else 
+					playmenusound_error()
+				end
+			end
+		else
+			-- Change skin
+			if menu_carselection.goingforward or menu_carselection.goingback then
+				return
+			end
+	
+			if menu_carselection.only_description then return end
+	
+			if menu_carselection.SelectedSkin then
+				local d = tonumber(GetCarDataIndex(menu_carselection.SelectedCar))
+				local n
+				if CubiqsColorPalette then
+					n = table.getn(CarPalette[d])
+				else
+					n = max_skins
+				end
+				if n > max_skins then n = max_skins end
+				if menu_carselection.SelectedSkin < n then --fix for skins slots
+					menu_carselection.SelectedSkin = menu_carselection.SelectedSkin + 1
+				else
+					menu_carselection.SelectedSkin = 1
+				end
+				SetPaletteSelector(menu_carselection.SelectedSkin)
+				--if SetPaletteSelector(menu_carselection.SelectedSkin) then
+					GUI:LoadCarSkin(menu_carselection.SelectedSkin)
+					--Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin)
+					playmenusound_move()
 			end
 		end
 	end
@@ -595,10 +675,10 @@ function menu_carselection.init(self)
 		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
 	end
 	
-
+	-- local first = 1
+	--[[ 
 	local cars={}
 	local id,button
-	local first
 
 	local i
 	local cars={}
@@ -620,7 +700,22 @@ function menu_carselection.init(self)
 		end
 	end
 
-	self.GarageCars=cars
+	--]]
+
+	self.GarageCars={}
+	-- local cars, first = parent:loadCarList(true)
+	local first = 1
+	local cars = {}
+	parent:loadCarList()
+	
+	
+	self.CurrentClass = 1
+
+	-- W("garage_cars"):testFunction(menu_carselection)
+	-- W("garage_cars"):loadCarList(1)
+	-- self.GarageCars=W("garage_cars"):loadCarList(menu_carselection,1)
+	-- self.GarageCars = {}
+	-- W("garage_cars"):loadCarList(menu_carselection,1)
 
 	local cur_car=self.SelectedCar or PlayerProfile:GetActiveCar()
 	if cur_car < 0 or self.shop_mode then
@@ -637,6 +732,18 @@ function menu_carselection.init(self)
 	parent:SetSelectedButton(0,FALSE)
 	parent:onButtonChange(1)
 
+	--[BLO]
+	local selected_car = usrOpt.lastMenuCar
+	if not cars[selected_car] then
+		selected_car = math.floor(parent:GetNumButtons()/2)
+	end
+	usrOpt.lastMenuCar = selected_car;
+
+	--[BLO]
+--	parent:SetSelectedButton(0,FALSE)
+--	parent:onButtonChange(1)
+	-- parent:SetSelectedButton(selected_car,FALSE)
+	-- parent:onButtonChange(selected_car) --+1)
 
 	GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
 
