@@ -1,43 +1,37 @@
 customCarClassList = {
-    {
-        {index = 1},
-        {index = 1},
-        {index = 1},
-        {index = 2},
-        {index = 3},
+    { 
+        classname = "Loading All Cars :)",
+        loadallcars = true,
+        background = "data/menu/carshop_bg.tga"
     },
     {
-        {index = 3},
-        {index = 3},
-        {index = 5},
-        {index = 8},
+        classname = "Begineer",
+        background = "data/menu/carshop_derby_bg.tga",
+        2,6,23,13,20,8,14,17,18,
     },
     {
-        {index = 12},
-        {index = 13},
-        {index = 15},
-        {index = 15},
-        {index = 16},
+        classname = "Amateur",
+        background = "data/menu/carshop_racing_bg.tga",
+        1,3,5,19,4,7,33,16,24,26,10,
     },
     {
-        {index = 17},
-        {index = 18},
-        {index = 19},
-        {index = 20},
-        {index = 21},
+        classname = "uwu u be pro :o",
+        background = "data/menu/carshop_street_bg.tga",
+        28,30,31,09,21,27,12,32,22, 15,11,34,25,29,
     },
     {
-        {index = 22},
-        {index = 23},
-        {index = 24},
-        {index = 25},
-        {index = 26},
+        classname = "Stunt",
+        background = "data/menu/stunt_car_selection_bg.tga",
+        35,36,37,38,39,
     },
     {
-        {index = 27},
-        {index = 28},
-        {index = 29},
-        {index = 30},
-        {index = 31},
+        classname = "no way bonus omg",
+        background = "data/menu/career_incup_bg.tga",
+        40,41,42,43,44,45,
+    },
+    {
+        classname = "Made By Cubiq",
+        background = "data/menu/bg_racing.tga",
+        39,29,45,41,42,43,44,45,
     }
 }
