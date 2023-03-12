@@ -377,6 +377,7 @@ local function ChangeCar()
 		nil,
 		true,
 		nil,
+		true,
 		true
 	)
 end

@@ -663,10 +663,12 @@ function menu_singleplayer_trackselection.init(self)
 			local carlist
 			local bg
 			local description=false
+			local classChanger = true
 			if RaceSelectionState.RaceType == TRACKTYPE_STUNT then
 				carlist=CarlistStuntCars()
 				bg="data/menu/stunt_car_selection_bg.tga"
 				description=true
+				classChanger = false
 			else
 				-- [cond]? [yes]:[no] in lua is basically [cond] and [yes] or [no]
 				carlist=(SR_unlockAllCars and CarlistAllCars() or CarlistAllUnlocked())
@@ -676,7 +678,19 @@ function menu_singleplayer_trackselection.init(self)
 					  function()
 							--//RaceSelectionState:prevPhase()
 							EnterMenu("menu_singleplayer_trackselection")
-					  end,carlist,false,true,description,false,bg,nil,true,TRANSLATOR(TITLE_SELECTCAR))
+					  end,
+					  carlist,
+					  false,
+					  true,
+					  description,
+					  false,
+					  bg,
+					  nil,
+					  true,
+					  TRANSLATOR(TITLE_SELECTCAR),
+					  nil,
+					  classChanger
+					)
 		end
 	end
 

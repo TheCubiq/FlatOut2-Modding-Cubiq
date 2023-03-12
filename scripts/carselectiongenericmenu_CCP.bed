@@ -12,15 +12,13 @@
 
 useTestTrack = false
 
-CUSTOM_CAR_MIN = 25
-
 local currentlyLoadedCars = 0
 
 -- standalone palette selector mod
 -- removing this line will disable the color palette mod :)
 dofile("data/scripts/carcolorpalette.bed") 
 
-dofile("data/scripts/customCarClasses.bed")
+dofile("data/scripts/customcarclasses.bed")
 
 menu_carselection = CreateMenuFromTemplate("template_cars")
 local max_skins
@@ -202,7 +200,7 @@ function GetGarageIndexFromCarDatapath(car_idx)
 end
 
 
-function EnterCarSelection(okaction,backaction,carlist,purchase,all_available,only_description,show_tutorial,background,testtrack_menudata,show_class,title,hide_menubar_car)
+function EnterCarSelection(okaction,backaction,carlist,purchase,all_available,only_description,show_tutorial,background,testtrack_menudata,show_class,title,hide_menubar_car, class_changer_enabled)
 	menu_carselection.carlist=carlist or CarlistAllCars()
 	menu_carselection.back=backaction
 	menu_carselection.okaction=okaction
@@ -215,6 +213,7 @@ function EnterCarSelection(okaction,backaction,carlist,purchase,all_available,on
 	menu_carselection.testtrack_menudata=testtrack_menudata
 	menu_carselection.title=title
 	menu_carselection.hide_menubar_car=hide_menubar_car
+	menu_carselection.classChangerEnabled=class_changer_enabled
 	EnterMenu("menu_carselection")
 end
 
@@ -375,17 +374,11 @@ end
 function insertDataToMetatable(from, pos, value)
 	local tbl = from
 	table.insert(tbl,pos, value)
-	-- MessageBox(L(table.getn(tbl)), MESSAGEBOX_BUTTON_OK, ok)
-	-- from= tbl
 end
 
 
 function menu_carselection.init(self)
 	self.parent:init(self)
-
-	
-	--[BLO]
-	-- local usrOpt = db:GetTable("Settings.UserOptions")
 	local usrOpt = {}
 
     if CubiqsColorPalette then
@@ -456,32 +449,21 @@ function menu_carselection.init(self)
 		UpdateCarInfo(menu_carselection.SelectedCar,menu_carselection,false,menu_carselection.SelectedSkin)
 	end
 
-	-- local carCurrentRow = 0;
-
 	parent.onMoveDown = function(self,id)
-		-- local row = id
-		-- local m = menu_carselection
-		-- if m.carRow > 1 then
+		local m = menu_carselection
+		if m.classChangerEnabled then
 			parent:removeAllButtons()
-			-- m.carRow = m.carRow - 1
 			parent:reloadCarList(-1)
-		-- end
-		
-		-- parent:onButtonChange(carButtonsRemoved)
-		-- messagebox
-		-- MessageBox(L(usrOpt.lastMenuCar),MESSAGEBOX_OK,ok)
+		end
 	end
 
 	parent.onMoveUp = function(self,id)
-		-- parent:RemoveButton(2)
-		-- parent:loadCarList(0)
 		
-		-- local m = menu_carselection
-		-- if m.carRow < table.getn(customCarClassList) then
+		local m = menu_carselection
+		if m.classChangerEnabled then	
 			parent:removeAllButtons()
-			-- m.carRow = m.carRow + 1
 			parent:reloadCarList(1)
-		-- end
+		end
 	end
  
 	function parent.removeAllButtons(self)
@@ -491,62 +473,40 @@ function menu_carselection.init(self)
 	end
 
 	parent.testFunction = function(self, menu, demoTest)
-		-- MessageBox(L("table.getn(self.carlist)"),MESSAGEBOX_OK,ok)
 		local randomId = math.random(1,table.getn(menu.carlist))
 		local iconname=string.format("car_%d_icon",GetCarDataIndex(randomId))
-		-- parent:AddButton(menu:getResource(iconname)) -- this works
 		local id,button=parent:AddButton(menu:getResource(iconname))
 		insertDataToMetatable(menu.GarageCars,id, { index=randomId,button=button})
-				-- table.insert(menu.GarageCars,id,{ index=car.index,button=button})
 		MessageBox(L(id),MESSAGEBOX_OK,ok)
 	end
 
 	function parent.reloadCarList(self, dir)
 		dir = dir or 0
 		local m = menu_carselection
-
-		
 		local oldLoadedCarCount = m.currentCarCount
 		local oldCarIdx = m.currentCarCount - (table.getn(m.GarageCars) - usrOpt.lastMenuCar)
-
 		currentlyLoadedCars = 0
-
-		
-		-- m.carRow = m.carRow + dir
-
-		-- if m.carRow > table.getn(customCarClassList) then
-		-- 	m.carRow = 1
-		-- end
-
-		-- if m.carRow < 1 then
-		-- 	m.carRow = table.getn(customCarClassList)
-		-- end
-		
-		-- use the % operator to loop around the list
 		m.carRow = (m.carRow + dir - 1) % table.getn(customCarClassList) + 1
 
-
 		local listIdx = m.carRow
-		
-		-- local mycarlist = customCarClassList
 		if listIdx then
 			local list = customCarClassList[listIdx]
 			if (list.loadallcars) then
 				m.carlist = m.carlist_orig
 			else
-				-- MessageBox(L("listIdx"),MESSAGEBOX_OK,ok)
-				-- menu.carlist = customCarClassList[listIdx]
 				m.carlist = {}
 				for i=1,table.getn(list) do
 					local garage_index = GetGarageIndexFromCarDatapath(list[i])
-					-- if car then
-						table.insert(m.carlist, {index = garage_index})
-					-- end
+					table.insert(m.carlist, {index = garage_index})
 				end
 
 			end
-			GUI:SetBackground(list.background or "data/menu/carshop_bg.tga")
-			W("CustomClassName"):SetTitle(L(list.classname or ""))
+			GUI:SetBackground(m.background or list.background or "data/menu/carshop_bg.tga")
+			if m.classChangerEnabled then
+				W("CustomClassName"):SetTitle(L(list.classname or "")) 
+			else 
+				W("CustomClassName"):SetTitle(L(""))
+			end
 		end
 		
 		local mycarlist = m.carlist
@@ -575,18 +535,12 @@ function menu_carselection.init(self)
 			end
 		end
 
-
-		-- if oldCarIdx > currentlyLoadedCars then
-			parent:SetSelectedButton(0,false)
-			-- oldCarIdx = currentlyLoadedCars-1
-			-- parent:SetSelectedButton(currentlyLoadedCars-1,false)
-		-- end
+		parent:SetSelectedButton(0,false)
 
 		parent:onButtonChange(table.getn(m.GarageCars)+1 - currentlyLoadedCars)
 
 		m.currentCarCount = currentlyLoadedCars
 
-		-- menu.GarageCars=cars
 	end
 
 	parent.onChildAction = function(self,id)
@@ -677,7 +631,6 @@ function menu_carselection.init(self)
 			end
 		else
 			-- Change skin
-			----[[
 			if menu_carselection.goingforward or menu_carselection.goingback then
 				return
 			end
@@ -704,30 +657,6 @@ function menu_carselection.init(self)
 					--Garage:SetCarSkinIndex(menu_carselection.SelectedCar,menu_carselection.SelectedSkin)
 					playmenusound_move()
 			end
-			--]]
-
-			
-			-- MessageBox(L(Garage:GetNumCars() ),MESSAGEBOX_OK,ok)
-			
-			-- MessageBox(L(usrOpt.lastMenuCar),MESSAGEBOX_OK,ok)
-			--[[
-			local str = ""
-			local m = menu_carselection
-			-- str = str..("currentRow: "..m.carRow.."/"..table.getn(customCarClassList).."\n")
-			str = str..(string.format("currentRow: %d/%d\n", m.carRow, table.getn(customCarClassList)))
-			str = str..(string.format(
-				"SelectedCar: %d (%d)\n",
-				-- table.getn(m.GarageCars) - usrOpt.lastMenuCar - table.getn(customCarClassList[m.carRow]),
-				-- m.currentCarCount,
-				m.currentCarCount - (table.getn(m.GarageCars) - usrOpt.lastMenuCar),
-				usrOpt.lastMenuCar
-			))
-			str = str..("LoadedButtons: "..table.getn(m.GarageCars).."\n")
-			str = str..(usrOpt.lastMenuCar.." "..table.getn(m.GarageCars).." "..m.currentCarCount)
-
-
-			MessageBox(L(str),MESSAGEBOX_OK,ok)
-			--]]
 		end
 	end
 	
@@ -774,33 +703,6 @@ function menu_carselection.init(self)
 		GUI:SetHelpButtons(BUTTON_OK,TRANSLATOR(UI_SELECT),BUTTON_BACK,TRANSLATOR(UI_BACK))
 	end
 	
-	-- local first = 1
-	--[[ 
-	local cars={}
-	local id,button
-
-	local i
-	local cars={}
-	for i=1,table.getn(self.carlist) do
-		local car=self.carlist[i]
-		if car then
-			local iconname
-
-			if not menu_carselection.all_available and Garage:IsCarLocked(car.index) then
-				iconname=string.format("car_%d_icon_locked",GetCarDataIndex(car.index))
-			else
-				iconname=string.format("car_%d_icon",GetCarDataIndex(car.index))
-			end
-
-			local id,button=parent:AddButton(self:getResource(iconname)) --//ICON(self,iconname))
-			table.insert(cars,id,{ index=car.index,button=button})
-			
-			if not first then first=id end
-		end
-	end
-
-	--]]
-
 	self.GarageCars={}
 
 	self.currentCarCount = 0
@@ -813,12 +715,6 @@ function menu_carselection.init(self)
 	local cars = {}
 	self.carlist_orig = self.carlist
 	parent:reloadCarList()
-
-	-- W("garage_cars"):testFunction(menu_carselection)
-	-- W("garage_cars"):loadCarList(1)
-	-- self.GarageCars=W("garage_cars"):loadCarList(menu_carselection,1)
-	-- self.GarageCars = {}
-	-- W("garage_cars"):loadCarList(menu_carselection,1)
 
 	local cur_car=self.SelectedCar or PlayerProfile:GetActiveCar()
 	if cur_car < 0 or self.shop_mode then
@@ -834,23 +730,6 @@ function menu_carselection.init(self)
 	SetPaletteSelector(self.SelectedSkin) -- Enable Palette Selector
 	parent:SetSelectedButton(0,FALSE)
 	parent:onButtonChange(1)
-
-	--[BLO]
-	-- local selected_car = usrOpt.lastMenuCar
-	-- if not cars[selected_car] then
-		-- selected_car = math.floor(parent:GetNumButtons()/2)
-		-- selected_car = 0
-	-- end
-	-- usrOpt.lastMenuCar = selected_car;
-
-	--[BLO]
---	parent:SetSelectedButton(0,FALSE)
---	parent:onButtonChange(1)
-	-- parent:SetSelectedButton(selected_car,FALSE)
-	-- parent:onButtonChange(selected_car) --+1)
-
-	-- GUI:SetBackground(self.background or "data/menu/carshop_bg.tga")
-
 end
 
 function menu_carselection.update(self,time)

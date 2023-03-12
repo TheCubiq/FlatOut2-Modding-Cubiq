@@ -215,7 +215,18 @@ local function ChangeCar()
 			CarSelected = true
 			EnterMenu("menu_multiplayer_lobby")
 		end,
-		entermenu("menu_multiplayer_lobby")
+		entermenu("menu_multiplayer_lobby"),
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		true
 	)
 end
 
