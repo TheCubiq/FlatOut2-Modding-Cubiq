@@ -11,7 +11,7 @@
 
 dofile("data/menu/garage_elements1.bed")
 
-local IWantAllCars = true
+local IWantAllCars = false
 
 local Layout={
 	TrackFramePos=POS(284,84),
@@ -280,6 +280,7 @@ local function ChangeCar()
 	local carclass = info.CarClass
 	local bg
 	local description = false
+	local class_changer_enabled = false
 	
 	LeavingLobby = true
 
@@ -297,6 +298,7 @@ local function ChangeCar()
 			description = true
 		elseif carclass == SessionInfo.CarClass.Any then
 			-- Any car; includes derby, racing, street and bonus cars
+			class_changer_enabled = true
 			local function SplitString(str)
 				local t={}	
 	---@diagnostic disable-next-line: undefined-field
@@ -319,6 +321,7 @@ local function ChangeCar()
 			carlist = CarlistFromClass(carclass, false, true)
 		elseif Session:IsHost() then
 			-- "Same as host" car setting
+			class_changer_enabled = true
 			local function SplitString(str)
 				local t={}		
 	---@diagnostic disable-next-line: undefined-field
@@ -342,9 +345,10 @@ local function ChangeCar()
 			if IsStuntCar(carclass - 5) then
 				bg="data/menu/stunt_car_selection_bg.tga"
 				description=true
-			end
+			end		
 		end
 	else
+		class_changer_enabled = true
 		for i = 0, db.FlatOut2.Cars:GetPropertyArraySize("Car") - 1 do
 			table.insert(carlist, {index = i} )
 		end	
@@ -378,7 +382,7 @@ local function ChangeCar()
 		true,
 		nil,
 		true,
-		true
+		class_changer_enabled
 	)
 end
 
