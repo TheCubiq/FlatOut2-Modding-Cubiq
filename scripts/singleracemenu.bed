@@ -183,7 +183,76 @@ local race_type_names = {
 	{ name=TRANSLATOR(RACETRACKTYPE_DERBY), bg="derby_cls_bg.tga", tracktype=TRACKTYPE_DERBY, },
 }
 
+--// ---------------------------------------------------------------------------------------------------------------------------------
+--//	Map Loaders
+--// ---------------------------------------------------------------------------------------------------------------------------------
 
+
+local racemaps = {
+	[TRACKTYPE_RACING] = {
+		"map_racing1a",
+		"map_racing1b",
+		"map_racing1c",
+		"map_racing2a",
+		"map_racing2b",
+		"map_racing2c",
+	},
+	[TRACKTYPE_FIELDS] = {
+		"map_fields1a",
+		"map_fields1b",
+		"map_fields1c",
+		"map_fields2a",
+		"map_fields2b",
+		"map_fields2c",
+	},
+	[TRACKTYPE_FOREST] = {
+		"map_forest1a",
+		"map_forest1b",
+		"map_forest1c",
+		"map_forest2a",
+		"map_forest2b",
+		"map_forest2c",
+	},
+	[TRACKTYPE_CITY] = {
+		"map_city1a",
+		"map_city1b",
+		"map_city1c",
+		"map_city2a",
+		"map_city2b",
+		"map_city2c",
+	},
+	[TRACKTYPE_DESERT] = {
+		"map_desert1a",
+		"map_desert1b",
+		"map_desert1c",
+	},
+	[TRACKTYPE_CANAL] = {
+		"map_canal1a",
+		"map_canal1b",
+		"map_canal1c",
+	},
+	[TRACKTYPE_STUNT] = {
+		"map_arena1a",
+		"map_arena2a",
+		"map_arena3a",
+		"map_arena4a",
+		"map_arena5a",
+		"map_arena6a",
+	},
+	[TRACKTYPE_EVENT] = {
+		"map_nascar1a",
+		"map_nascar1b",
+		"map_nascar1c",
+	},
+	[TRACKTYPE_DERBY] = {
+		"map_derby1a",
+		"map_derby2a",
+		"map_derby3a",
+		"map_derby4a",
+		"map_derby5a",
+		"map_derby6a",
+	},
+}
 
 --// ---------------------------------------------------------------------------------------------------------------------------------
 --// SINGLE RACE RACETYPE
@@ -430,6 +499,11 @@ local function SwitchTrackInfo(self,direction,id)
 	local icon=leveldata.TrackIcon or ""
 	W("track_image"):AttachResource(self:getResource(icon.."_sp"))
 
+	W("CubiqHelp"):SetTitle(L(leveldata.TrackImage.." "..leveldata.TrackType));
+	
+	-- W("track_map"):AttachResource(self:getResource("map_racing1a"))
+	W("track_map"):AttachResource(self:getResource(racemaps[leveldata.TrackType][id]))
+
 	state.highscores=GetLevelHighScores(tracks[id].level_id)
 
 	UpdateHighScores()
@@ -494,6 +568,21 @@ function menu_singleplayer_trackselection.create(self)
 
 
 	local files=trackfiles[racetype]
+
+
+    -- load all track maps from racemaps
+
+	local default_map_proportions = { 1, 1, 512, 512 }
+	for k,v in ipairs(racemaps[racetype]) do
+		self:addResource(
+			("../global/map/"..v..".dds"),
+			{
+				[v] = default_map_proportions
+			}
+		,{512,512})
+	end
+
+	-- self:addResource("../global/map/map_racing1a.dds", { ["map_racing1a"] = default_map_proportions }, {512,512})
 
 	for k,v in ipairs(files) do
 		self:addResource(v..".tga",_G[v],_G[v.."_size"])
@@ -616,6 +705,9 @@ function menu_singleplayer_trackselection.init(self)
 	Frame{Position=POS(313,215),Size=SIZE(34,101)}:AttachResource(self:getResource("big_bottom_race_sel_ang"))
 
 	Frame{Name="track_image",Position=POS(0,84),Size=SIZE(332,219)}
+
+	StaticText { Name=(	"CubiqHelp" ), Title=L("eyo"), Position=POS(50,60), Size=SIZE(560,12), Font=fontmedium(), Color=GetPaletteColor(34), Align=FONTF_LEFT, TitleCentering=TITLECENTER_Y }
+	Frame{Name="track_map",Position=POS(50,84),Size=SIZE(100,100)}
 
 	bar.onButtonChange = function(self,id)
 		if self.pressed or self.backpressed then return end
